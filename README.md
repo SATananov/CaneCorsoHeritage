@@ -54,8 +54,12 @@ Implemented so far:
 - ESLint configured
 - Basic application composition
 - `Header` functional component
+- `Hero` functional component
+- Reusable `StoryCard` functional component
+- Props passed manually to multiple `StoryCard` instances
 - `Footer` functional component
-- Initial `App` component structure
+- USG-inspired black / old-gold / ivory visual identity
+- Responsive layout for the current landing page
 - Git repository initialized
 - Public GitHub repository connected
 
@@ -65,12 +69,16 @@ Current project structure includes:
 src/
 ├── components/
 │   ├── Footer.jsx
-│   └── Header.jsx
+│   ├── Header.jsx
+│   ├── Hero.jsx
+│   └── StoryCard.jsx
 ├── App.css
 ├── App.jsx
 ├── index.css
 └── main.jsx
 ```
+
+The story cards currently use temporary static props for course practice. Real remote data will replace the sample data after backend communication is covered.
 
 ---
 
@@ -100,7 +108,6 @@ The following functionality is planned and will be added gradually as the relate
 - Empty-data states
 - Context API
 - React Hooks and lifecycle behavior
-- Responsive and consistent styling
 - Deployment of the final application
 
 ---
@@ -153,13 +160,13 @@ Planned routes:
 
 ```text
 /
- /stories
- /stories/:id
- /stories/create
- /stories/:id/edit
- /my-stories
- /login
- /register
+/stories
+/stories/:id
+/stories/create
+/stories/:id/edit
+/my-stories
+/login
+/register
 ```
 
 Planned route behavior:
@@ -241,14 +248,18 @@ Validation will be added progressively and will include multiple validated field
 
 ---
 
-## 11. Planned React-Specific Techniques
+## 11. React-Specific Techniques
 
-The project is expected to demonstrate:
+Implemented at the current stage:
 
 - Functional components
 - JSX
-- Props
 - Component composition
+- Props
+- Reusable components
+
+Planned for later course stages:
+
 - `useState`
 - `useEffect`
 - Custom hooks where appropriate
@@ -266,20 +277,23 @@ Only techniques already covered in the course will be introduced during each dev
 
 ## 12. Styling Approach
 
-The interface will follow a clean and consistent design.
+The interface follows the visual identity of the user's earlier Cane Corso / Unico Suo Genere project while being rebuilt specifically for this React application.
 
-Planned design principles:
+Current visual direction:
 
-- Simple navigation
-- Consistent typography and buttons
+- Black base: `#0E0E10`
+- Old-gold accent: `#D4AF37`
+- Ivory text: `#F8F5EF`
+- `Playfair Display` for display headings
+- `Inter` for interface and body text
+- Dark premium surfaces
+- Thin gold borders
+- Restrained glow and shadow effects
 - Clear visual hierarchy
-- Good readability and contrast
-- Clearly visible action buttons
-- Visible feedback for interactive elements
-- Sufficient whitespace
-- Limited and consistent color palette
+- Responsive layout
+- External CSS files
 
-Styling will use external CSS files.
+The design will stay focused and will not copy the complexity of the older platform.
 
 ---
 
@@ -314,11 +328,17 @@ http://localhost:5173/
 npm run lint
 ```
 
+### Create a Production Build
+
+```bash
+npm run build
+```
+
 ---
 
 ## 14. Project Development Roadmap
 
-The roadmap will follow the ReactJS lectures and exercises.
+The roadmap follows the ReactJS lectures and exercises.
 
 ### Stage 01 — Completed
 
@@ -330,12 +350,19 @@ The roadmap will follow the ReactJS lectures and exercises.
 - Initialize Git
 - Create the public GitHub repository
 
-### Stage 02 — Next
+### Stage 02 — Completed
 
 - Continue practicing JSX
-- Add reusable components
-- Introduce props
-- Build the first story presentation components
+- Add a reusable `Hero` component
+- Add a reusable `StoryCard` component
+- Pass different data through props
+- Render multiple component instances manually
+- Apply the established USG visual identity with external CSS
+- Add responsive styling
+
+### Stage 03 — Next
+
+Stage 03 will be defined by the next lecture and exercise. The project will not jump ahead of the course material.
 
 ### Later Stages
 
