@@ -1,16 +1,20 @@
 # ReactJS
 
-**септември 2026**
+**September 2026**
 
 **Stefan Tananov**
 
 # Cane Corso Heritage
 
-This is my ReactJS course project.
+## Project Idea
 
-I chose Cane Corso because it is a subject I know well and I want the project to feel personal, not like a random exam example.
+I chose this project because Cane Corso is a subject I know well and care about.
 
-My goal is to keep the project simple and focus on clean, understandable React code.
+My idea is that, after the course and the exam, Cane Corso Heritage can become a separate section of the larger application I have been developing for the past nine months:
+
+https://usg-cane-corso-platform.com/
+
+For the ReactJS course, however, I will keep this project simple and focus mainly on clean and understandable React code.
 
 ## How I will work
 
