@@ -35,21 +35,23 @@ I do not want to add complicated functionality before we study it. After every n
 - [x] Pass data with props
 - [x] Add external CSS and the USG visual style
 - [x] Build the Home page as the entrance to Cane Corso Heritage
-- [x] Add an automatic image banner with reusable slide components
+- [x] Add an automatic Heritage slider with reusable slide components
+- [x] Refine the slider into text, main visual and USG crest areas
+- [x] Add responsive styling
+- [x] Add the Cane Corso Heritage favicon
 
 Current components:
 
 ```text
 Header
-Hero
 HeritageSlider
 HeritageSlide
+Hero
 EntranceCard
 Footer
 ```
 
 The navigation currently uses page anchors only. I will add real page routing after routing is covered in the course.
-
 ## Run the project
 
 ```bash
