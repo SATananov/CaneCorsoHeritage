@@ -1,6 +1,7 @@
 import './App.css';
 import Header from './components/Header';
 import Hero from './components/Hero';
+import HeritageSlider from './components/HeritageSlider';
 import EntranceCard from './components/EntranceCard';
 import Footer from './components/Footer';
 
@@ -11,6 +12,7 @@ function App() {
 
             <main>
                 <Hero />
+                <HeritageSlider />
 
                 <section className="paths-section" id="paths" aria-labelledby="paths-title">
                     <div className="site-container">

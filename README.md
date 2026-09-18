@@ -31,16 +31,19 @@ I do not want to add complicated functionality before we study it. After every n
 - [x] Create the main `App` structure
 - [x] Use a Fragment as the root
 - [x] Create React components
-- [x] Create a reusable component
+- [x] Create reusable components
 - [x] Pass data with props
 - [x] Add external CSS and the USG visual style
 - [x] Build the Home page as the entrance to Cane Corso Heritage
+- [x] Add an automatic image banner with reusable slide components
 
 Current components:
 
 ```text
 Header
 Hero
+HeritageSlider
+HeritageSlide
 EntranceCard
 Footer
 ```
