@@ -11,8 +11,8 @@ function App() {
             <Header />
 
             <main>
-                <Hero />
                 <HeritageSlider />
+                <Hero />
 
                 <section className="paths-section" id="paths" aria-labelledby="paths-title">
                     <div className="site-container">
