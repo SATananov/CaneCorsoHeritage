@@ -1,4 +1,6 @@
-import HeritageSlide from './HeritageSlide';
+﻿import HeritageSlide from './HeritageSlide';
+
+const crestImage = '/images/slider/usg-crest-trim.png';
 
 function HeritageSlider() {
     return (
@@ -6,14 +8,13 @@ function HeritageSlider() {
             <div className="site-container">
                 <div className="heritage-slider-topline">
                     <span>Discover Cane Corso Heritage</span>
-                    <span>Automatic gallery · pauses on hover</span>
                 </div>
 
                 <div className="heritage-slider">
                     <div className="heritage-slider-track">
                         <HeritageSlide
                             image="/images/slider/stories.png"
-                            alt="Cane Corso shown in different parts of everyday life"
+                            sideImage={crestImage}
                             kicker="Stories"
                             title="Character. Loyalty. Bond."
                             text="Discover Cane Corso through real stories and the people connected with them."
@@ -22,7 +23,7 @@ function HeritageSlider() {
 
                         <HeritageSlide
                             image="/images/slider/heritage.png"
-                            alt="Cane Corso heritage presented in a global gallery"
+                            sideImage={crestImage}
                             kicker="Heritage"
                             title="History. Function. Type."
                             text="Enter the historical side of Cane Corso and the heritage behind the breed."
@@ -31,7 +32,7 @@ function HeritageSlider() {
 
                         <HeritageSlide
                             image="/images/slider/knowledge.png"
-                            alt="Educational Cane Corso visual guides"
+                            sideImage={crestImage}
                             kicker="Knowledge"
                             title="Learn. Understand. Preserve."
                             text="A visual knowledge space for responsible care, understanding and preservation."
@@ -40,7 +41,7 @@ function HeritageSlider() {
 
                         <HeritageSlide
                             image="/images/slider/community.png"
-                            alt="Cane Corso connected with people and community"
+                            sideImage={crestImage}
                             kicker="Community"
                             title="People connected by Cane Corso."
                             text="A place for owners, stories, knowledge and shared respect for Cane Corso."
@@ -49,7 +50,7 @@ function HeritageSlider() {
 
                         <HeritageSlide
                             image="/images/slider/usg-global.png"
-                            alt="Unico Suo Genere global Cane Corso ecosystem"
+                            sideImage={crestImage}
                             kicker="Unico Suo Genere"
                             title="One identity. One heritage."
                             text="Cane Corso Heritage carries the visual language of the larger USG platform."
@@ -58,7 +59,7 @@ function HeritageSlider() {
 
                         <HeritageSlide
                             image="/images/slider/stories.png"
-                            alt=""
+                            sideImage={crestImage}
                             kicker="Stories"
                             title="Character. Loyalty. Bond."
                             text="Discover Cane Corso through real stories and the people connected with them."
@@ -66,13 +67,11 @@ function HeritageSlider() {
                         />
                     </div>
                 </div>
-
-                <p className="heritage-slider-hint">
-                    Each image changes automatically. Move the pointer over the banner to pause it.
-                </p>
             </div>
         </section>
     );
 }
 
 export default HeritageSlider;
+
+
