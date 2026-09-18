@@ -11,7 +11,7 @@ function Footer() {
                     </div>
                 </div>
 
-                <p>© 2026 Cane Corso Heritage · ReactJS course project</p>
+                <p>© 2026 Cane Corso Heritage · Unico Suo Genere</p>
             </div>
         </footer>
     );

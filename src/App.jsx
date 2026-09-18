@@ -17,10 +17,6 @@ function App() {
                         <div className="section-heading">
                             <p className="section-kicker">Explore Cane Corso Heritage</p>
                             <h2 id="paths-title">Choose where you want to begin.</h2>
-                            <p>
-                                For now these sections are part of the same page. When routing is
-                                covered in the course, they can become separate pages.
-                            </p>
                         </div>
 
                         <div className="entrance-grid">

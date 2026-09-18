@@ -22,10 +22,6 @@ function Hero() {
                                 About the project
                             </a>
                         </div>
-
-                        <p className="hero-note">
-                            React + JavaScript · Built step by step with the course
-                        </p>
                     </div>
 
                     <div className="hero-visual" aria-label="Unico Suo Genere visual identity">
