@@ -31,20 +31,21 @@ I do not want to add complicated functionality before we study it. After every n
 - [x] Create the main `App` structure
 - [x] Use a Fragment as the root
 - [x] Create React components
-- [x] Create a reusable `StoryCard`
+- [x] Create a reusable component
 - [x] Pass data with props
 - [x] Add external CSS and the USG visual style
+- [x] Build the Home page as the entrance to Cane Corso Heritage
 
 Current components:
 
 ```text
 Header
 Hero
-StoryCard
+EntranceCard
 Footer
 ```
 
-The story cards currently use sample data only for practicing components and props.
+The navigation currently uses page anchors only. I will add real page routing after routing is covered in the course.
 
 ## Run the project
 

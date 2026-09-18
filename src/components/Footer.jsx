@@ -4,6 +4,7 @@ function Footer() {
             <div className="site-container footer-inner">
                 <div className="footer-brand">
                     <img src="/images/logo.jpg" alt="" />
+
                     <div>
                         <strong>Cane Corso Heritage</strong>
                         <span>Unico Suo Genere</span>

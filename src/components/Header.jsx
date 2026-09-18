@@ -4,9 +4,10 @@ function Header() {
             <div className="site-container header-inner">
                 <a className="brand" href="#home" aria-label="Cane Corso Heritage home">
                     <img className="brand-logo" src="/images/logo.jpg" alt="" />
+
                     <span className="brand-copy">
-                        <strong>Cane Corso Heritage</strong>
                         <small>Unico Suo Genere</small>
+                        <strong>Cane Corso Heritage</strong>
                     </span>
                 </a>
 
@@ -14,6 +15,7 @@ function Header() {
                     <a href="#home">Home</a>
                     <a href="#stories">Stories</a>
                     <a href="#heritage">Heritage</a>
+                    <a href="#about">About</a>
                 </nav>
             </div>
         </header>
