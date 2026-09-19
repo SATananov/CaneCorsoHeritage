@@ -15,7 +15,8 @@ function Header() {
                     <a href="#home">Home</a>
                     <a href="#stories">Stories</a>
                     <a href="#heritage">Heritage</a>
-                    <a href="#about">About</a>
+                    <button className="nav-placeholder" type="button">About USG</button>
+                <button className="nav-placeholder" type="button">Help</button>
                 </nav>
             </div>
         </header>

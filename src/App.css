@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --usg-black: #0e0e10;
     --usg-black-soft: #151518;
     --usg-panel: rgba(18, 18, 20, 0.92);
@@ -882,4 +882,28 @@
 
 .heritage-slider-hint {
     display: none;
+}
+
+/* HEADER ABOUT + HELP 01 */
+.main-nav .nav-placeholder {
+    appearance: none;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(248, 245, 239, 0.72);
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: default;
+}
+
+.main-nav .nav-placeholder:hover,
+.main-nav .nav-placeholder:focus-visible {
+    color: var(--usg-gold);
+    border-color: rgba(212, 175, 55, 0.24);
+    background: rgba(212, 175, 55, 0.06);
+    outline: none;
 }
