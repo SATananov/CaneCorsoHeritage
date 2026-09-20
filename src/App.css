@@ -1,13 +1,10 @@
 :root {
     --usg-black: #0e0e10;
-    --usg-black-soft: #151518;
-    --usg-panel: rgba(18, 18, 20, 0.92);
     --usg-gold: #d4af37;
     --usg-gold-light: #e3c766;
     --usg-ivory: #f8f5ef;
     --usg-muted: rgba(248, 245, 239, 0.72);
     --usg-muted-soft: rgba(248, 245, 239, 0.48);
-    --usg-border: rgba(212, 175, 55, 0.34);
 }
 
 .site-container {
@@ -532,12 +529,6 @@
     line-height: 1.12;
 }
 
-.entrance-card-description {
-    margin: 16px 0 0;
-    color: var(--usg-muted);
-    line-height: 1.68;
-}
-
 .entrance-card-footer {
     margin-top: auto;
     padding-top: 22px;
@@ -830,29 +821,6 @@
     }
 }
 
-/* Header navigation */
-.main-nav .nav-placeholder {
-    appearance: none;
-    padding: 8px 10px;
-    border: 1px solid transparent;
-    border-radius: 999px;
-    background: transparent;
-    color: rgba(248, 245, 239, 0.72);
-    font: inherit;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: default;
-}
-
-.main-nav .nav-placeholder:hover,
-.main-nav .nav-placeholder:focus-visible {
-    color: var(--usg-gold);
-    border-color: rgba(212, 175, 55, 0.24);
-    background: rgba(212, 175, 55, 0.06);
-    outline: none;
-}
 /* Section links */
 #stories,
 #heritage,
@@ -927,11 +895,6 @@
     .entrance-card h3 {
         margin-top: 12px;
         font-size: 1.45rem;
-    }
-
-    .entrance-card-description {
-        margin-top: 12px;
-        line-height: 1.52;
     }
 
     .entrance-card-footer {

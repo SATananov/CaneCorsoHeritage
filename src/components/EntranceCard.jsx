@@ -1,6 +1,6 @@
 function EntranceCard(props) {
     return (
-        <a className="entrance-card" id={props.sectionId} href={props.href}>
+        <a className="entrance-card" href={props.href}>
             <p className="entrance-card-eyebrow">{props.eyebrow}</p>
             <h3>{props.title}</h3>
 

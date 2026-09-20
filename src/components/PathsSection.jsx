@@ -11,7 +11,6 @@ function PathsSection() {
 
                 <div className="entrance-grid">
                     <EntranceCard
-                        sectionId="stories-card"
                         href="#stories"
                         eyebrow="Stories"
                         title="Cane Corso Stories"
@@ -21,7 +20,6 @@ function PathsSection() {
                     />
 
                     <EntranceCard
-                        sectionId="heritage-card"
                         href="#heritage"
                         eyebrow="Heritage"
                         title="History and Heritage"
@@ -31,7 +29,6 @@ function PathsSection() {
                     />
 
                     <EntranceCard
-                        sectionId="about-card"
                         href="#about"
                         eyebrow="About USG"
                         title="Unico Suo Genere"
