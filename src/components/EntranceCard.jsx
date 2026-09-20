@@ -3,7 +3,12 @@ function EntranceCard(props) {
         <article className="entrance-card" id={props.sectionId}>
             <p className="entrance-card-eyebrow">{props.eyebrow}</p>
             <h3>{props.title}</h3>
-            <p className="entrance-card-description">{props.description}</p>
+
+            {props.imagePath ? (
+                <div className="entrance-card-media">
+                    <img src={props.imagePath} alt={props.imageAlt || ''} />
+                </div>
+            ) : null}
 
             <div className="entrance-card-footer">
                 <span>{props.note}</span>

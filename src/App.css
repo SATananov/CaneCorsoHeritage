@@ -907,3 +907,161 @@
     background: rgba(212, 175, 55, 0.06);
     outline: none;
 }
+/* SECTION LINKS 01 */
+#stories,
+#heritage,
+#about {
+    scroll-margin-top: 260px;
+}
+
+@media (max-width: 680px) {
+    #stories,
+    #heritage,
+    #about {
+        scroll-margin-top: 210px;
+    }
+}
+/* HOME COMPACT 01 */
+@media (min-width: 921px) {
+    .hero {
+        padding-top: 18px;
+        padding-bottom: 28px;
+    }
+
+    .hero-shell {
+        min-height: 500px;
+        gap: 24px;
+        padding: 24px;
+    }
+
+    .hero-copy-panel {
+        max-width: 460px;
+        padding: 22px;
+    }
+
+    .hero h1 {
+        margin-top: 12px;
+        font-size: clamp(2.8rem, 4.2vw, 4.15rem);
+        line-height: 0.98;
+    }
+
+    .hero-lead {
+        margin-top: 16px;
+        font-size: 0.94rem;
+        line-height: 1.58;
+    }
+
+    .hero-actions {
+        margin-top: 20px;
+    }
+
+    .hero-visual-frame {
+        width: min(435px, 33vw);
+    }
+
+    .paths-section {
+        padding-top: 38px;
+        padding-bottom: 48px;
+    }
+
+    .section-heading {
+        margin-bottom: 26px;
+    }
+
+    .section-heading h2 {
+        font-size: clamp(2.4rem, 3.6vw, 3.6rem);
+        line-height: 1;
+    }
+
+    .entrance-card {
+        min-height: 280px;
+        padding: 24px;
+    }
+
+    .entrance-card h3 {
+        margin-top: 12px;
+        font-size: 1.45rem;
+    }
+
+    .entrance-card-description {
+        margin-top: 12px;
+        line-height: 1.52;
+    }
+
+    .entrance-card-footer {
+        padding-top: 16px;
+    }
+}
+@media (min-width: 921px) {
+    .hero-shell {
+        background:
+            linear-gradient(90deg, rgba(12, 12, 14, 0.98) 0%, rgba(12, 12, 14, 0.9) 40%, rgba(12, 12, 14, 0.58) 100%),
+            radial-gradient(circle at 76% 46%, rgba(212, 175, 55, 0.045), transparent 62%);
+    }
+
+    .hero-shell::before {
+        opacity: 0.22;
+    }
+
+    .hero-visual::before,
+    .hero-visual::after {
+        opacity: 0.12;
+    }
+}
+
+/* HOME CARDS 03 IMAGE MEDIA START */
+.entrance-card {
+    min-height: 420px;
+    overflow: hidden;
+}
+
+.entrance-card-media {
+    position: relative;
+    margin-top: 20px;
+    flex: 1 1 auto;
+    min-height: 190px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.16);
+    background: rgba(6, 6, 8, 0.92);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.entrance-card-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.22));
+    pointer-events: none;
+}
+
+.entrance-card-media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    opacity: 0.94;
+    transform: scale(1.01);
+    filter: saturate(0.94) brightness(0.9);
+    transition:
+        transform 0.24s ease,
+        opacity 0.24s ease,
+        filter 0.24s ease;
+}
+
+.entrance-card:hover .entrance-card-media img {
+    opacity: 1;
+    transform: scale(1.04);
+    filter: saturate(1) brightness(0.98);
+}
+
+@media (max-width: 900px) {
+    .entrance-card {
+        min-height: 380px;
+    }
+
+    .entrance-card-media {
+        min-height: 170px;
+    }
+}
+/* HOME CARDS 03 IMAGE MEDIA END */

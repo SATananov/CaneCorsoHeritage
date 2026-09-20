@@ -1,4 +1,4 @@
-﻿import HeritageSlide from './HeritageSlide';
+import HeritageSlide from './HeritageSlide';
 
 const crestImage = '/images/slider/usg-crest-trim.png';
 
@@ -17,7 +17,6 @@ function HeritageSlider() {
                             sideImage={crestImage}
                             kicker="Stories"
                             title="Character. Loyalty. Bond."
-                            text="Discover Cane Corso through real stories and the people connected with them."
                             href="#stories"
                         />
 
@@ -26,7 +25,6 @@ function HeritageSlider() {
                             sideImage={crestImage}
                             kicker="Heritage"
                             title="History. Function. Type."
-                            text="Enter the historical side of Cane Corso and the heritage behind the breed."
                             href="#heritage"
                         />
 
@@ -35,7 +33,6 @@ function HeritageSlider() {
                             sideImage={crestImage}
                             kicker="Knowledge"
                             title="Learn. Understand. Preserve."
-                            text="A visual knowledge space for responsible care, understanding and preservation."
                             href="#heritage"
                         />
 
@@ -44,7 +41,6 @@ function HeritageSlider() {
                             sideImage={crestImage}
                             kicker="Community"
                             title="People connected by Cane Corso."
-                            text="A place for owners, stories, knowledge and shared respect for Cane Corso."
                             href="#stories"
                         />
 
@@ -53,7 +49,6 @@ function HeritageSlider() {
                             sideImage={crestImage}
                             kicker="Unico Suo Genere"
                             title="One identity. One heritage."
-                            text="Cane Corso Heritage carries the visual language of the larger USG platform."
                             href="#about"
                         />
 
@@ -62,7 +57,6 @@ function HeritageSlider() {
                             sideImage={crestImage}
                             kicker="Stories"
                             title="Character. Loyalty. Bond."
-                            text="Discover Cane Corso through real stories and the people connected with them."
                             clone={true}
                         />
                     </div>

@@ -1,7 +1,7 @@
-﻿function HeritageSlide(props) {
+function HeritageSlide(props) {
     const slideLabel = props.clone
         ? undefined
-        : `${props.kicker}. ${props.title} ${props.text}`;
+        : `${props.kicker}. ${props.title}`;
 
     return (
         <a
@@ -30,7 +30,6 @@
             <span className="heritage-slide-content">
                 <span className="heritage-slide-kicker">{props.kicker}</span>
                 <strong>{props.title}</strong>
-                <span className="heritage-slide-text">{props.text}</span>
                 {!props.clone && (
                     <span className="heritage-slide-link">
                         Explore <span aria-hidden="true">→</span>

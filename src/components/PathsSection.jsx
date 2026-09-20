@@ -14,24 +14,27 @@ function PathsSection() {
                         sectionId="stories"
                         eyebrow="Stories"
                         title="Cane Corso Stories"
-                        description="A place for personal stories, remarkable Cane Corso and the people connected with them."
-                        note="Stories section"
+                        note="Stories Section"
+                        imagePath="/images/cards/stories-card.png"
+                        imageAlt="Cane Corso stories"
                     />
 
                     <EntranceCard
                         sectionId="heritage"
                         eyebrow="Heritage"
                         title="History and Heritage"
-                        description="A focused section for the history, character and heritage of Cane Corso."
-                        note="Heritage section"
+                        note="Heritage Section"
+                        imagePath="/images/cards/heritage-card.png"
+                        imageAlt="Cane Corso heritage"
                     />
 
                     <EntranceCard
                         sectionId="about"
-                        eyebrow="About"
-                        title="About the Project"
-                        description="Cane Corso Heritage is my ReactJS course project, built step by step with the lectures and exercises."
-                        note="Project section"
+                        eyebrow="About USG"
+                        title="Unico Suo Genere"
+                        note="About USG"
+                        imagePath="/images/cards/about-usg-card.png"
+                        imageAlt="Unico Suo Genere"
                     />
                 </div>
             </div>

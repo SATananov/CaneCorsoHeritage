@@ -8,10 +8,7 @@ function Hero() {
 
                         <h1>Enter the world of Cane Corso Heritage.</h1>
 
-                        <p className="hero-lead">
-                            Stories, history and heritage presented in a simple React project
-                            with the visual identity of Unico Suo Genere.
-                        </p>
+                        <p className="hero-lead">Discover the stories, history and heritage of Cane Corso.</p>
 
                         <div className="hero-actions">
                             <a className="button button-primary" href="#paths">
