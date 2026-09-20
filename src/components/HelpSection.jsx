@@ -1,3 +1,5 @@
+import AuthActions from './AuthActions';
+
 function HelpSection() {
     return (
         <section className="visitor-section visitor-section-alt" id="help" aria-labelledby="help-title">
@@ -28,15 +30,12 @@ function HelpSection() {
                         <span>03</span>
                         <h3>Join</h3>
                         <p>Create an account when you want to share your own stories.</p>
-                        <div className="help-auth-actions">
-                            <button type="button">Login</button>
-                            <button className="register-button" type="button">Register</button>
-                        </div>
+                        <AuthActions className="help-auth-actions" ariaLabel="Join options" />
                     </article>
                 </div>
             </div>
         </section>
-    )
+    );
 }
 
-export default HelpSection
+export default HelpSection;

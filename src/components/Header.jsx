@@ -1,3 +1,5 @@
+import AuthActions from './AuthActions';
+
 function Header() {
     return (
         <header className="site-header">
@@ -18,10 +20,7 @@ function Header() {
                     <a href="#about">About USG</a>
                     <a href="#help">Help</a>
 
-                    <span className="visitor-auth" aria-label="Account options">
-                        <button className="login-button" type="button">Login</button>
-                        <button className="register-button" type="button">Register</button>
-                    </span>
+                    <AuthActions className="visitor-auth" ariaLabel="Account options" />
                 </nav>
             </div>
         </header>

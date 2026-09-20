@@ -1,3 +1,5 @@
+import PreviewCard from './PreviewCard';
+
 function StoriesPreviewSection() {
     return (
         <section className="visitor-section" id="stories" aria-labelledby="stories-feature-title">
@@ -22,26 +24,23 @@ function StoriesPreviewSection() {
                 </div>
 
                 <div className="story-preview-grid">
-                    <article className="story-preview-card">
-                        <span>Origins</span>
-                        <h3>Where every story begins</h3>
-                        <p>A first look at the people, Cane Corso and moments behind the heritage.</p>
-                        <button type="button">Details</button>
-                    </article>
+                    <PreviewCard
+                        eyebrow="Origins"
+                        title="Where every story begins"
+                        description="A first look at the people, Cane Corso and moments behind the heritage."
+                    />
 
-                    <article className="story-preview-card">
-                        <span>Loyalty</span>
-                        <h3>The bond that stays</h3>
-                        <p>Stories that show character, trust and the connection built over time.</p>
-                        <button type="button">Details</button>
-                    </article>
+                    <PreviewCard
+                        eyebrow="Loyalty"
+                        title="The bond that stays"
+                        description="Stories that show character, trust and the connection built over time."
+                    />
 
-                    <article className="story-preview-card">
-                        <span>Legacy</span>
-                        <h3>Stories carried forward</h3>
-                        <p>A place for memories and experiences that become part of the heritage.</p>
-                        <button type="button">Details</button>
-                    </article>
+                    <PreviewCard
+                        eyebrow="Legacy"
+                        title="Stories carried forward"
+                        description="A place for memories and experiences that become part of the heritage."
+                    />
                 </div>
             </div>
         </section>

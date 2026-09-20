@@ -1,3 +1,5 @@
+import PreviewCard from './PreviewCard';
+
 function HeritagePreviewSection() {
     return (
         <section className="visitor-section visitor-section-alt" id="heritage" aria-labelledby="heritage-preview-title">
@@ -21,26 +23,23 @@ function HeritagePreviewSection() {
                 </div>
 
                 <div className="story-preview-grid">
-                    <article className="story-preview-card">
-                        <span>Origins</span>
-                        <h3>Roots and history</h3>
-                        <p>Discover the historical background and the path that shaped Cane Corso heritage.</p>
-                        <button type="button">Details</button>
-                    </article>
+                    <PreviewCard
+                        eyebrow="Origins"
+                        title="Roots and history"
+                        description="Discover the historical background and the path that shaped Cane Corso heritage."
+                    />
 
-                    <article className="story-preview-card">
-                        <span>Function</span>
-                        <h3>Built for purpose</h3>
-                        <p>Explore the original working function and the role that shaped the Cane Corso.</p>
-                        <button type="button">Details</button>
-                    </article>
+                    <PreviewCard
+                        eyebrow="Function"
+                        title="Built for purpose"
+                        description="Explore the original working function and the role that shaped the Cane Corso."
+                    />
 
-                    <article className="story-preview-card">
-                        <span>Type</span>
-                        <h3>Function shapes type</h3>
-                        <p>See how function, structure and identity connect through the heritage of Cane Corso.</p>
-                        <button type="button">Details</button>
-                    </article>
+                    <PreviewCard
+                        eyebrow="Type"
+                        title="Function shapes type"
+                        description="See how function, structure and identity connect through the heritage of Cane Corso."
+                    />
                 </div>
             </div>
         </section>

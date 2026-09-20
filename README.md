@@ -28,6 +28,7 @@ I do not want to add functionality before we study it. After every new lecture a
 - [x] Use JavaScript and JSX
 - [x] Create reusable React components
 - [x] Pass data with props
+- [x] Reuse shared preview cards and account actions with props
 - [x] Add the USG visual style
 - [x] Add a standalone automatic intro slider
 - [x] Build the Home section
@@ -43,6 +44,7 @@ Current components:
 
 ```text
 Header
+AuthActions
 HeritageSlider
 HeritageSlide
 Hero
@@ -50,6 +52,7 @@ PathsSection
 EntranceCard
 StoriesPreviewSection
 HeritagePreviewSection
+PreviewCard
 AboutUsgSection
 HelpSection
 Footer
@@ -60,7 +63,7 @@ Footer
 A visitor can currently:
 
 - explore the Home page
-- see the main Stories, Heritage and About USG directions
+- use the main entrance cards to move to Stories, Heritage and About USG
 - read the current public preview content
 - open the USG Cane Corso Platform from the About USG section
 - see the prepared Login and Register actions
