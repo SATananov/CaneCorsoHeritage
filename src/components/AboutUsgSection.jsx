@@ -25,7 +25,7 @@ function AboutUsgSection() {
                             aria-label="Open the USG Cane Corso Platform in English"
                         >
                             <img
-                                src="/images/cards/about-usg-platform.png"
+                                src="/images/cards/about-usg-platform.webp"
                                 alt="USG Cane Corso Platform"
                             />
                             <span className="visitor-platform-cta">Explore</span>

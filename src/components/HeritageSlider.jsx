@@ -1,6 +1,6 @@
 import HeritageSlide from './HeritageSlide';
 
-const crestImage = '/images/slider/usg-crest-trim.png';
+const crestImage = '/images/slider/usg-crest-trim.webp';
 
 function HeritageSlider() {
     return (
@@ -13,7 +13,7 @@ function HeritageSlider() {
                 <div className="heritage-slider">
                     <div className="heritage-slider-track">
                         <HeritageSlide
-                            image="/images/slider/stories.png"
+                            image="/images/slider/stories.webp"
                             sideImage={crestImage}
                             kicker="Stories"
                             title="Character. Loyalty. Bond."
@@ -21,7 +21,7 @@ function HeritageSlider() {
                         />
 
                         <HeritageSlide
-                            image="/images/slider/heritage.png"
+                            image="/images/slider/heritage.webp"
                             sideImage={crestImage}
                             kicker="Heritage"
                             title="History. Function. Type."
@@ -29,7 +29,7 @@ function HeritageSlider() {
                         />
 
                         <HeritageSlide
-                            image="/images/slider/knowledge.png"
+                            image="/images/slider/knowledge.webp"
                             sideImage={crestImage}
                             kicker="Knowledge"
                             title="Learn. Understand. Preserve."
@@ -37,7 +37,7 @@ function HeritageSlider() {
                         />
 
                         <HeritageSlide
-                            image="/images/slider/community.png"
+                            image="/images/slider/community.webp"
                             sideImage={crestImage}
                             kicker="Community"
                             title="People connected by Cane Corso."
@@ -45,7 +45,7 @@ function HeritageSlider() {
                         />
 
                         <HeritageSlide
-                            image="/images/slider/usg-global.png"
+                            image="/images/slider/usg-global.webp"
                             sideImage={crestImage}
                             kicker="Unico Suo Genere"
                             title="One identity. One heritage."
@@ -53,7 +53,7 @@ function HeritageSlider() {
                         />
 
                         <HeritageSlide
-                            image="/images/slider/stories.png"
+                            image="/images/slider/stories.webp"
                             sideImage={crestImage}
                             kicker="Stories"
                             title="Character. Loyalty. Bond."

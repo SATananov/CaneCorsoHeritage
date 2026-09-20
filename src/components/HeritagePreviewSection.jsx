@@ -4,7 +4,7 @@ function HeritagePreviewSection() {
             <div className="site-container">
                 <div className="visitor-feature-grid section-feature-intro">
                     <div className="visitor-feature-image">
-                        <img src="/images/cards/heritage-card.png" alt="Cane Corso heritage" />
+                        <img src="/images/cards/heritage-card.webp" alt="Cane Corso heritage" />
                     </div>
 
                     <div className="visitor-feature-copy">

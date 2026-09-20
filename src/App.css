@@ -111,9 +111,9 @@
 
 .heritage-slider-topline {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 20px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     color: var(--usg-muted-soft);
     font-size: 0.62rem;
     font-weight: 800;
@@ -155,18 +155,6 @@
     background: #050507;
 }
 
-.heritage-slide img {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 25%;
-    width: 75%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
-    background: #050507;
-}
 
 .heritage-slide-overlay {
     position: absolute;
@@ -180,7 +168,7 @@
 
 .heritage-slide-content {
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     left: clamp(22px, 2.4vw, 34px);
     top: 50%;
     bottom: auto;
@@ -216,14 +204,6 @@
     text-shadow: 0 3px 14px rgba(0, 0, 0, 0.68);
 }
 
-.heritage-slide-text {
-    max-width: 290px;
-    margin-top: 8px;
-    color: rgba(248, 245, 239, 0.72);
-    font-size: clamp(0.72rem, 0.86vw, 0.82rem);
-    line-height: 1.42;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.78);
-}
 
 .heritage-slide-link {
     display: inline-flex;
@@ -242,12 +222,6 @@
     background: rgba(10, 10, 12, 0.76);
 }
 
-.heritage-slider-hint {
-    margin: 8px 2px 0;
-    color: rgba(248, 245, 239, 0.34);
-    font-size: 0.64rem;
-    line-height: 1.45;
-}
 
 @keyframes heritage-auto-slide {
     0%,
@@ -689,12 +663,6 @@
         height: 260px;
     }
 
-    .heritage-slide img {
-        inset: 0;
-        width: 100%;
-        height: 100%;
-    }
-
     .heritage-slide-overlay {
         background:
             linear-gradient(180deg, rgba(5, 5, 7, 0.04), rgba(5, 5, 7, 0.55));
@@ -716,10 +684,6 @@
 
     .heritage-slide-content strong {
         font-size: clamp(1.35rem, 6.4vw, 1.85rem);
-    }
-
-    .heritage-slide-text {
-        display: none;
     }
 
     .hero {
@@ -776,9 +740,7 @@
 }
 
 
-
-
-/* HOME ENTRANCE 01.7 TRIPLE SPLIT OVERRIDE */
+/* Heritage slider imagery */
 .heritage-slide-main-image,
 .heritage-slide-side-image {
     position: absolute;
@@ -796,13 +758,15 @@
 }
 
 .heritage-slide-side-image {
+    z-index: 2;
     top: 50%;
-    right: clamp(18px, 2.4vw, 34px);
-    width: min(15%, 210px);
+    right: clamp(18px, 2.6vw, 34px);
+    width: min(18%, 210px);
+    height: min(82%, 330px);
     aspect-ratio: 1 / 1;
     transform: translateY(-50%);
-    filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.45));
-    opacity: 0.98;
+    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 16px rgba(212, 175, 55, 0.16));
+    opacity: 1;
 }
 
 .heritage-slide-overlay {
@@ -847,41 +811,6 @@
         background: rgba(7, 7, 9, 0.42);
         backdrop-filter: blur(6px);
     }
-}
-
-/* HOME ENTRANCE 01.7.1 RIGHT CREST FIX */
-.heritage-slide-main-image {
-    z-index: 0;
-}
-
-.heritage-slide-overlay {
-    z-index: 1;
-}
-
-.heritage-slide-side-image {
-    z-index: 2;
-    right: clamp(18px, 2.6vw, 34px);
-    width: min(18%, 210px);
-    height: min(82%, 330px);
-    background-position: center;
-    background-size: contain;
-    background-repeat: no-repeat;
-    opacity: 1;
-    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 16px rgba(212, 175, 55, 0.16));
-}
-
-.heritage-slide-content {
-    z-index: 3;
-}
-
-/* HOME ENTRANCE 01.8 SLIDER UI CLEANUP */
-.heritage-slider-topline {
-    justify-content: flex-start;
-    margin-bottom: 12px;
-}
-
-.heritage-slider-hint {
-    display: none;
 }
 
 /* Header navigation */
@@ -1701,7 +1630,6 @@
     }
 }
 /* End platform explore label */
-
 
 
 /* Section card rhythm */

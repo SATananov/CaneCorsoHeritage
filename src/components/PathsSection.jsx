@@ -15,7 +15,7 @@ function PathsSection() {
                         eyebrow="Stories"
                         title="Cane Corso Stories"
                         note="Stories Section"
-                        imagePath="/images/cards/stories-card.png"
+                        imagePath="/images/cards/stories-card.webp"
                         imageAlt="Cane Corso stories"
                     />
 
@@ -24,7 +24,7 @@ function PathsSection() {
                         eyebrow="Heritage"
                         title="History and Heritage"
                         note="Heritage Section"
-                        imagePath="/images/cards/heritage-card.png"
+                        imagePath="/images/cards/heritage-card.webp"
                         imageAlt="Cane Corso heritage"
                     />
 
@@ -33,7 +33,7 @@ function PathsSection() {
                         eyebrow="About USG"
                         title="Unico Suo Genere"
                         note="About USG"
-                        imagePath="/images/cards/about-usg-platform.png"
+                        imagePath="/images/cards/about-usg-platform.webp"
                         imageAlt="Unico Suo Genere"
                     />
                 </div>

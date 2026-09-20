@@ -13,7 +13,7 @@ function StoriesPreviewSection() {
                     </div>
 
                     <div className="visitor-feature-image">
-                        <img src="/images/cards/stories-card.png" alt="Cane Corso stories" />
+                        <img src="/images/cards/stories-card.webp" alt="Cane Corso stories" />
                     </div>
                 </div>
 

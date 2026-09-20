@@ -25,7 +25,7 @@ function Hero() {
                         <div className="hero-visual-frame">
                             <img
                                 className="hero-main-image"
-                                src="/images/welcome-logo.jpg"
+                                src="/images/logo.jpg"
                                 alt="Unico Suo Genere Cane Corso"
                             />
 
