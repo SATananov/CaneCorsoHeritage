@@ -15,8 +15,13 @@ function Header() {
                     <a href="#home">Home</a>
                     <a href="#stories">Stories</a>
                     <a href="#heritage">Heritage</a>
-                    <button className="nav-placeholder" type="button">About USG</button>
-                <button className="nav-placeholder" type="button">Help</button>
+                    <a href="#about">About USG</a>
+                    <a href="#help">Help</a>
+
+                    <span className="visitor-auth" aria-label="Account options">
+                        <button className="login-button" type="button">Login</button>
+                        <button className="register-button" type="button">Register</button>
+                    </span>
                 </nav>
             </div>
         </header>

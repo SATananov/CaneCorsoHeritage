@@ -11,7 +11,12 @@ function Footer() {
                     </div>
                 </div>
 
-                <p>© 2026 Cane Corso Heritage · Unico Suo Genere</p>
+                <nav className="footer-nav" aria-label="Footer navigation">
+                    <a href="#about">About USG</a>
+                    <a href="#help">Help</a>
+                </nav>
+
+                <p>© 2026 Cane Corso Heritage</p>
             </div>
         </footer>
     );

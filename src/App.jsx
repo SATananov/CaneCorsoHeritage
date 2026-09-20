@@ -1,8 +1,12 @@
 import './App.css';
 import Header from './components/Header';
-import Hero from './components/Hero';
 import HeritageSlider from './components/HeritageSlider';
+import Hero from './components/Hero';
 import PathsSection from './components/PathsSection';
+import StoriesPreviewSection from './components/StoriesPreviewSection';
+import HeritagePreviewSection from './components/HeritagePreviewSection';
+import AboutUsgSection from './components/AboutUsgSection';
+import HelpSection from './components/HelpSection';
 import Footer from './components/Footer';
 
 function App() {
@@ -14,6 +18,10 @@ function App() {
                 <HeritageSlider />
                 <Hero />
                 <PathsSection />
+                <StoriesPreviewSection />
+                <HeritagePreviewSection />
+                <AboutUsgSection />
+                <HelpSection />
             </main>
 
             <Footer />
