@@ -449,6 +449,21 @@
     text-transform: uppercase;
 }
 
+/* Home hero card balance */
+@media (min-width: 921px) {
+    .hero-copy-panel {
+        aspect-ratio: 1;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .hero-visual-frame {
+        aspect-ratio: 1;
+    }
+}
+
 /* Entrance cards */
 
 .paths-section {
@@ -485,6 +500,8 @@
     min-height: 280px;
     scroll-margin-top: 116px;
     display: flex;
+    color: inherit;
+    text-decoration: none;
     flex-direction: column;
     padding: 26px;
     border: 1px solid rgba(212, 175, 55, 0.28);
@@ -2010,10 +2027,7 @@ body {
         padding: 28px 34px;
     }
 
-    .hero-copy-panel {
-        width: min(100%, 430px);
-    }
-
+    .hero-copy-panel,
     .hero-visual-frame {
         width: min(100%, 420px);
     }
