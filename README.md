@@ -27,6 +27,8 @@ I do not want to add functionality before we study it. After every new lecture a
 - [x] Add local component state with `useState`
 - [x] Handle button events with `onClick`
 - [x] Use conditional rendering with boolean and ternary operators
+- [x] Use `useEffect` for a component lifecycle side effect
+- [x] Add a `useEffect` cleanup function
 - [x] Add the USG visual style
 - [x] Add a standalone automatic intro slider
 - [x] Build the Home section
@@ -65,6 +67,8 @@ A visitor can currently:
 - open the USG Cane Corso Platform from the About USG section
 - see the prepared Login and Register actions
 
+The application also uses `useEffect` in the root App component for a browser page-title side effect with cleanup.
+
 The Login and Register actions are visual only at this stage.
 
 The current navigation still uses page anchors. Real routing will be added after routing is covered in the course.
@@ -83,6 +87,7 @@ Later in the course I plan to add:
 - forms and validation
 - React hooks
 - Context API
+
 I will add these only after the related topics are covered in the lectures and exercises.
 ## Run the project
 

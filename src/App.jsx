@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
 import HeritageSlider from './components/HeritageSlider';
@@ -10,6 +11,16 @@ import HelpSection from './components/HelpSection';
 import Footer from './components/Footer';
 
 function App() {
+    useEffect(() => {
+        const previousTitle = document.title;
+
+        document.title = 'Cane Corso Heritage';
+
+        return () => {
+            document.title = previousTitle;
+        };
+    }, []);
+
     return (
         <>
             <Header />
