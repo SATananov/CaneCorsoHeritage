@@ -26,6 +26,7 @@ I do not want to add functionality before we study it. After every new lecture a
 - [x] Render repeated UI from arrays with `map()` and stable `key` props
 - [x] Add local component state with `useState`
 - [x] Handle button events with `onClick`
+- [x] Use conditional rendering with boolean and ternary operators
 - [x] Add the USG visual style
 - [x] Add a standalone automatic intro slider
 - [x] Build the Home section
@@ -59,7 +60,8 @@ A visitor can currently:
 - explore the Home page
 - use the main entrance cards to move to Stories, Heritage and About USG
 - read the current public preview content
-- use the Details buttons to show or hide additional preview information
+- use the Details buttons to conditionally show or hide additional preview information
+- see each Details button change its label according to the current component state
 - open the USG Cane Corso Platform from the About USG section
 - see the prepared Login and Register actions
 

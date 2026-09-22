@@ -12,14 +12,16 @@ function PreviewCard(props) {
             <span>{props.eyebrow}</span>
             <h3>{props.title}</h3>
             <p>{props.description}</p>
-            <p hidden={!showDetails}>{props.details}</p>
+
+            {showDetails && <p>{props.details}</p>}
+
             <button
                 type="button"
                 aria-expanded={showDetails}
-                aria-label={`Details about ${props.title}`}
+                aria-label={`${showDetails ? 'Hide details about' : 'Details about'} ${props.title}`}
                 onClick={detailsClickHandler}
             >
-                Details
+                {showDetails ? 'Hide details' : 'Details'}
             </button>
         </article>
     );
