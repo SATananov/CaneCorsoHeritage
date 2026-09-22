@@ -13,7 +13,6 @@ function StoriesPreviewSection() {
                             and people.
                         </p>
                     </div>
-
                     <div className="visitor-feature-image">
                         <img src="/images/cards/stories-card.webp" alt="Cane Corso stories" />
                     </div>
@@ -22,24 +21,24 @@ function StoriesPreviewSection() {
                 <div className="visitor-section-heading visitor-section-heading-compact">
                     <h2>Discover the stories.</h2>
                 </div>
-
                 <div className="story-preview-grid">
                     <PreviewCard
                         eyebrow="Origins"
                         title="Where every story begins"
                         description="A first look at the people, Cane Corso and moments behind the heritage."
+                        details="Every story starts with a real relationship, a place and a moment worth remembering."
                     />
-
                     <PreviewCard
                         eyebrow="Loyalty"
                         title="The bond that stays"
                         description="Stories that show character, trust and the connection built over time."
+                        details="Trust is built through everyday life, shared experience and responsibility."
                     />
-
                     <PreviewCard
                         eyebrow="Legacy"
                         title="Stories carried forward"
                         description="A place for memories and experiences that become part of the heritage."
+                        details="Preserving these memories helps connect personal experience with the wider Cane Corso heritage."
                     />
                 </div>
             </div>
