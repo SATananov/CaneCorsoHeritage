@@ -30,6 +30,9 @@ I do not want to add functionality before we study it. After every new lecture a
 - [x] Use `useEffect` for a component lifecycle side effect
 - [x] Add a `useEffect` cleanup function
 - [x] Use a CSS Module for locally scoped component styles
+- [x] Fetch project content with the Fetch API
+- [x] Separate fetch logic into a service
+- [x] Show loading, success and error states for fetched data
 - [x] Add the USG visual style
 - [x] Add a standalone automatic intro slider
 - [x] Build the Home section
@@ -65,12 +68,15 @@ A visitor can currently:
 - read the current public preview content
 - use the Details buttons to conditionally show or hide additional preview information
 - see each Details button change its label according to the current component state
+- see the Heritage introduction loaded from project JSON data
 - open the USG Cane Corso Platform from the About USG section
 - see the prepared Login and Register actions
 
 The application also uses `useEffect` in the root App component for a browser page-title side effect with cleanup.
 
 The PreviewCard details style is locally scoped with a CSS Module.
+
+The existing Heritage preview section loads its introduction through the Fetch API from `public/data/heritage-preview.json`. The fetch logic is separated into `heritageService.js`, and the component handles loading, success and error states without exposing technical repository information to visitors.
 
 The Login and Register actions are visual only at this stage.
 
