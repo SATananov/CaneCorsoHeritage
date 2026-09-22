@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import styles from './PreviewCard.module.css';
 
 function PreviewCard(props) {
     const [showDetails, setShowDetails] = useState(false);
@@ -13,7 +14,7 @@ function PreviewCard(props) {
             <h3>{props.title}</h3>
             <p>{props.description}</p>
 
-            {showDetails && <p>{props.details}</p>}
+            {showDetails && <p className={styles.details}>{props.details}</p>}
 
             <button
                 type="button"

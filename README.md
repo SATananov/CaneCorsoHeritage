@@ -29,6 +29,7 @@ I do not want to add functionality before we study it. After every new lecture a
 - [x] Use conditional rendering with boolean and ternary operators
 - [x] Use `useEffect` for a component lifecycle side effect
 - [x] Add a `useEffect` cleanup function
+- [x] Use a CSS Module for locally scoped component styles
 - [x] Add the USG visual style
 - [x] Add a standalone automatic intro slider
 - [x] Build the Home section
@@ -68,6 +69,8 @@ A visitor can currently:
 - see the prepared Login and Register actions
 
 The application also uses `useEffect` in the root App component for a browser page-title side effect with cleanup.
+
+The PreviewCard details style is locally scoped with a CSS Module.
 
 The Login and Register actions are visual only at this stage.
 
