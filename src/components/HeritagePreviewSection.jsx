@@ -47,11 +47,10 @@ function HeritagePreviewSection() {
     return (
         <section
             className="visitor-section visitor-section-alt"
-            id="heritage"
             aria-labelledby="heritage-preview-title"
         >
             <div className="site-container">
-                <div className="visitor-feature-grid section-feature-intro">
+                <div className="visitor-feature-grid section-feature-intro" id="heritage">
                     <div className="visitor-feature-image">
                         <img src="/images/cards/heritage-card.webp" alt="Cane Corso heritage" />
                     </div>

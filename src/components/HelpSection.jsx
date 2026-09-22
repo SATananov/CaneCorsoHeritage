@@ -2,9 +2,9 @@ import AuthActions from './AuthActions';
 
 function HelpSection() {
     return (
-        <section className="visitor-section visitor-section-alt" id="help" aria-labelledby="help-title">
+        <section className="visitor-section visitor-section-alt" aria-labelledby="help-title">
             <div className="site-container">
-                <div className="visitor-section-heading">
+                <div className="visitor-section-heading" id="help">
                     <p className="section-kicker">Help</p>
                     <h2 id="help-title">Explore first. Join when you are ready.</h2>
                     <p>

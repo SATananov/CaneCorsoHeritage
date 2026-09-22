@@ -1,8 +1,8 @@
 function AboutUsgSection() {
     return (
-        <section className="visitor-section" id="about" aria-labelledby="about-usg-title">
+        <section className="visitor-section" aria-labelledby="about-usg-title">
             <div className="site-container">
-                <div className="visitor-feature-grid visitor-feature-grid-reverse section-feature-intro about-usg-intro">
+                <div className="visitor-feature-grid visitor-feature-grid-reverse section-feature-intro about-usg-intro" id="about">
                     <div className="visitor-feature-copy about-usg-copy">
                         <p className="section-kicker">About Us</p>
                         <h2 id="about-usg-title">USG — Unico Suo Genere.</h2>

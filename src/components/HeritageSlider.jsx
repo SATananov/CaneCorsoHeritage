@@ -49,7 +49,7 @@ const heritageSlides = [
 
 function HeritageSlider() {
     return (
-        <section className="heritage-slider-section" aria-label="Cane Corso Heritage highlights">
+        <section className="heritage-slider-section" id="home" aria-label="Cane Corso Heritage highlights">
             <div className="site-container">
                 <div className="heritage-slider-topline">
                     <span>Discover Cane Corso Heritage</span>

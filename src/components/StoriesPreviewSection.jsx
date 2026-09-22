@@ -2,9 +2,9 @@ import PreviewCard from './PreviewCard';
 
 function StoriesPreviewSection() {
     return (
-        <section className="visitor-section" id="stories" aria-labelledby="stories-feature-title">
+        <section className="visitor-section" aria-labelledby="stories-feature-title">
             <div className="site-container">
-                <div className="visitor-feature-grid visitor-feature-grid-reverse section-feature-intro">
+                <div className="visitor-feature-grid visitor-feature-grid-reverse section-feature-intro" id="stories">
                     <div className="visitor-feature-copy">
                         <p className="section-kicker">Stories</p>
                         <h2 id="stories-feature-title">Cane Corso Stories.</h2>

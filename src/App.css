@@ -822,16 +822,30 @@
 }
 
 /* Section links */
+#home,
 #stories,
 #heritage,
-#about {
-    scroll-margin-top: 260px;
+#about,
+#help {
+    scroll-margin-top: 108px;
+}
+
+@media (max-width: 1060px) {
+    #home,
+    #stories,
+    #heritage,
+    #about,
+    #help {
+        scroll-margin-top: 168px;
+    }
 }
 
 @media (max-width: 680px) {
+    #home,
     #stories,
     #heritage,
-    #about {
+    #about,
+    #help {
         scroll-margin-top: 210px;
     }
 }
@@ -2210,3 +2224,9 @@ body {
     }
 }
 /* End About USG */
+
+/* Full representative images */
+.visitor-feature-image img,
+.visitor-platform-link img {
+    object-fit: contain;
+}
