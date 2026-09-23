@@ -1,0 +1,27 @@
+.loadingCard {
+    grid-column: 1 / -1;
+    min-height: 180px;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+}
+
+.loadingCard p {
+    margin: 0;
+}
+
+.spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid rgba(212, 175, 55, 0.22);
+    border-top-color: #d4af37;
+    border-radius: 50%;
+    animation: stories-loading-spin 0.8s linear infinite;
+}
+
+@keyframes stories-loading-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

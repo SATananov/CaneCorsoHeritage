@@ -1,0 +1,16 @@
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.deleteButton {
+    border-color: rgba(198, 100, 100, 0.42) !important;
+    color: rgba(238, 168, 168, 0.92) !important;
+}
+
+.deleteButton:hover {
+    border-color: rgba(220, 118, 118, 0.78) !important;
+    background: rgba(154, 54, 54, 0.12) !important;
+}

@@ -1,6 +1,80 @@
+import { useEffect, useState } from 'react';
+import AddStoryModal from './AddStoryModal';
+import LoadingSpinner from './LoadingSpinner';
 import PreviewCard from './PreviewCard';
+import StoryDeleteModal from './StoryDeleteModal';
+import StoryDetailsModal from './StoryDetailsModal';
+import { fetchStories } from '../services/storyService';
+import styles from './StoriesPreviewSection.module.css';
+
+const fallbackStories = [
+    {
+        _id: 'origins-story',
+        eyebrow: 'Origins',
+        title: 'Where every story begins',
+        description: 'A first look at the people, Cane Corso and moments behind the heritage.',
+        details: 'Every story starts with a real relationship, a place and a moment worth remembering.',
+    },
+    {
+        _id: 'loyalty-story',
+        eyebrow: 'Loyalty',
+        title: 'The bond that stays',
+        description: 'Stories that show character, trust and the connection built over time.',
+        details: 'Trust is built through everyday life, shared experience and responsibility.',
+    },
+    {
+        _id: 'legacy-story',
+        eyebrow: 'Legacy',
+        title: 'Stories carried forward',
+        description: 'A place for memories and experiences that become part of the heritage.',
+        details: 'Preserving these memories helps connect personal experience with the wider Cane Corso heritage.',
+    },
+];
 
 function StoriesPreviewSection() {
+    const [stories, setStories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isUsingFallback, setIsUsingFallback] = useState(false);
+    const [selectedStoryId, setSelectedStoryId] = useState(null);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [storyToDelete, setStoryToDelete] = useState(null);
+
+    useEffect(() => {
+        let isActive = true;
+
+        const loadStories = async () => {
+            try {
+                const data = await fetchStories();
+
+                if (isActive) {
+                    setStories(data);
+                    setIsUsingFallback(false);
+                }
+            } catch {
+                if (isActive) {
+                    setStories(fallbackStories);
+                    setIsUsingFallback(true);
+                }
+            } finally {
+                if (isActive) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        loadStories();
+
+        return () => {
+            isActive = false;
+        };
+    }, []);
+
+    const refreshStoriesAfterMutation = async () => {
+        const data = await fetchStories();
+        setStories(data);
+        setIsUsingFallback(false);
+    };
+
     return (
         <section className="visitor-section" aria-labelledby="stories-feature-title">
             <div className="site-container">
@@ -13,6 +87,7 @@ function StoriesPreviewSection() {
                             and people.
                         </p>
                     </div>
+
                     <div className="visitor-feature-image">
                         <img src="/images/cards/stories-card.webp" alt="Cane Corso stories" />
                     </div>
@@ -21,27 +96,63 @@ function StoriesPreviewSection() {
                 <div className="visitor-section-heading visitor-section-heading-compact">
                     <h2>Discover the stories.</h2>
                 </div>
+
+                {!isLoading && !isUsingFallback && (
+                    <div className={styles.createAction}>
+                        <button type="button" onClick={() => setIsCreateOpen(true)}>
+                            Share a Story
+                        </button>
+                    </div>
+                )}
+
                 <div className="story-preview-grid">
-                    <PreviewCard
-                        eyebrow="Origins"
-                        title="Where every story begins"
-                        description="A first look at the people, Cane Corso and moments behind the heritage."
-                        details="Every story starts with a real relationship, a place and a moment worth remembering."
-                    />
-                    <PreviewCard
-                        eyebrow="Loyalty"
-                        title="The bond that stays"
-                        description="Stories that show character, trust and the connection built over time."
-                        details="Trust is built through everyday life, shared experience and responsibility."
-                    />
-                    <PreviewCard
-                        eyebrow="Legacy"
-                        title="Stories carried forward"
-                        description="A place for memories and experiences that become part of the heritage."
-                        details="Preserving these memories helps connect personal experience with the wider Cane Corso heritage."
-                    />
+                    {isLoading ? (
+                        <LoadingSpinner label="Loading stories..." />
+                    ) : (
+                        stories.map((story) => (
+                            <PreviewCard
+                                key={story._id}
+                                eyebrow={story.eyebrow}
+                                title={story.title}
+                                description={story.description}
+                                details={story.details}
+                                onDetails={
+                                    isUsingFallback
+                                        ? undefined
+                                        : () => setSelectedStoryId(story._id)
+                                }
+                                onDelete={
+                                    isUsingFallback
+                                        ? undefined
+                                        : () => setStoryToDelete(story)
+                                }
+                            />
+                        ))
+                    )}
                 </div>
             </div>
+
+            {isCreateOpen && (
+                <AddStoryModal
+                    onClose={() => setIsCreateOpen(false)}
+                    onCreated={refreshStoriesAfterMutation}
+                />
+            )}
+
+            {storyToDelete && (
+                <StoryDeleteModal
+                    story={storyToDelete}
+                    onClose={() => setStoryToDelete(null)}
+                    onDeleted={refreshStoriesAfterMutation}
+                />
+            )}
+
+            {selectedStoryId && (
+                <StoryDetailsModal
+                    storyId={selectedStoryId}
+                    onClose={() => setSelectedStoryId(null)}
+                />
+            )}
         </section>
     );
 }

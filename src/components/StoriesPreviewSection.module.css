@@ -1,0 +1,30 @@
+.createAction {
+    display: flex;
+    justify-content: center;
+    margin: -10px 0 34px;
+}
+
+.createAction button {
+    min-height: 44px;
+    padding: 0 22px;
+    border: 1px solid rgba(212, 175, 55, 0.48);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #d4af37;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        transform 160ms ease;
+}
+
+.createAction button:hover {
+    border-color: rgba(212, 175, 55, 0.78);
+    background: rgba(212, 175, 55, 0.14);
+    transform: translateY(-1px);
+}

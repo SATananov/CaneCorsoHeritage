@@ -1,0 +1,29 @@
+{
+  "origins-story": {
+    "_id": "origins-story",
+    "eyebrow": "Origins",
+    "title": "Where every story begins",
+    "description": "A first look at the people, Cane Corso and moments behind the heritage.",
+    "details": "Every story starts with a real relationship, a place and a moment worth remembering.",
+    "content": "Stories begin with real people, real Cane Corso and the moments that make those relationships worth preserving.",
+    "author": "Cane Corso Heritage"
+  },
+  "loyalty-story": {
+    "_id": "loyalty-story",
+    "eyebrow": "Loyalty",
+    "title": "The bond that stays",
+    "description": "Stories that show character, trust and the connection built over time.",
+    "details": "Trust is built through everyday life, shared experience and responsibility.",
+    "content": "Loyalty is not a single moment. It grows through daily life, responsibility, trust and shared experience.",
+    "author": "Cane Corso Heritage"
+  },
+  "legacy-story": {
+    "_id": "legacy-story",
+    "eyebrow": "Legacy",
+    "title": "Stories carried forward",
+    "description": "A place for memories and experiences that become part of the heritage.",
+    "details": "Preserving these memories helps connect personal experience with the wider Cane Corso heritage.",
+    "content": "Preserved memories connect individual experience with a wider living heritage and carry those stories forward.",
+    "author": "Cane Corso Heritage"
+  }
+}

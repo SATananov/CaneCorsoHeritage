@@ -33,6 +33,11 @@ I do not want to add functionality before we study it. After every new lecture a
 - [x] Fetch project content with the Fetch API
 - [x] Separate fetch logic into a service
 - [x] Show loading, success and error states for fetched data
+- [x] Load Stories from a local practice REST API
+- [x] Show a reusable loading spinner while Stories are fetched
+- [x] Fetch Story Details by id and display them in a modal
+- [x] Create a Story with POST and refresh the Story list
+- [x] Delete a Story with DELETE and refresh the Story list
 - [x] Add the USG visual style
 - [x] Add a standalone automatic intro slider
 - [x] Build the Home section
@@ -43,73 +48,58 @@ I do not want to add functionality before we study it. After every new lecture a
 - [x] Add a link from About USG to the USG Cane Corso Platform
 - [x] Add responsive styling for different screen sizes
 - [x] Complete the current visual polish
-Current components:
-```text
-Header
-AuthActions
-HeritageSlider
-HeritageSlide
-Hero
-PathsSection
-EntranceCard
-StoriesPreviewSection
-HeritagePreviewSection
-PreviewCard
-AboutUsgSection
-HelpSection
-Footer
-```
+
 ## Current Visitor View
 
-A visitor can currently:
+Stories now load from the local practice REST API during development. If the practice API is not running, the same three Story cards are used as a fallback so the Visitor View still works.
 
-- explore the Home page
-- use the main entrance cards to move to Stories, Heritage and About USG
-- read the current public preview content
-- use the Details buttons to conditionally show or hide additional preview information
-- see each Details button change its label according to the current component state
-- see the Heritage introduction loaded from project JSON data
-- open the USG Cane Corso Platform from the About USG section
-- see the prepared Login and Register actions
+Heritage continues to load its introduction through the Fetch API from `public/data/heritage-preview.json`.
 
-The application also uses `useEffect` in the root App component for a browser page-title side effect with cleanup.
+## Practice REST API
 
-The PreviewCard details style is locally scoped with a CSS Module.
+For this course exercise stage, the project includes the SoftUni-style practice server at:
 
-The existing Heritage preview section loads its introduction through the Fetch API from `public/data/heritage-preview.json`. The fetch logic is separated into `heritageService.js`, and the component handles loading, success and error states without exposing technical repository information to visitors.
+`http://localhost:3030/jsonstore/stories`
 
-The Login and Register actions are visual only at this stage.
+The practice server keeps changes in memory and resets them when it restarts.
 
-The current navigation still uses page anchors. Real routing will be added after routing is covered in the course.
-## Planned functionality
+Run the project with two terminals.
 
-Later in the course I plan to add:
-
-- real routes
-- Login and Register
-- authentication and session handling
-- Stories list and Story Details
-- Create Story
-- Edit and Delete for the author of a story
-- protected user actions
-- real backend data
-- forms and validation
-- React hooks
-- Context API
-
-I will add these only after the related topics are covered in the lectures and exercises.
-## Run the project
+Terminal 1:
 
 ```bash
-npm install
+npm run server
+```
+
+Terminal 2:
+
+```bash
 npm run dev
 ```
+
 ## Next
 
-The next functional step will be decided after the next ReactJS lecture and exercise.
+The next exercise-aligned step is Story Details: select one Story, fetch it by id and close the details view.
 
-Before the final exam submission I will complete the required Functional Guide in this README and add the final deployment information.
+Create Story now follows the exercise pattern: submit a controlled form with POST and refresh the Story collection with a new GET after success.
+
+Delete Story now follows the exercise pattern: confirm the selected Story, send DELETE by id and refresh the Story collection with a new GET after success.
+
+The Edit flow in the 21 September exercise is only partially implemented, so it is not treated as finished functionality yet.
 
 ## Repository
 
 https://github.com/SATananov/CaneCorsoHeritage
+
+
+## Exercise alignment after 21 September
+
+The completed exercise patterns now represented in Cane Corso Heritage are:
+
+- REST collection GET
+- loading Spinner
+- Details GET by id
+- Create with POST and collection refresh
+- Delete with DELETE and collection refresh
+
+The Edit flow from the exercise remains intentionally unimplemented because the exercise itself leaves Edit only partially completed.
