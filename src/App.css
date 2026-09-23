@@ -65,6 +65,16 @@
     text-transform: uppercase;
 }
 
+.brand-trademark {
+    position: relative;
+    top: -0.2em;
+    margin-left: 0.18em;
+    color: var(--usg-gold-light);
+    font-size: 0.62em;
+    line-height: 0;
+    letter-spacing: 0;
+}
+
 .brand-copy strong {
     font-family: "Playfair Display", Georgia, serif;
     font-size: 1rem;
@@ -593,6 +603,28 @@
     font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
+}
+
+.footer-trademark {
+    position: relative;
+    top: -0.22em;
+    margin-left: 0.12em;
+    color: var(--usg-gold-light);
+    font-size: 0.62em;
+    line-height: 0;
+    letter-spacing: 0;
+}
+
+.footer-legal {
+    margin: 0;
+    color: var(--usg-muted-soft);
+    white-space: nowrap;
+}
+
+.footer-legal strong {
+    color: rgba(212, 175, 55, 0.86);
+    font-weight: 800;
+    letter-spacing: 0.08em;
 }
 
 /* Responsive */
@@ -1462,6 +1494,11 @@
         justify-content: center;
         gap: 18px;
         padding: 28px 0;
+    }
+
+    .footer-legal {
+        white-space: normal;
+        line-height: 1.6;
     }
 }
 

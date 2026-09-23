@@ -7,7 +7,10 @@ function Footer() {
 
                     <div>
                         <strong>Cane Corso Heritage</strong>
-                        <span>Unico Suo Genere</span>
+                        <span>
+                            USG · Unico Suo Genere
+                            <sup className="footer-trademark" aria-label="trademark">&trade;</sup>
+                        </span>
                     </div>
                 </div>
 
@@ -16,7 +19,11 @@ function Footer() {
                     <a href="#help">Help</a>
                 </nav>
 
-                <p>© 2026 Cane Corso Heritage</p>
+                <p className="footer-legal">
+                    © 2026 <strong>USG</strong> · Unico Suo Genere
+                    <sup className="footer-trademark" aria-label="trademark">&trade;</sup>
+                    <span aria-hidden="true"> · </span>Cane Corso Heritage
+                </p>
             </div>
         </footer>
     );

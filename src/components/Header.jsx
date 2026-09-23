@@ -4,11 +4,14 @@ function Header() {
     return (
         <header className="site-header">
             <div className="site-container header-inner">
-                <a className="brand" href="#home" aria-label="Cane Corso Heritage home">
+                <a className="brand" href="#home" aria-label="USG Cane Corso Heritage home">
                     <img className="brand-logo" src="/images/logo.jpg" alt="" />
 
                     <span className="brand-copy">
-                        <small>Unico Suo Genere</small>
+                        <small>
+                            Unico Suo Genere
+                            <sup className="brand-trademark" aria-label="trademark">&trade;</sup>
+                        </small>
                         <strong>Cane Corso Heritage</strong>
                     </span>
                 </a>
