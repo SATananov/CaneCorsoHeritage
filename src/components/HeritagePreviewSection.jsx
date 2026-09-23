@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import HeritageDetailsModal from './HeritageDetailsModal';
 import PreviewCard from './PreviewCard';
-import { getHeritagePreview } from '../services/heritageService';
+import { getHeritageArticles, getHeritagePreview } from '../services/heritageService';
 
 const fallbackHeritageSections = [
     {
@@ -33,8 +33,25 @@ const fallbackHeritageSections = [
     },
 ];
 
+const categoryLabels = {
+    stories: 'True Story',
+    'heritage-history': 'Heritage & History',
+    understanding: 'Understanding Cane Corso',
+    'living-care': 'Living & Care',
+    research: 'USG Research',
+};
+
+function getArticleEyebrow(article) {
+    if (article.content_type === 'heritage-story') {
+        return 'Dr. Flavio Bruno · Heritage Story';
+    }
+
+    return categoryLabels[article.category] ?? 'Cane Corso Heritage';
+}
+
 function HeritagePreviewSection() {
     const [heritageData, setHeritageData] = useState(null);
+    const [heritageArticles, setHeritageArticles] = useState(null);
     const [hasError, setHasError] = useState(false);
     const [selectedHeritage, setSelectedHeritage] = useState(null);
 
@@ -43,10 +60,14 @@ function HeritagePreviewSection() {
 
         const loadHeritageData = async () => {
             try {
-                const data = await getHeritagePreview();
+                const [previewData, articles] = await Promise.all([
+                    getHeritagePreview(),
+                    getHeritageArticles(),
+                ]);
 
                 if (isActive) {
-                    setHeritageData(data);
+                    setHeritageData(previewData);
+                    setHeritageArticles(articles);
                 }
             } catch {
                 if (isActive) {
@@ -76,7 +97,14 @@ function HeritagePreviewSection() {
         );
     }
 
-    const heritageSections = heritageData?.sections ?? fallbackHeritageSections;
+    const featuredArticles = heritageArticles
+        ?.filter((article) => article.featured)
+        .sort((firstArticle, secondArticle) => firstArticle.display_order - secondArticle.display_order)
+        .slice(0, 3);
+
+    const heritageSections = featuredArticles?.length === 3
+        ? featuredArticles
+        : heritageData?.sections ?? fallbackHeritageSections;
 
     return (
         <section
@@ -99,16 +127,20 @@ function HeritagePreviewSection() {
                 </div>
 
                 <div className="story-preview-grid">
-                    {heritageSections.map((heritage) => (
-                        <PreviewCard
-                            key={heritage.id}
-                            eyebrow={heritage.eyebrow}
-                            title={heritage.title}
-                            description={heritage.description}
-                            details={heritage.details}
-                            onDetails={() => setSelectedHeritage(heritage)}
-                        />
-                    ))}
+                    {heritageSections.map((heritage) => {
+                        const isLibraryArticle = Boolean(heritage.slug);
+
+                        return (
+                            <PreviewCard
+                                key={heritage.slug ?? heritage.id}
+                                eyebrow={isLibraryArticle ? getArticleEyebrow(heritage) : heritage.eyebrow}
+                                title={heritage.title}
+                                description={isLibraryArticle ? heritage.summary : heritage.description}
+                                details={heritage.details}
+                                onDetails={() => setSelectedHeritage(heritage)}
+                            />
+                        );
+                    })}
                 </div>
             </div>
 

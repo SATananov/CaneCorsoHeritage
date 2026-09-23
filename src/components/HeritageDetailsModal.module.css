@@ -13,8 +13,8 @@
     position: relative;
     display: grid;
     grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
-    width: min(980px, 100%);
-    max-height: min(760px, calc(100vh - 48px));
+    width: min(1060px, 100%);
+    max-height: min(820px, calc(100vh - 48px));
     overflow: hidden;
     border: 1px solid rgba(212, 175, 55, 0.42);
     border-radius: 26px;
@@ -22,6 +22,11 @@
         radial-gradient(circle at 78% 12%, rgba(212, 175, 55, 0.08), transparent 36%),
         linear-gradient(180deg, rgba(24, 22, 18, 0.99), rgba(10, 10, 12, 0.99));
     box-shadow: 0 38px 110px rgba(0, 0, 0, 0.72);
+}
+
+.textOnlyDialog {
+    display: block;
+    width: min(900px, 100%);
 }
 
 .closeButton {
@@ -70,8 +75,13 @@
     overflow-y: auto;
 }
 
+.textOnlyDialog .content {
+    max-height: min(820px, calc(100vh - 48px));
+}
+
 .eyebrow {
     margin: 0;
+    padding-right: 48px;
     color: #d4af37;
     font-size: 0.74rem;
     font-weight: 800;
@@ -83,22 +93,31 @@
     margin: 12px 0 0;
     font-family: "Playfair Display", Georgia, serif;
     color: #f8f5ef;
-    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-size: clamp(2.35rem, 5vw, 4rem);
     font-weight: 600;
     line-height: 1.02;
 }
 
 .description {
-    margin: 22px 0 0;
-    color: rgba(248, 245, 239, 0.74);
-    font-size: 1.02rem;
-    line-height: 1.7;
+    margin: 18px 0 0;
+    color: rgba(248, 245, 239, 0.78);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.12rem;
+    font-style: italic;
+    line-height: 1.62;
+}
+
+.summary {
+    margin: 18px 0 0;
+    color: rgba(248, 245, 239, 0.64);
+    font-size: 0.98rem;
+    line-height: 1.72;
 }
 
 .divider {
     width: 100%;
     height: 1px;
-    margin: 26px 0;
+    margin: 28px 0;
     background: linear-gradient(
         90deg,
         rgba(212, 175, 55, 0.42),
@@ -106,11 +125,49 @@
     );
 }
 
-.body {
+.body,
+.articleSection p {
     margin: 0;
-    color: rgba(248, 245, 239, 0.66);
+    color: rgba(248, 245, 239, 0.7);
     font-size: 0.98rem;
-    line-height: 1.82;
+    line-height: 1.86;
+}
+
+.articleBody {
+    display: grid;
+    gap: 30px;
+}
+
+.articleSection h3 {
+    margin: 0 0 12px;
+    font-family: "Playfair Display", Georgia, serif;
+    color: #f3ead0;
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.articleSection p + p {
+    margin-top: 14px;
+}
+
+.attribution {
+    display: grid;
+    gap: 7px;
+    margin-top: 34px;
+    padding: 20px 0 0;
+    border-top: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+.attribution strong {
+    color: #d4af37;
+    font-size: 0.9rem;
+}
+
+.attribution span {
+    color: rgba(248, 245, 239, 0.52);
+    font-size: 0.8rem;
+    line-height: 1.55;
 }
 
 .footer {
@@ -157,6 +214,10 @@
         border-radius: 22px;
     }
 
+    .textOnlyDialog .content {
+        max-height: calc(100vh - 28px);
+    }
+
     .imageFrame {
         min-height: 220px;
         max-height: 280px;
@@ -172,6 +233,10 @@
     .content {
         overflow: visible;
         padding: 34px 26px 28px;
+    }
+
+    .textOnlyDialog .content {
+        overflow-y: auto;
     }
 
     .footer {
