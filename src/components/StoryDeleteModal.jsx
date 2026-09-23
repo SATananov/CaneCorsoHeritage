@@ -34,7 +34,7 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
                 <h2 id="delete-story-title">Remove this story?</h2>
                 <p className={styles.storyTitle}>{story.title}</p>
                 <p className={styles.message}>
-                    This removes the Story from the local practice REST server.
+                    This story will be removed from the Stories collection.
                 </p>
 
                 {error && <p className={styles.error} role="alert">{error}</p>}

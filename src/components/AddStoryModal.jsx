@@ -81,7 +81,8 @@ function AddStoryModal({ onClose, onCreated }) {
                     <p>Add Story</p>
                     <h2 id="add-story-title">Share a new story.</h2>
                     <span>
-                        This course-stage form saves to the local practice REST server.
+                        Share an experience, memory or moment that belongs in the Cane Corso
+                        Heritage stories.
                     </span>
                 </div>
 
