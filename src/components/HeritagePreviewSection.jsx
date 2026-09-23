@@ -1,10 +1,42 @@
 import { useEffect, useState } from 'react';
+import HeritageDetailsModal from './HeritageDetailsModal';
 import PreviewCard from './PreviewCard';
 import { getHeritagePreview } from '../services/heritageService';
+
+const fallbackHeritageSections = [
+    {
+        id: 'roots-and-history',
+        eyebrow: 'Origins',
+        title: 'Roots and history',
+        description: 'Discover the historical background and the path that shaped Cane Corso heritage.',
+        details: 'Historical context helps explain how the Cane Corso developed alongside people and their needs.',
+        content: 'The Cane Corso heritage is understood through the relationship between people, place and practical work. Looking at roots and history gives context to the qualities preserved in the Cane Corso over time.',
+        image: '/images/cards/heritage-card.webp',
+    },
+    {
+        id: 'built-for-purpose',
+        eyebrow: 'Function',
+        title: 'Built for purpose',
+        description: 'Explore the original working function and the role that shaped the Cane Corso.',
+        details: 'Working purpose influenced character, structure and the qualities expected from the Cane Corso.',
+        content: 'The Cane Corso was shaped by purpose. Working needs influenced the qualities expected from the Cane Corso: presence, balance, responsiveness and the ability to act when required.',
+        image: '/images/cards/heritage-card.webp',
+    },
+    {
+        id: 'function-shapes-type',
+        eyebrow: 'Type',
+        title: 'Function shapes type',
+        description: 'See how function, structure and identity connect through the heritage of Cane Corso.',
+        details: 'Understanding type means looking beyond appearance and considering the function behind the form.',
+        content: 'Type is more than appearance. Structure, character and identity make most sense when they are read together with function: the work and purpose that shaped them.',
+        image: '/images/cards/heritage-card.webp',
+    },
+];
 
 function HeritagePreviewSection() {
     const [heritageData, setHeritageData] = useState(null);
     const [hasError, setHasError] = useState(false);
+    const [selectedHeritage, setSelectedHeritage] = useState(null);
 
     useEffect(() => {
         let isActive = true;
@@ -44,6 +76,8 @@ function HeritagePreviewSection() {
         );
     }
 
+    const heritageSections = heritageData?.sections ?? fallbackHeritageSections;
+
     return (
         <section
             className="visitor-section visitor-section-alt"
@@ -65,28 +99,25 @@ function HeritagePreviewSection() {
                 </div>
 
                 <div className="story-preview-grid">
-                    <PreviewCard
-                        eyebrow="Origins"
-                        title="Roots and history"
-                        description="Discover the historical background and the path that shaped Cane Corso heritage."
-                        details="Historical context helps explain how the Cane Corso developed alongside people and their needs."
-                    />
-
-                    <PreviewCard
-                        eyebrow="Function"
-                        title="Built for purpose"
-                        description="Explore the original working function and the role that shaped the Cane Corso."
-                        details="Working purpose influenced character, structure and the qualities expected from the Cane Corso."
-                    />
-
-                    <PreviewCard
-                        eyebrow="Type"
-                        title="Function shapes type"
-                        description="See how function, structure and identity connect through the heritage of Cane Corso."
-                        details="Understanding type means looking beyond appearance and considering the function behind the form."
-                    />
+                    {heritageSections.map((heritage) => (
+                        <PreviewCard
+                            key={heritage.id}
+                            eyebrow={heritage.eyebrow}
+                            title={heritage.title}
+                            description={heritage.description}
+                            details={heritage.details}
+                            onDetails={() => setSelectedHeritage(heritage)}
+                        />
+                    ))}
                 </div>
             </div>
+
+            {selectedHeritage && (
+                <HeritageDetailsModal
+                    heritage={selectedHeritage}
+                    onClose={() => setSelectedHeritage(null)}
+                />
+            )}
         </section>
     );
 }
