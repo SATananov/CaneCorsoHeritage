@@ -3,7 +3,7 @@ import EntranceCard from './EntranceCard';
 const entranceCards = [
     {
         id: 'stories',
-        href: '#stories',
+        to: '/stories',
         eyebrow: 'Stories',
         title: 'Cane Corso Stories',
         note: 'Stories Section',
@@ -12,7 +12,7 @@ const entranceCards = [
     },
     {
         id: 'heritage',
-        href: '#heritage',
+        to: '/heritage',
         eyebrow: 'Heritage',
         title: 'History and Heritage',
         note: 'Heritage Section',
@@ -21,7 +21,7 @@ const entranceCards = [
     },
     {
         id: 'about',
-        href: '#about',
+        to: '/about',
         eyebrow: 'About USG',
         title: 'Unico Suo Genere',
         note: 'About USG',
@@ -42,7 +42,7 @@ function PathsSection() {
                     {entranceCards.map((card) => (
                         <EntranceCard
                             key={card.id}
-                            href={card.href}
+                            to={card.to}
                             eyebrow={card.eyebrow}
                             title={card.title}
                             note={card.note}

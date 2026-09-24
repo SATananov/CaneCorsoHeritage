@@ -12,12 +12,21 @@ https://usg-cane-corso-platform.com/
 ## Current application
 
 - Home experience with an automatic visual slider
+- Client-side routing with React Router
+- Shared application layout with Header, Footer and `Outlet`
+- Dedicated routes for Home, Stories, Heritage, About USG, Help, Login and Register
+- Dynamic Story and Heritage detail routes with URL parameters
+- Heritage category filtering with URL search parameters
+- Active navigation with `NavLink`
+- Optional Help topic route segments
+- 404 fallback route
+- Guarded `My Stories` route prepared for a future Supabase session
+- Route-based lazy loading with `React.lazy` and `Suspense`
 - Stories collection loaded through a REST API
-- Story Details modal
 - Create Story flow with POST and automatic list refresh
 - Delete Story flow with confirmation and automatic list refresh
 - Heritage content loaded with the Fetch API
-- Heritage Details modal
+- AbortController cleanup for route and collection fetch requests
 - About USG section
 - Help section
 - Reusable React components and props
@@ -29,6 +38,24 @@ https://usg-cane-corso-platform.com/
 - CSS Modules for locally scoped styles
 - Loading, success and error states
 - Responsive layout for desktop and mobile
+
+## Main routes
+
+- `/` — Home
+- `/stories` — Stories catalog
+- `/stories/:storyId` — Story details
+- `/heritage` — Heritage library
+- `/heritage/:slug` — Heritage article details
+- `/heritage?category=understanding` — Heritage library filtered through search params
+- `/about` — About USG
+- `/help/:topic?` — Help with an optional topic segment
+- `/login` — Login preparation
+- `/register` — Register preparation
+- `/my-stories` — guarded route reserved for authenticated members
+
+## Authentication preparation
+
+Login and Register are UI preparation only. Supabase authentication is not connected yet and no credentials are processed. The guarded route is intentionally wired to redirect guests to `/login`; the current placeholder session is `null` until the real Supabase session milestone.
 
 ## Stories API
 
@@ -62,7 +89,10 @@ Open the address shown by Vite in the terminal.
 
 ## Project structure
 
-- `src/components` — interface components
+- `src/components` — reusable interface components
+- `src/pages` — route-level page components
+- `src/layouts` — shared route layouts
+- `src/routing` — route guard components
 - `src/services` — data access functions
 - `public/data` — Heritage content
 - `server` — Stories data service

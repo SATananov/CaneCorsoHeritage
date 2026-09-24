@@ -1,12 +1,20 @@
+import { NavLink } from 'react-router';
+
 function AuthActions(props) {
     return (
         <div className={props.className} role="group" aria-label={props.ariaLabel}>
-            <button className="login-button" type="button">
+            <NavLink
+                className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
+                to="/login"
+            >
                 Login
-            </button>
-            <button className="register-button" type="button">
+            </NavLink>
+            <NavLink
+                className={({ isActive }) => `register-button${isActive ? ' auth-route-active' : ''}`}
+                to="/register"
+            >
                 Register
-            </button>
+            </NavLink>
         </div>
     );
 }

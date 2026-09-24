@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import AddStoryModal from './AddStoryModal';
 import LoadingSpinner from './LoadingSpinner';
 import PreviewCard from './PreviewCard';
 import StoryDeleteModal from './StoryDeleteModal';
-import StoryDetailsModal from './StoryDetailsModal';
 import { fetchStories } from '../services/storyService';
 import styles from './StoriesPreviewSection.module.css';
 
@@ -32,31 +32,28 @@ const fallbackStories = [
 ];
 
 function StoriesPreviewSection() {
+    const navigate = useNavigate();
     const [stories, setStories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUsingFallback, setIsUsingFallback] = useState(false);
-    const [selectedStoryId, setSelectedStoryId] = useState(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [storyToDelete, setStoryToDelete] = useState(null);
 
     useEffect(() => {
-        let isActive = true;
+        const controller = new AbortController();
 
         const loadStories = async () => {
             try {
-                const data = await fetchStories();
-
-                if (isActive) {
-                    setStories(data);
-                    setIsUsingFallback(false);
-                }
-            } catch {
-                if (isActive) {
+                const data = await fetchStories({ signal: controller.signal });
+                setStories(data);
+                setIsUsingFallback(false);
+            } catch (loadError) {
+                if (loadError.name !== 'AbortError') {
                     setStories(fallbackStories);
                     setIsUsingFallback(true);
                 }
             } finally {
-                if (isActive) {
+                if (!controller.signal.aborted) {
                     setIsLoading(false);
                 }
             }
@@ -65,7 +62,7 @@ function StoriesPreviewSection() {
         loadStories();
 
         return () => {
-            isActive = false;
+            controller.abort();
         };
     }, []);
 
@@ -119,7 +116,7 @@ function StoriesPreviewSection() {
                                 onDetails={
                                     isUsingFallback
                                         ? undefined
-                                        : () => setSelectedStoryId(story._id)
+                                        : () => navigate(`/stories/${story._id}`)
                                 }
                                 onDelete={
                                     isUsingFallback
@@ -144,13 +141,6 @@ function StoriesPreviewSection() {
                     story={storyToDelete}
                     onClose={() => setStoryToDelete(null)}
                     onDeleted={refreshStoriesAfterMutation}
-                />
-            )}
-
-            {selectedStoryId && (
-                <StoryDetailsModal
-                    storyId={selectedStoryId}
-                    onClose={() => setSelectedStoryId(null)}
                 />
             )}
         </section>

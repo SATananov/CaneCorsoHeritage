@@ -2267,3 +2267,155 @@ body {
 .visitor-platform-link img {
     object-fit: contain;
 }
+
+/* React Routing 01 */
+
+.route-page {
+    min-height: 62vh;
+    background: var(--usg-black);
+}
+
+.route-loading {
+    min-height: 64vh;
+    display: grid;
+    place-items: center;
+    padding: 72px 0;
+    background: var(--usg-black);
+    color: var(--usg-muted);
+    text-align: center;
+}
+
+.main-nav .main-nav-link-active,
+.main-nav .auth-route-active {
+    color: var(--usg-gold-light);
+    border-color: rgba(212, 175, 55, 0.52);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.heritage-filter-bar {
+    width: min(100%, 980px);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 9px;
+    margin: -8px auto 34px;
+}
+
+.heritage-filter-bar button {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 999px;
+    background: rgba(248, 245, 239, 0.025);
+    color: rgba(248, 245, 239, 0.68);
+    font: inherit;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.heritage-filter-bar button:hover,
+.heritage-filter-bar button:focus-visible,
+.heritage-filter-bar .heritage-filter-active {
+    color: var(--usg-gold-light);
+    border-color: rgba(212, 175, 55, 0.68);
+    background: rgba(212, 175, 55, 0.1);
+    transform: translateY(-1px);
+}
+
+.heritage-empty-state {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 22px;
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 18px;
+    color: var(--usg-muted);
+    text-align: center;
+}
+
+.help-topic-link {
+    width: fit-content;
+    margin-top: auto;
+    padding-top: 20px;
+    color: var(--usg-gold);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.help-topic-link:hover,
+.help-topic-link:focus-visible {
+    color: var(--usg-gold-light);
+    text-decoration: underline;
+}
+
+.route-topic-banner {
+    padding: clamp(42px, 5vw, 66px) 0 0;
+    background:
+        radial-gradient(680px 280px at 50% 0%, rgba(212, 175, 55, 0.07), transparent 72%),
+        #0b0b0d;
+}
+
+.route-topic-banner h1,
+.route-simple-shell h1 {
+    margin: 12px 0 0;
+    color: var(--usg-ivory);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(2.4rem, 5vw, 4.3rem);
+    font-weight: 600;
+    line-height: 1.02;
+}
+
+.route-topic-banner p:last-child,
+.route-simple-shell > p:last-of-type {
+    max-width: 720px;
+    margin: 18px 0 0;
+    color: var(--usg-muted);
+    line-height: 1.75;
+}
+
+.route-simple-page {
+    padding: clamp(72px, 8vw, 118px) 0;
+    background:
+        radial-gradient(780px 360px at 50% 0%, rgba(212, 175, 55, 0.07), transparent 70%),
+        #0b0b0d;
+}
+
+.route-simple-shell {
+    max-width: 780px;
+    padding: clamp(28px, 4vw, 46px);
+    border: 1px solid rgba(212, 175, 55, 0.26);
+    border-radius: 26px;
+    background: rgba(248, 245, 239, 0.025);
+    box-shadow: 0 24px 72px rgba(0, 0, 0, 0.3);
+}
+
+.route-primary-action {
+    min-height: 44px;
+    margin-top: 26px;
+    padding: 0 18px;
+    border: 1px solid rgba(212, 175, 55, 0.66);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.12);
+    color: var(--usg-gold-light);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.route-primary-action:hover,
+.route-primary-action:focus-visible {
+    border-color: var(--usg-gold);
+    background: rgba(212, 175, 55, 0.2);
+}

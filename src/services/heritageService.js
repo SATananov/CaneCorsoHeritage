@@ -1,8 +1,10 @@
 const HERITAGE_PREVIEW_URL = '/data/heritage-preview.json';
 const HERITAGE_ARTICLES_URL = '/data/heritage-articles.json';
 
-async function fetchJson(url, errorMessage) {
-    const response = await fetch(url);
+async function fetchJson(url, errorMessage, options = {}) {
+    const response = await fetch(url, {
+        signal: options.signal,
+    });
 
     if (!response.ok) {
         throw new Error(errorMessage);
@@ -11,14 +13,19 @@ async function fetchJson(url, errorMessage) {
     return response.json();
 }
 
-export function getHeritagePreview() {
-    return fetchJson(HERITAGE_PREVIEW_URL, 'Unable to load heritage preview.');
+export function getHeritagePreview(options = {}) {
+    return fetchJson(
+        HERITAGE_PREVIEW_URL,
+        'Unable to load heritage preview.',
+        options,
+    );
 }
 
-export async function getHeritageArticles() {
+export async function getHeritageArticles(options = {}) {
     const articles = await fetchJson(
         HERITAGE_ARTICLES_URL,
         'Unable to load Heritage content library.',
+        options,
     );
 
     if (!Array.isArray(articles)) {

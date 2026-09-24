@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import HeritageDetailsModal from './HeritageDetailsModal';
+import { useNavigate, useSearchParams } from 'react-router';
 import PreviewCard from './PreviewCard';
 import { getHeritageArticles, getHeritagePreview } from '../services/heritageService';
 
@@ -34,7 +34,7 @@ const fallbackHeritageSections = [
 ];
 
 const categoryLabels = {
-    stories: 'True Story',
+    stories: 'True Stories',
     'heritage-history': 'Heritage & History',
     understanding: 'Understanding Cane Corso',
     'living-care': 'Living & Care',
@@ -49,28 +49,29 @@ function getArticleEyebrow(article) {
     return categoryLabels[article.category] ?? 'Cane Corso Heritage';
 }
 
-function HeritagePreviewSection() {
+function HeritagePreviewSection({ catalogMode = false }) {
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [heritageData, setHeritageData] = useState(null);
     const [heritageArticles, setHeritageArticles] = useState(null);
     const [hasError, setHasError] = useState(false);
-    const [selectedHeritage, setSelectedHeritage] = useState(null);
+
+    const selectedCategory = catalogMode ? searchParams.get('category') ?? 'all' : 'all';
 
     useEffect(() => {
-        let isActive = true;
+        const controller = new AbortController();
 
         const loadHeritageData = async () => {
             try {
                 const [previewData, articles] = await Promise.all([
-                    getHeritagePreview(),
-                    getHeritageArticles(),
+                    getHeritagePreview({ signal: controller.signal }),
+                    getHeritageArticles({ signal: controller.signal }),
                 ]);
 
-                if (isActive) {
-                    setHeritageData(previewData);
-                    setHeritageArticles(articles);
-                }
-            } catch {
-                if (isActive) {
+                setHeritageData(previewData);
+                setHeritageArticles(articles);
+            } catch (loadError) {
+                if (loadError.name !== 'AbortError') {
                     setHasError(true);
                 }
             }
@@ -79,7 +80,7 @@ function HeritagePreviewSection() {
         loadHeritageData();
 
         return () => {
-            isActive = false;
+            controller.abort();
         };
     }, []);
 
@@ -97,14 +98,34 @@ function HeritagePreviewSection() {
         );
     }
 
-    const featuredArticles = heritageArticles
+    const sortedArticles = heritageArticles
+        ?.slice()
+        .sort((firstArticle, secondArticle) => firstArticle.display_order - secondArticle.display_order);
+
+    const featuredArticles = sortedArticles
         ?.filter((article) => article.featured)
-        .sort((firstArticle, secondArticle) => firstArticle.display_order - secondArticle.display_order)
         .slice(0, 3);
 
-    const heritageSections = featuredArticles?.length === 3
-        ? featuredArticles
-        : heritageData?.sections ?? fallbackHeritageSections;
+    let heritageSections;
+
+    if (catalogMode && sortedArticles) {
+        heritageSections = selectedCategory === 'all'
+            ? sortedArticles
+            : sortedArticles.filter((article) => article.category === selectedCategory);
+    } else {
+        heritageSections = featuredArticles?.length === 3
+            ? featuredArticles
+            : heritageData?.sections ?? fallbackHeritageSections;
+    }
+
+    const setCategory = (category) => {
+        if (category === 'all') {
+            setSearchParams({});
+            return;
+        }
+
+        setSearchParams({ category });
+    };
 
     return (
         <section
@@ -123,33 +144,58 @@ function HeritagePreviewSection() {
                 </div>
 
                 <div className="visitor-section-heading visitor-section-heading-compact">
-                    <h2>Explore the heritage.</h2>
+                    <h2>{catalogMode ? 'Heritage library.' : 'Explore the heritage.'}</h2>
+                    {catalogMode && (
+                        <p>
+                            Filter the library through URL search parameters. The selected category
+                            remains visible in the address bar.
+                        </p>
+                    )}
                 </div>
 
-                <div className="story-preview-grid">
-                    {heritageSections.map((heritage) => {
-                        const isLibraryArticle = Boolean(heritage.slug);
+                {catalogMode && (
+                    <div className="heritage-filter-bar" aria-label="Heritage categories">
+                        <button
+                            type="button"
+                            className={selectedCategory === 'all' ? 'heritage-filter-active' : ''}
+                            onClick={() => setCategory('all')}
+                        >
+                            All
+                        </button>
+                        {Object.entries(categoryLabels).map(([category, label]) => (
+                            <button
+                                type="button"
+                                key={category}
+                                className={selectedCategory === category ? 'heritage-filter-active' : ''}
+                                onClick={() => setCategory(category)}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
-                        return (
-                            <PreviewCard
-                                key={heritage.slug ?? heritage.id}
-                                eyebrow={isLibraryArticle ? getArticleEyebrow(heritage) : heritage.eyebrow}
-                                title={heritage.title}
-                                description={isLibraryArticle ? heritage.summary : heritage.description}
-                                details={heritage.details}
-                                onDetails={() => setSelectedHeritage(heritage)}
-                            />
-                        );
-                    })}
-                </div>
+                {heritageSections.length > 0 ? (
+                    <div className="story-preview-grid">
+                        {heritageSections.map((heritage) => {
+                            const isLibraryArticle = Boolean(heritage.slug);
+
+                            return (
+                                <PreviewCard
+                                    key={heritage.slug ?? heritage.id}
+                                    eyebrow={isLibraryArticle ? getArticleEyebrow(heritage) : heritage.eyebrow}
+                                    title={heritage.title}
+                                    description={isLibraryArticle ? heritage.summary : heritage.description}
+                                    details={heritage.details}
+                                    onDetails={() => navigate(`/heritage/${heritage.slug ?? heritage.id}`)}
+                                />
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <p className="heritage-empty-state">No Heritage articles match this category.</p>
+                )}
             </div>
-
-            {selectedHeritage && (
-                <HeritageDetailsModal
-                    heritage={selectedHeritage}
-                    onClose={() => setSelectedHeritage(null)}
-                />
-            )}
         </section>
     );
 }

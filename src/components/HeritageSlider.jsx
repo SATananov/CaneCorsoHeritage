@@ -8,35 +8,35 @@ const heritageSlides = [
         image: '/images/slider/stories.webp',
         kicker: 'Stories',
         title: 'Character. Loyalty. Bond.',
-        href: '#stories',
+        to: '/stories',
     },
     {
         id: 'heritage',
         image: '/images/slider/heritage.webp',
         kicker: 'Heritage',
         title: 'History. Function. Type.',
-        href: '#heritage',
+        to: '/heritage',
     },
     {
         id: 'knowledge',
         image: '/images/slider/knowledge.webp',
         kicker: 'Knowledge',
         title: 'Learn. Understand. Preserve.',
-        href: '#heritage',
+        to: '/heritage?category=understanding',
     },
     {
         id: 'community',
         image: '/images/slider/community.webp',
         kicker: 'Community',
         title: 'People connected by Cane Corso.',
-        href: '#stories',
+        to: '/stories',
     },
     {
         id: 'usg-global',
         image: '/images/slider/usg-global.webp',
         kicker: 'Unico Suo Genere',
         title: 'One identity. One heritage.',
-        href: '#about',
+        to: '/about',
     },
     {
         id: 'stories-clone',
@@ -63,7 +63,7 @@ function HeritageSlider() {
                                 sideImage={crestImage}
                                 kicker={slide.kicker}
                                 title={slide.title}
-                                href={slide.href}
+                                to={slide.to}
                                 clone={slide.clone}
                             />
                         ))}

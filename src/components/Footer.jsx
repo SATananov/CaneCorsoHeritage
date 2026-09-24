@@ -1,3 +1,5 @@
+import { Link } from 'react-router';
+
 function Footer() {
     return (
         <footer className="site-footer">
@@ -15,8 +17,8 @@ function Footer() {
                 </div>
 
                 <nav className="footer-nav" aria-label="Footer navigation">
-                    <a href="#about">About USG</a>
-                    <a href="#help">Help</a>
+                    <Link to="/about">About USG</Link>
+                    <Link to="/help">Help</Link>
                 </nav>
 
                 <p className="footer-legal">

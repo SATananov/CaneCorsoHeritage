@@ -1,7 +1,9 @@
 const STORIES_API_URL = 'http://localhost:3030/jsonstore/stories';
 
-export async function fetchStories() {
-    const response = await fetch(STORIES_API_URL);
+export async function fetchStories(options = {}) {
+    const response = await fetch(STORIES_API_URL, {
+        signal: options.signal,
+    });
 
     if (!response.ok) {
         throw new Error('Unable to load stories.');
@@ -12,8 +14,10 @@ export async function fetchStories() {
     return Object.values(data ?? {});
 }
 
-export async function fetchStoryById(storyId) {
-    const response = await fetch(`${STORIES_API_URL}/${storyId}`);
+export async function fetchStoryById(storyId, options = {}) {
+    const response = await fetch(`${STORIES_API_URL}/${storyId}`, {
+        signal: options.signal,
+    });
 
     if (!response.ok) {
         throw new Error('Unable to load story details.');

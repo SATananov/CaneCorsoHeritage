@@ -1,3 +1,5 @@
+import { Link } from 'react-router';
+
 function HelpSection() {
     return (
         <section className="visitor-section visitor-section-alt" aria-labelledby="help-title">
@@ -16,12 +18,14 @@ function HelpSection() {
                         <span>01</span>
                         <h3>Explore</h3>
                         <p>Start from Home and discover Stories, Heritage and About USG.</p>
+                        <Link className="help-topic-link" to="/help/explore">Explore help →</Link>
                     </article>
 
                     <article className="help-card">
                         <span>02</span>
                         <h3>Read</h3>
                         <p>Open any Story or Heritage card to discover the full details.</p>
+                        <Link className="help-topic-link" to="/help/read">Reading help →</Link>
                     </article>
 
                     <article className="help-card help-card-join">
@@ -31,6 +35,7 @@ function HelpSection() {
                             Add a story to the collection and preserve meaningful Cane Corso
                             experiences.
                         </p>
+                        <Link className="help-topic-link" to="/help/share">Sharing help →</Link>
                     </article>
                 </div>
             </div>

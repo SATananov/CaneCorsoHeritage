@@ -1,31 +1,23 @@
-function HeritageSlide(props) {
-    const slideLabel = props.clone
-        ? undefined
-        : `${props.kicker}. ${props.title}`;
+import { Link } from 'react-router';
 
+function SlideContent(props) {
     return (
-        <a
-            className={`heritage-slide${props.clone ? ' heritage-slide-clone' : ''}`}
-            href={props.clone ? undefined : props.href}
-            aria-hidden={props.clone ? 'true' : undefined}
-            aria-label={slideLabel}
-            tabIndex={props.clone ? -1 : undefined}
-        >
+        <>
             <span
                 className="heritage-slide-main-image"
                 aria-hidden="true"
                 style={{ backgroundImage: `url(${props.image})` }}
-            ></span>
+            />
 
             {props.sideImage && (
                 <span
                     className="heritage-slide-side-image"
                     aria-hidden="true"
                     style={{ backgroundImage: `url(${props.sideImage})` }}
-                ></span>
+                />
             )}
 
-            <span className="heritage-slide-overlay" aria-hidden="true"></span>
+            <span className="heritage-slide-overlay" aria-hidden="true" />
 
             <span className="heritage-slide-content">
                 <span className="heritage-slide-kicker">{props.kicker}</span>
@@ -36,7 +28,27 @@ function HeritageSlide(props) {
                     </span>
                 )}
             </span>
-        </a>
+        </>
+    );
+}
+
+function HeritageSlide(props) {
+    if (props.clone) {
+        return (
+            <div className="heritage-slide heritage-slide-clone" aria-hidden="true">
+                <SlideContent {...props} />
+            </div>
+        );
+    }
+
+    return (
+        <Link
+            className="heritage-slide"
+            to={props.to}
+            aria-label={`${props.kicker}. ${props.title}`}
+        >
+            <SlideContent {...props} />
+        </Link>
     );
 }
 
