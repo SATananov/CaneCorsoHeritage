@@ -147,8 +147,7 @@ function HeritagePreviewSection({ catalogMode = false }) {
                     <h2>{catalogMode ? 'Heritage library.' : 'Explore the heritage.'}</h2>
                     {catalogMode && (
                         <p>
-                            Filter the library through URL search parameters. The selected category
-                            remains visible in the address bar.
+                            Explore the Cane Corso heritage through true stories, history, working tradition, care and research.
                         </p>
                     )}
                 </div>
