@@ -130,3 +130,80 @@
         border-radius: 20px;
     }
 }
+
+.meta a {
+    display: block;
+    width: fit-content;
+    color: #d4af37;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.meta a:hover,
+.meta a:focus-visible {
+    text-decoration: underline;
+}
+
+
+.attachments {
+    margin-top: 30px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(212, 175, 55, 0.16);
+}
+
+.attachments h2 {
+    margin: 0 0 16px;
+    color: #f8f5ef;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.attachmentGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.attachmentCard {
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 16px;
+    background: rgba(248, 245, 239, 0.025);
+}
+
+.attachmentCard img,
+.attachmentCard video {
+    display: block;
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    background: #070709;
+}
+
+.attachmentCard > div {
+    padding: 14px;
+}
+
+.attachmentCard strong {
+    display: block;
+    overflow-wrap: anywhere;
+    color: rgba(248, 245, 239, 0.82);
+    font-size: 0.78rem;
+}
+
+.attachmentCard a {
+    display: inline-block;
+    margin-top: 9px;
+    color: #d4af37;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+    .attachmentGrid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -15,6 +15,7 @@ const HelpPage = lazy(() => import('./pages/HelpPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const MyStoriesPage = lazy(() => import('./pages/MyStoriesPage'));
+const MyFilesPage = lazy(() => import('./pages/MyFilesPage'));
 const UsersPage = lazy(() => import('./pages/UsersPage'));
 const UserDetailsPage = lazy(() => import('./pages/UserDetailsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -57,6 +58,7 @@ function App() {
 
                     <Route element={<RequireAuth />}>
                         <Route path="my-stories" element={<MyStoriesPage />} />
+                        <Route path="my-files" element={<MyFilesPage />} />
                     </Route>
 
                     <Route path="*" element={<NotFoundPage />} />

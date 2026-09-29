@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { fetchStoryFiles } from '../services/fileService';
 import { fetchStoryById } from '../services/storyService';
 import styles from './DetailsPage.module.css';
 
@@ -8,17 +9,24 @@ function StoryDetailsPage() {
     const { storyId } = useParams();
     const navigate = useNavigate();
     const [story, setStory] = useState(null);
+    const [attachments, setAttachments] = useState([]);
     const [error, setError] = useState('');
 
     useEffect(() => {
         const controller = new AbortController();
+        let active = true;
 
         const loadStory = async () => {
             try {
                 const data = await fetchStoryById(storyId, { signal: controller.signal });
-                setStory(data);
+                const fileData = await fetchStoryFiles(storyId);
+
+                if (active) {
+                    setStory(data);
+                    setAttachments(fileData);
+                }
             } catch (loadError) {
-                if (loadError.name !== 'AbortError') {
+                if (loadError.name !== 'AbortError' && active) {
                     setError('Unable to load this story right now.');
                 }
             }
@@ -27,6 +35,7 @@ function StoryDetailsPage() {
         loadStory();
 
         return () => {
+            active = false;
             controller.abort();
         };
     }, [storyId]);
@@ -54,8 +63,46 @@ function StoryDetailsPage() {
                         <div className={styles.divider} />
                         <p className={styles.body}>{story.content ?? story.details}</p>
 
+                        {attachments.length > 0 && (
+                            <section className={styles.attachments} aria-labelledby="story-files-title">
+                                <h2 id="story-files-title">Attached files</h2>
+
+                                <div className={styles.attachmentGrid}>
+                                    {attachments.map((file) => (
+                                        <article className={styles.attachmentCard} key={file.id}>
+                                            {file.mime_type?.startsWith('image/') && file.url && (
+                                                <img src={file.url} alt="" />
+                                            )}
+
+                                            {file.mime_type === 'video/mp4' && file.url && (
+                                                <video controls preload="metadata">
+                                                    <source src={file.url} type="video/mp4" />
+                                                </video>
+                                            )}
+
+                                            <div>
+                                                <strong>{file.file_name}</strong>
+                                                {file.url && (
+                                                    <a href={file.url} target="_blank" rel="noreferrer">
+                                                        Open file
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
                         {story.author && (
-                            <p className={styles.meta}>Story by <strong>{story.author}</strong></p>
+                            <p className={styles.meta}>
+                                Story by
+                                {story.author_id ? (
+                                    <Link to={`/users/${story.author_id}`}>{story.author}</Link>
+                                ) : (
+                                    <strong>{story.author}</strong>
+                                )}
+                            </p>
                         )}
                     </article>
                 )}

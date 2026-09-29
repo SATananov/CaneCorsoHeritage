@@ -3,58 +3,56 @@
 **ReactJS · September 2026**
 **Stefan Tananov**
 
-Cane Corso Heritage is a React application dedicated to the history, function, identity and stories of the Cane Corso.
+Cane Corso Heritage is a React single-page application dedicated to Cane Corso history, working tradition, identity and community stories.
 
-The application is designed as a focused heritage experience and can also become part of the larger USG Cane Corso Platform:
-
-https://usg-cane-corso-platform.com/
 ## Current application
-- Home experience with an automatic visual slider
-- Client-side routing with React Router
-- Shared application layout with Header, Footer and `Outlet`
-- Dedicated routes for Home, Stories, Heritage, About USG, Help, Login and Register
-- Dynamic Story and Heritage detail routes with URL parameters
-- Heritage category filtering with URL search parameters
-- Active navigation with `NavLink`
-- Optional Help topic route segments
-- 404 fallback route
-- Guarded `My Stories` route prepared for a future Supabase session
-- Route-based lazy loading with `React.lazy` and `Suspense`
-- Stories collection loaded from Supabase REST
-- Story details loaded from Supabase REST by story ID
-- Public Story reads restricted to published records
-- Heritage content loaded from Supabase REST
-- AbortController cleanup for route and collection fetch requests
-- About USG section
-- Help section
-- Reusable React components and props
-- Lists rendered with `map()` and stable `key` props
-- Local component state with `useState`
-- Event handling with `onClick`
-- Conditional rendering
-- Lifecycle side effects and cleanup with `useEffect`
-- CSS Modules for locally scoped styles
-- Loading, success and error states
-- Responsive layout for desktop and mobile
+
+- React Router client-side routing with shared layout and lazy-loaded pages
+- Public Home, Stories, Heritage, Members, About USG and Help sections
+- Dynamic Story, Heritage article and Member profile detail routes
+- Supabase authentication with Register, Login, Logout and persistent sessions
+- Guest and authenticated route guards
+- Public Members catalog backed by the `profiles` table
+- Public Story and Heritage reads from Supabase
+- Authenticated Story Create, Read, Update and Delete operations
+- Story ownership through `author_id`
+- Only the story owner can edit or delete their records through Supabase RLS
+- Story visibility with `Community` and `My Own`
+- `My Stories` private workspace for the signed-in member
+- `My Files` private file workspace
+- Image, MP4 and TXT uploads through private Supabase Storage
+- User files are private by default and can be shared with the Community
+- Community files can be displayed from the member profile
+- Story attachments follow the Story visibility setting
+- Controlled forms, loading states, validation and API error states
+- AbortController cleanup for collection and detail requests
+- Responsive layout with reusable React components and CSS Modules
+
 ## Main routes
 
 - `/` — Home
-- `/stories` — Stories catalog
+- `/stories` — public Community Stories catalog
 - `/stories/:storyId` — Story details
 - `/heritage` — Heritage library
 - `/heritage/:slug` — Heritage article details
-- `/heritage?category=understanding` — Heritage library filtered through search params
+- `/users` — public Members catalog
+- `/users/:userId` — public Member profile
 - `/about` — About USG
-- `/help/:topic?` — Help with an optional topic segment
-- `/login` — Login preparation
-- `/register` — Register preparation
-- `/my-stories` — guarded route reserved for authenticated members
-## Authentication preparation
+- `/help/:topic?` — Help
+- `/login` — Login for guests
+- `/register` — Registration for guests
+- `/my-stories` — private Story workspace
+- `/my-files` — private user file workspace
 
-Login and Register are UI preparation only. Supabase authentication is not connected yet and no credentials are processed. The guarded route is intentionally wired to redirect guests to `/login`; the current placeholder session is `null` until the real Supabase session milestone.
+## Authentication and sessions
+
+Authentication is provided by Supabase Auth. The application restores the current session when it loads and listens for authentication state changes through the shared Auth Context.
+
+Guests can browse public content. Authenticated users can access the private Story and file workspaces and manage only the records that belong to their account.
+
 ## Supabase data access
 
-Published Heritage articles and published Stories are read through the Supabase REST API.
+The application uses Supabase as its hosted backend.
 
 Local configuration is provided through `.env.local`:
 
@@ -63,9 +61,10 @@ Local configuration is provided through `.env.local`:
 
 `.env.local` is ignored by Git and is not part of the repository.
 
-Public Story reads are limited by Row Level Security to records with `status = 'published'`.
+Community Stories are publicly readable. `My Own` Stories are readable only by their owner. Authenticated Story writes send the signed-in user's access token and are protected by Row Level Security.
 
-Story create and delete operations are intentionally deferred until the authentication/write milestone. The local Stories server and write service code remain in the project for that later course step; they are not required to browse the current application.
+The private `user-files` Storage bucket accepts images, MP4 and TXT files up to 50 MB. File metadata is stored in `user_files`. A file can remain private or be explicitly shared with the Community.
+
 ## Run the application
 
 Install dependencies:
@@ -80,23 +79,30 @@ Start the React application:
 npm run dev
 ```
 
-Open the address shown by Vite in the terminal.
-
-The preserved local Stories service can still be started when it is needed for the later write-flow course work:
+Create a production build:
 
 ```bash
-npm run server
+npm run build
 ```
+
+Run lint checks:
+
+```bash
+npm run lint
+```
+
 ## Project structure
 
 - `src/components` — reusable interface components
 - `src/pages` — route-level page components
 - `src/layouts` — shared route layouts
 - `src/routing` — route guard components
-- `src/services` — data access functions
+- `src/context` — shared authentication context
+- `src/hooks` — reusable React hooks
+- `src/services` — Supabase data and file access functions
+- `src/lib` — Supabase client setup
 - `public/data` — lightweight public preview data
 - `content-source` — non-public source content used to prepare Heritage data
-- `server` — preserved local Stories service for later authenticated write-flow work
 
 ## Repository
 

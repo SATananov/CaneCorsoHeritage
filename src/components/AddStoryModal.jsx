@@ -1,19 +1,35 @@
-import { useState } from 'react';
-import { createStory } from '../services/storyService';
+import { useEffect, useState } from 'react';
+import {
+    syncStoryFilesVisibility,
+    uploadUserFiles,
+} from '../services/fileService';
+import { createStory, updateStory } from '../services/storyService';
 import styles from './AddStoryModal.module.css';
 
-const initialForm = {
-    eyebrow: 'Community',
-    title: '',
-    description: '',
-    content: '',
-    author: '',
-};
+function getInitialForm(story) {
+    return {
+        visibility: story?.visibility ?? 'community',
+        title: story?.title ?? '',
+        description: story?.description ?? '',
+        content: story?.content ?? '',
+    };
+}
 
-function AddStoryModal({ onClose, onCreated }) {
-    const [formData, setFormData] = useState(initialForm);
+function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
+    const [formData, setFormData] = useState(() => getInitialForm(story));
+    const [selectedFiles, setSelectedFiles] = useState([]);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const isEditing = Boolean(story);
+
+    useEffect(() => {
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+        };
+    }, []);
 
     const changeHandler = (event) => {
         const { name, value } = event.target;
@@ -24,36 +40,56 @@ function AddStoryModal({ onClose, onCreated }) {
         }));
     };
 
+    const fileChangeHandler = (event) => {
+        setSelectedFiles(Array.from(event.target.files ?? []));
+        setError('');
+    };
+
     const submitHandler = async (event) => {
         event.preventDefault();
         setError('');
 
         const storyData = {
-            eyebrow: formData.eyebrow.trim(),
+            eyebrow: formData.visibility === 'community' ? 'Community' : 'My Own',
+            visibility: formData.visibility,
             title: formData.title.trim(),
             description: formData.description.trim(),
             content: formData.content.trim(),
-            author: formData.author.trim(),
+            author: authorName,
         };
 
         if (
-            !storyData.eyebrow ||
-            !storyData.title ||
-            !storyData.description ||
-            !storyData.content ||
-            !storyData.author
+            !storyData.title
+            || !storyData.description
+            || !storyData.content
+            || !storyData.author
         ) {
-            setError('Please complete all fields.');
+            setError('Please complete all text fields.');
             return;
         }
 
         try {
             setIsSubmitting(true);
-            await createStory(storyData);
-            await onCreated();
+
+            const savedStory = isEditing
+                ? await updateStory(story._id, storyData)
+                : await createStory(storyData);
+
+            if (isEditing) {
+                await syncStoryFilesVisibility(savedStory._id, storyData.visibility);
+            }
+
+            if (selectedFiles.length > 0) {
+                await uploadUserFiles(selectedFiles, {
+                    storyId: savedStory._id,
+                    visibility: storyData.visibility,
+                });
+            }
+
+            await onSaved();
             onClose();
-        } catch {
-            setError('Unable to create the story right now.');
+        } catch (submitError) {
+            setError(submitError.message || 'Unable to save the story right now.');
         } finally {
             setIsSubmitting(false);
         }
@@ -65,48 +101,54 @@ function AddStoryModal({ onClose, onCreated }) {
                 className={styles.dialog}
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="add-story-title"
+                aria-labelledby="story-form-title"
                 onMouseDown={(event) => event.stopPropagation()}
             >
                 <button
                     className={styles.closeButton}
                     type="button"
-                    aria-label="Close add story"
+                    aria-label="Close story form"
                     onClick={onClose}
                 >
                     ×
                 </button>
 
                 <div className={styles.heading}>
-                    <p>Add Story</p>
-                    <h2 id="add-story-title">Share a new story.</h2>
+                    <p>{isEditing ? 'Edit Story' : 'Add Story'}</p>
+                    <h2 id="story-form-title">
+                        {isEditing ? 'Update your story.' : 'Share a new story.'}
+                    </h2>
                     <span>
-                        Share an experience, memory or moment that belongs in the Cane Corso
-                        Heritage stories.
+                        Choose who can see it, write the text and attach images, MP4 or TXT files.
                     </span>
                 </div>
 
                 <form className={styles.form} onSubmit={submitHandler}>
-                    <label>
-                        Category
-                        <input
-                            name="eyebrow"
-                            value={formData.eyebrow}
-                            onChange={changeHandler}
-                            disabled={isSubmitting}
-                        />
-                    </label>
+                    <div className={styles.formRow}>
+                        <label>
+                            Visibility
+                            <select
+                                name="visibility"
+                                value={formData.visibility}
+                                onChange={changeHandler}
+                                disabled={isSubmitting}
+                            >
+                                <option value="community">Community — visible to everyone</option>
+                                <option value="private">My Own — only visible to me</option>
+                            </select>
+                        </label>
 
-                    <label>
-                        Title
-                        <input
-                            name="title"
-                            value={formData.title}
-                            onChange={changeHandler}
-                            disabled={isSubmitting}
-                            placeholder="A story worth preserving"
-                        />
-                    </label>
+                        <label>
+                            Title
+                            <input
+                                name="title"
+                                value={formData.title}
+                                onChange={changeHandler}
+                                disabled={isSubmitting}
+                                placeholder="A story worth preserving"
+                            />
+                        </label>
+                    </div>
 
                     <label>
                         Short description
@@ -115,7 +157,7 @@ function AddStoryModal({ onClose, onCreated }) {
                             value={formData.description}
                             onChange={changeHandler}
                             disabled={isSubmitting}
-                            rows="3"
+                            rows="1"
                             placeholder="A short introduction for the Story card."
                         />
                     </label>
@@ -127,32 +169,52 @@ function AddStoryModal({ onClose, onCreated }) {
                             value={formData.content}
                             onChange={changeHandler}
                             disabled={isSubmitting}
-                            rows="6"
+                            rows="3"
                             placeholder="Write the Story details."
                         />
                     </label>
 
-                    <label>
-                        Author
+                    <label className={styles.fileField}>
+                        Attach files
                         <input
-                            name="author"
-                            value={formData.author}
-                            onChange={changeHandler}
+                            type="file"
+                            multiple
+                            accept="image/*,video/mp4,text/plain,.txt"
+                            onChange={fileChangeHandler}
                             disabled={isSubmitting}
-                            placeholder="Your name"
                         />
+                        <span>Images, MP4 and TXT · up to 50 MB per file</span>
+                        <span>Attachments follow this Story visibility.</span>
                     </label>
 
-                    {error && <p className={styles.error} role="alert">{error}</p>}
+                    {selectedFiles.length > 0 && (
+                        <div className={styles.selectedFiles}>
+                            {selectedFiles.map((file) => (
+                                <span key={`${file.name}-${file.size}`}>{file.name}</span>
+                            ))}
+                        </div>
+                    )}
 
-                    <div className={styles.actions}>
-                        <button type="button" onClick={onClose} disabled={isSubmitting}>
-                            Cancel
-                        </button>
-                        <button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : 'Add Story'}
-                        </button>
+                    <div className={styles.formFooter}>
+                        <p className={styles.authorNote}>
+                            Publishing as <strong>{authorName}</strong>
+                        </p>
+
+                        <div className={styles.actions}>
+                            <button type="button" onClick={onClose} disabled={isSubmitting}>
+                                Cancel
+                            </button>
+                            <button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? 'Saving...'
+                                    : isEditing
+                                        ? 'Save Changes'
+                                        : 'Publish Story'}
+                            </button>
+                        </div>
                     </div>
+
+                    {error && <p className={styles.error} role="alert">{error}</p>}
                 </form>
             </section>
         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { fetchCommunityFilesByUser } from '../services/fileService';
 import {
     fetchProfileById,
     fetchPublishedStoriesByAuthor,
@@ -28,17 +29,20 @@ function UserDetailsPage() {
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [stories, setStories] = useState([]);
+    const [sharedFiles, setSharedFiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
         const controller = new AbortController();
+        let active = true;
 
         const loadProfile = async () => {
             try {
-                const [profileData, storyData] = await Promise.all([
+                const [profileData, storyData, fileData] = await Promise.all([
                     fetchProfileById(userId, { signal: controller.signal }),
                     fetchPublishedStoriesByAuthor(userId, { signal: controller.signal }),
+                    fetchCommunityFilesByUser(userId),
                 ]);
 
                 if (!profileData) {
@@ -46,14 +50,17 @@ function UserDetailsPage() {
                     return;
                 }
 
-                setProfile(profileData);
-                setStories(storyData);
+                if (active) {
+                    setProfile(profileData);
+                    setStories(storyData);
+                    setSharedFiles(fileData);
+                }
             } catch (loadError) {
-                if (loadError.name !== 'AbortError') {
+                if (loadError.name !== 'AbortError' && active) {
                     setError('Unable to load this member profile right now.');
                 }
             } finally {
-                if (!controller.signal.aborted) {
+                if (active && !controller.signal.aborted) {
                     setLoading(false);
                 }
             }
@@ -62,6 +69,7 @@ function UserDetailsPage() {
         loadProfile();
 
         return () => {
+            active = false;
             controller.abort();
         };
     }, [userId]);
@@ -125,6 +133,40 @@ function UserDetailsPage() {
                                             <h3>{story.title}</h3>
                                             <p>{story.description}</p>
                                             <Link to={`/stories/${story.id}`}>View story →</Link>
+                                        </article>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+
+                        <section className={styles.storySection} aria-labelledby="member-files-title">
+                            <div className={styles.sectionHeading}>
+                                <p className={styles.eyebrow}>Shared files</p>
+                                <h2 id="member-files-title">Public files by {displayName}</h2>
+                            </div>
+
+                            {sharedFiles.length === 0 ? (
+                                <div className={styles.message}>No public files from this member yet.</div>
+                            ) : (
+                                <div className={styles.fileGrid}>
+                                    {sharedFiles.map((file) => (
+                                        <article className={styles.fileCard} key={file.id}>
+                                            {file.mime_type?.startsWith('image/') && file.url ? (
+                                                <img src={file.url} alt="" />
+                                            ) : (
+                                                <div className={styles.fileType}>
+                                                    {file.mime_type === 'video/mp4' ? 'MP4' : 'TXT'}
+                                                </div>
+                                            )}
+
+                                            <div>
+                                                <strong>{file.file_name}</strong>
+                                                {file.url && (
+                                                    <a href={file.url} target="_blank" rel="noreferrer">
+                                                        Open file →
+                                                    </a>
+                                                )}
+                                            </div>
                                         </article>
                                     ))}
                                 </div>

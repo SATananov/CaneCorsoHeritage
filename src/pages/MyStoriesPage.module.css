@@ -1,0 +1,195 @@
+.page {
+    min-height: 72vh;
+    padding: clamp(58px, 7vw, 94px) 0 clamp(78px, 8vw, 120px);
+    background:
+        radial-gradient(820px 420px at 50% 0%, rgba(212, 175, 55, 0.06), transparent 70%),
+        #0b0b0d;
+}
+
+.shell {
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+}
+
+.heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 34px;
+    padding: clamp(26px, 4vw, 42px);
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-radius: 26px;
+    background: linear-gradient(180deg, rgba(24, 23, 20, 0.95), rgba(13, 13, 15, 0.98));
+}
+
+.heading h1,
+.emptyState h2,
+.card h2 {
+    color: #f8f5ef;
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 600;
+}
+
+.heading h1 {
+    margin: 10px 0 0;
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    line-height: 0.98;
+}
+
+.heading p:not(:first-child) {
+    max-width: 680px;
+    margin: 18px 0 0;
+    color: rgba(248, 245, 239, 0.68);
+    line-height: 1.7;
+}
+
+.headingActions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 10px;
+}
+
+.heading button,
+.headingActions a,
+.emptyState button,
+.actions a,
+.actions button {
+    min-height: 42px;
+    border: 1px solid rgba(212, 175, 55, 0.44);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #d4af37;
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.heading button,
+.headingActions a,
+.emptyState button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 22px;
+    text-decoration: none;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.card {
+    display: flex;
+    min-height: 300px;
+    flex-direction: column;
+    padding: 26px;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(23, 22, 19, 0.92), rgba(13, 13, 15, 0.98));
+}
+
+.eyebrow,
+.status {
+    margin: 0;
+    color: #d4af37;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.card h2 {
+    margin: 12px 0 0;
+    font-size: 1.75rem;
+    line-height: 1.12;
+}
+
+.description {
+    margin: 16px 0 0;
+    color: rgba(248, 245, 239, 0.66);
+    line-height: 1.65;
+}
+
+.status {
+    margin-top: auto;
+    padding-top: 24px;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 16px;
+}
+
+.actions a,
+.actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    text-decoration: none;
+}
+
+.deleteButton {
+    border-color: rgba(198, 100, 100, 0.5) !important;
+    background: rgba(154, 54, 54, 0.08) !important;
+    color: #e7a9a9 !important;
+}
+
+.message,
+.emptyState {
+    padding: 28px;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 22px;
+    background: rgba(248, 245, 239, 0.035);
+    color: rgba(248, 245, 239, 0.7);
+}
+
+.emptyState h2 {
+    margin: 10px 0 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.emptyState > p:not(:first-child) {
+    max-width: 640px;
+    margin: 14px 0 22px;
+    line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .shell {
+        width: min(100% - 24px, 1120px);
+    }
+
+    .heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .headingActions {
+        width: 100%;
+    }
+
+    .heading button,
+    .headingActions a,
+    .emptyState button {
+        flex: 1;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

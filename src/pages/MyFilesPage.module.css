@@ -1,0 +1,261 @@
+.page {
+    min-height: 72vh;
+    padding: clamp(58px, 7vw, 94px) 0 clamp(78px, 8vw, 120px);
+    background:
+        radial-gradient(820px 420px at 50% 0%, rgba(212, 175, 55, 0.06), transparent 70%),
+        #0b0b0d;
+}
+
+.shell {
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+}
+
+.heading {
+    padding: clamp(26px, 4vw, 42px);
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-radius: 26px;
+    background: linear-gradient(180deg, rgba(24, 23, 20, 0.95), rgba(13, 13, 15, 0.98));
+}
+
+.heading h1 {
+    margin: 10px 0 0;
+    color: #f8f5ef;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    font-weight: 600;
+    line-height: 0.98;
+}
+
+.heading p:not(:first-child) {
+    max-width: 680px;
+    margin: 18px 0 0;
+    color: rgba(248, 245, 239, 0.68);
+    line-height: 1.7;
+}
+
+.uploadPanel {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(220px, 0.8fr) auto;
+    gap: 14px;
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 20px;
+    background: rgba(248, 245, 239, 0.025);
+}
+
+.uploadPanel label {
+    display: grid;
+    gap: 7px;
+    color: rgba(248, 245, 239, 0.72);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.uploadPanel input,
+.uploadPanel select {
+    min-height: 44px;
+    width: 100%;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 12px;
+    background: rgba(7, 7, 9, 0.72);
+    color: #f8f5ef;
+    padding: 7px 11px;
+    font: inherit;
+}
+
+.uploadPanel button,
+.actions a,
+.actions button {
+    min-height: 42px;
+    border: 1px solid rgba(212, 175, 55, 0.44);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #d4af37;
+    font: inherit;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.uploadPanel > button {
+    align-self: end;
+    padding: 0 20px;
+}
+
+.fileHint {
+    margin: 9px 0 0;
+    color: rgba(248, 245, 239, 0.42);
+    font-size: 0.68rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 26px;
+}
+
+.card {
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(23, 22, 19, 0.92), rgba(13, 13, 15, 0.98));
+}
+
+.preview,
+.fileType {
+    width: 100%;
+    height: 170px;
+}
+
+.preview {
+    display: block;
+    object-fit: cover;
+}
+
+.fileType {
+    display: grid;
+    place-items: center;
+    background: rgba(212, 175, 55, 0.05);
+    color: #d4af37;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 2.2rem;
+}
+
+.cardBody {
+    padding: 20px;
+}
+
+.visibility {
+    margin: 0;
+    color: #d4af37;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.cardBody h2 {
+    margin: 10px 0 0;
+    overflow-wrap: anywhere;
+    color: #f8f5ef;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.cardBody > p:not(.visibility) {
+    margin: 10px 0 0;
+    color: rgba(248, 245, 239, 0.58);
+    font-size: 0.76rem;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.actions a,
+.actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 13px;
+    text-decoration: none;
+}
+
+.deleteButton {
+    border-color: rgba(198, 100, 100, 0.5) !important;
+    background: rgba(154, 54, 54, 0.08) !important;
+    color: #e7a9a9 !important;
+}
+
+.message {
+    margin-top: 24px;
+    padding: 22px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 18px;
+    background: rgba(248, 245, 239, 0.025);
+    color: rgba(248, 245, 239, 0.7);
+}
+
+@media (max-width: 900px) {
+    .uploadPanel,
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .uploadPanel > button {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .shell {
+        width: min(100% - 24px, 1120px);
+    }
+
+    .uploadPanel,
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .uploadPanel > button {
+        grid-column: auto;
+    }
+}
+
+.storyVisibility {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 999px;
+    color: rgba(248, 245, 239, 0.5);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+
+.publicCheck {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid rgba(212, 175, 55, 0.32);
+    border-radius: 999px;
+    color: #d4af37;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.publicCheck input {
+    width: 16px;
+    height: 16px;
+    accent-color: #d4af37;
+    cursor: pointer;
+}
+
+.publicCheckDisabled {
+    opacity: 0.52;
+    cursor: not-allowed;
+}
+
+.publicCheckDisabled input {
+    cursor: not-allowed;
+}

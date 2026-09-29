@@ -25,6 +25,12 @@ function AuthActions(props) {
                 >
                     My Stories
                 </NavLink>
+                <NavLink
+                    className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
+                    to="/my-files"
+                >
+                    My Files
+                </NavLink>
                 <button
                     className="register-button"
                     type="button"
