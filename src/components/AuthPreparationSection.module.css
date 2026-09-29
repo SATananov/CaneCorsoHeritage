@@ -90,8 +90,14 @@
     gap: 18px;
 }
 
+.authGridSingle {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 520px;
+    width: 100%;
+    justify-self: end;
+}
+
 .authCard {
-    scroll-margin-top: 122px;
     display: flex;
     min-width: 0;
     flex-direction: column;
@@ -99,16 +105,6 @@
     border: 1px solid rgba(248, 245, 239, 0.11);
     border-radius: 22px;
     background: rgba(248, 245, 239, 0.035);
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
-}
-
-.authCard:target {
-    border-color: rgba(212, 175, 55, 0.72);
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
-    transform: translateY(-2px);
 }
 
 .cardHeading {
@@ -188,6 +184,11 @@
     box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
 }
 
+.authForm input:disabled {
+    opacity: 0.66;
+    cursor: not-allowed;
+}
+
 .authForm button {
     min-height: 46px;
     margin-top: 3px;
@@ -212,48 +213,38 @@
     transform: translateY(-1px);
 }
 
+.authForm button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+.formMessage {
+    margin: 16px 0 0;
+    padding: 11px 13px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    line-height: 1.55;
+}
+
+.formError {
+    border: 1px solid rgba(220, 92, 92, 0.45);
+    background: rgba(220, 92, 92, 0.08);
+    color: #f0b6b6;
+}
+
+.formSuccess {
+    border: 1px solid rgba(212, 175, 55, 0.34);
+    background: rgba(212, 175, 55, 0.07);
+    color: var(--usg-gold-light);
+}
+
 .statusNote {
     margin: auto 0 0;
     padding-top: 18px;
     color: var(--usg-muted-soft);
     font-size: 0.68rem;
     line-height: 1.55;
-}
-
-@media (max-width: 980px) {
-    .authShell {
-        grid-template-columns: 1fr;
-    }
-
-    .authIntro {
-        max-width: 720px;
-    }
-}
-
-@media (max-width: 680px) {
-    .authSection {
-        padding: 58px 0 66px;
-    }
-
-    .authShell {
-        padding: 18px;
-        border-radius: 22px;
-    }
-
-    .authGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .authCard {
-        padding: 20px;
-    }
-}
-
-.authGridSingle {
-    grid-template-columns: minmax(0, 1fr);
-    max-width: 520px;
-    width: 100%;
-    justify-self: end;
 }
 
 .routeNotice {
@@ -283,4 +274,37 @@
 .switchLink:focus-visible {
     color: var(--usg-gold-light);
     text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+    .authShell {
+        grid-template-columns: 1fr;
+    }
+
+    .authIntro {
+        max-width: 720px;
+    }
+
+    .authGridSingle {
+        justify-self: stretch;
+    }
+}
+
+@media (max-width: 680px) {
+    .authSection {
+        padding: 58px 0 66px;
+    }
+
+    .authShell {
+        padding: 18px;
+        border-radius: 22px;
+    }
+
+    .authGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .authCard {
+        padding: 20px;
+    }
 }

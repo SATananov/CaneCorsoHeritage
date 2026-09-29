@@ -1,6 +1,41 @@
 import { NavLink } from 'react-router';
+import useAuth from '../hooks/useAuth';
 
 function AuthActions(props) {
+    const { user, loading, logout } = useAuth();
+
+    async function handleLogout() {
+        try {
+            await logout();
+        } catch (error) {
+            window.alert(error.message || 'Unable to sign out.');
+        }
+    }
+
+    if (loading) {
+        return null;
+    }
+
+    if (user) {
+        return (
+            <div className={props.className} role="group" aria-label={props.ariaLabel}>
+                <NavLink
+                    className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
+                    to="/my-stories"
+                >
+                    My Stories
+                </NavLink>
+                <button
+                    className="register-button"
+                    type="button"
+                    onClick={handleLogout}
+                >
+                    Logout
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className={props.className} role="group" aria-label={props.ariaLabel}>
             <NavLink

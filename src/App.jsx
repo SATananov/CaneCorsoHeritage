@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router';
 import './App.css';
 import AppLayout from './layouts/AppLayout';
 import RequireAuth from './routing/RequireAuth';
+import RequireGuest from './routing/RequireGuest';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const StoriesPage = lazy(() => import('./pages/StoriesPage'));
@@ -17,9 +18,6 @@ const MyStoriesPage = lazy(() => import('./pages/MyStoriesPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function App() {
-    // Supabase will replace this null session in the authentication milestone.
-    const authUser = null;
-
     return (
         <Suspense
             fallback={(
@@ -44,10 +42,13 @@ function App() {
 
                     <Route path="about" element={<AboutPage />} />
                     <Route path="help/:topic?" element={<HelpPage />} />
-                    <Route path="login" element={<LoginPage />} />
-                    <Route path="register" element={<RegisterPage />} />
 
-                    <Route element={<RequireAuth user={authUser} />}>
+                    <Route element={<RequireGuest />}>
+                        <Route path="login" element={<LoginPage />} />
+                        <Route path="register" element={<RegisterPage />} />
+                    </Route>
+
+                    <Route element={<RequireAuth />}>
                         <Route path="my-stories" element={<MyStoriesPage />} />
                     </Route>
 

@@ -1,8 +1,7 @@
-import { Navigate, Outlet, useLocation } from 'react-router';
+import { Navigate, Outlet } from 'react-router';
 import useAuth from '../hooks/useAuth';
 
-function RequireAuth() {
-    const location = useLocation();
+function RequireGuest() {
     const { user, loading } = useAuth();
 
     if (loading) {
@@ -13,17 +12,11 @@ function RequireAuth() {
         );
     }
 
-    if (!user) {
-        return (
-            <Navigate
-                to="/login"
-                replace
-                state={{ from: location }}
-            />
-        );
+    if (user) {
+        return <Navigate to="/my-stories" replace />;
     }
 
     return <Outlet />;
 }
 
-export default RequireAuth;
+export default RequireGuest;
