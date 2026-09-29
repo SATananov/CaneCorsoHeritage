@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getHeritageArticles, getHeritagePreview } from '../services/heritageService';
+import { getHeritageArticleBySlug, getHeritagePreview } from '../services/heritageService';
 import styles from './DetailsPage.module.css';
 
 const categoryLabels = {
@@ -31,12 +31,11 @@ function HeritageArticlePage() {
 
         const loadArticle = async () => {
             try {
-                const [articles, preview] = await Promise.all([
-                    getHeritageArticles({ signal: controller.signal }),
+                const [libraryArticle, preview] = await Promise.all([
+                    getHeritageArticleBySlug(slug, { signal: controller.signal }),
                     getHeritagePreview({ signal: controller.signal }),
                 ]);
 
-                const libraryArticle = articles.find((item) => item.slug === slug);
                 const previewArticle = preview.sections?.find((item) => item.id === slug);
                 const match = libraryArticle ?? previewArticle;
 
