@@ -179,11 +179,11 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                         <input
                             type="file"
                             multiple
-                            accept="image/*,video/mp4,text/plain,.txt"
+                            accept="image/*,audio/*,video/mp4,text/*,.txt,.md,.csv,.tsv,.json,.xml,.rtf,.pdf,.doc,.docx,.odt"
                             onChange={fileChangeHandler}
                             disabled={isSubmitting}
                         />
-                        <span>Images, MP4 and TXT · up to 50 MB per file</span>
+                        <span>Images, audio, MP4 and text documents · up to 50 MB per file</span>
                         <span>Attachments follow this Story visibility.</span>
                     </label>
 

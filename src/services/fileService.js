@@ -2,27 +2,76 @@ import { supabase } from '../lib/supabaseClient';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
+const MIME_BY_EXTENSION = {
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.webp': 'image/webp',
+    '.gif': 'image/gif',
+    '.bmp': 'image/bmp',
+    '.tif': 'image/tiff',
+    '.tiff': 'image/tiff',
+    '.svg': 'image/svg+xml',
+    '.heic': 'image/heic',
+    '.heif': 'image/heif',
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg',
+    '.oga': 'audio/ogg',
+    '.m4a': 'audio/mp4',
+    '.aac': 'audio/aac',
+    '.flac': 'audio/flac',
+    '.opus': 'audio/opus',
+    '.wma': 'audio/x-ms-wma',
+    '.aif': 'audio/aiff',
+    '.aiff': 'audio/aiff',
+    '.mid': 'audio/midi',
+    '.midi': 'audio/midi',
+    '.mp4': 'video/mp4',
+    '.txt': 'text/plain',
+    '.md': 'text/markdown',
+    '.csv': 'text/csv',
+    '.tsv': 'text/tab-separated-values',
+    '.json': 'application/json',
+    '.xml': 'application/xml',
+    '.rtf': 'application/rtf',
+    '.pdf': 'application/pdf',
+    '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.odt': 'application/vnd.oasis.opendocument.text',
+};
+
+const DOCUMENT_MIME_TYPES = new Set([
+    'application/json',
+    'application/xml',
+    'application/rtf',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text',
+]);
+
+function getFileExtension(fileName) {
+    const dotIndex = fileName.lastIndexOf('.');
+
+    return dotIndex >= 0 ? fileName.slice(dotIndex).toLowerCase() : '';
+}
+
 function getFileMimeType(file) {
     if (file.type) {
         return file.type;
     }
 
-    if (file.name.toLowerCase().endsWith('.txt')) {
-        return 'text/plain';
-    }
-
-    if (file.name.toLowerCase().endsWith('.mp4')) {
-        return 'video/mp4';
-    }
-
-    return '';
+    return MIME_BY_EXTENSION[getFileExtension(file.name)] ?? '';
 }
 
 function validateFile(file) {
     const mimeType = getFileMimeType(file);
     const isAllowed = mimeType.startsWith('image/')
+        || mimeType.startsWith('audio/')
+        || mimeType.startsWith('text/')
         || mimeType === 'video/mp4'
-        || mimeType === 'text/plain';
+        || DOCUMENT_MIME_TYPES.has(mimeType);
 
     if (!isAllowed) {
         throw new Error(`Unsupported file type: ${file.name}`);

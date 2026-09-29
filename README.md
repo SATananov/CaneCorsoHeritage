@@ -20,7 +20,7 @@ Cane Corso Heritage is a React single-page application dedicated to Cane Corso h
 - Story visibility with `Community` and `My Own`
 - `My Stories` private workspace for the signed-in member
 - `My Files` private file workspace
-- Image, MP4 and TXT uploads through private Supabase Storage
+- Image, audio, MP4 and text-document uploads through private Supabase Storage
 - User files are private by default and can be shared with the Community
 - Community files can be displayed from the member profile
 - Story attachments follow the Story visibility setting
@@ -107,3 +107,5 @@ npm run lint
 ## Repository
 
 https://github.com/SATananov/CaneCorsoHeritage
+
+- File library supports common image formats, common audio formats, MP4 video and text/document files.

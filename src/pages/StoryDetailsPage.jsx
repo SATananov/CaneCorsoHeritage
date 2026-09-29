@@ -80,6 +80,12 @@ function StoryDetailsPage() {
                                                 </video>
                                             )}
 
+                                            {file.mime_type?.startsWith('audio/') && file.url && (
+                                                <audio controls preload="metadata" src={file.url}>
+                                                    Your browser does not support audio playback.
+                                                </audio>
+                                            )}
+
                                             <div>
                                                 <strong>{file.file_name}</strong>
                                                 {file.url && (

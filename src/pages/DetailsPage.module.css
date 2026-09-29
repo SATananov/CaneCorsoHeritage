@@ -207,3 +207,10 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+.attachmentCard audio {
+    display: block;
+    width: calc(100% - 28px);
+    margin: 18px 14px 4px;
+}

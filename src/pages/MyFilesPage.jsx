@@ -21,6 +21,30 @@ function formatSize(bytes) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function getFileTypeLabel(file) {
+    if (file.mime_type?.startsWith('audio/')) {
+        return 'AUDIO';
+    }
+
+    if (file.mime_type === 'video/mp4') {
+        return 'MP4';
+    }
+
+    if (file.mime_type === 'application/pdf') {
+        return 'PDF';
+    }
+
+    if (
+        file.mime_type === 'application/msword'
+        || file.mime_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        || file.mime_type === 'application/vnd.oasis.opendocument.text'
+    ) {
+        return 'DOC';
+    }
+
+    return 'TEXT';
+}
+
 function MyFilesPage() {
     const { user } = useAuth();
     const [files, setFiles] = useState([]);
@@ -29,6 +53,7 @@ function MyFilesPage() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
+    const [zoomedImage, setZoomedImage] = useState(null);
 
     useEffect(() => {
         let active = true;
@@ -57,6 +82,28 @@ function MyFilesPage() {
             active = false;
         };
     }, [user.id]);
+
+    useEffect(() => {
+        if (!zoomedImage) {
+            return undefined;
+        }
+
+        const previousOverflow = document.body.style.overflow;
+
+        function closeOnEscape(event) {
+            if (event.key === 'Escape') {
+                setZoomedImage(null);
+            }
+        }
+
+        document.body.style.overflow = 'hidden';
+        window.addEventListener('keydown', closeOnEscape);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [zoomedImage]);
 
     async function refreshFiles() {
         const data = await fetchMyFiles(user.id);
@@ -116,7 +163,7 @@ function MyFilesPage() {
                         <p className="section-kicker">Private area</p>
                         <h1>My Files</h1>
                         <p>
-                            Upload images, MP4 or TXT files. Keep them private or share them with the Community.
+                            Upload images, music, MP4 video or text documents. Keep them private or share them with the Community.
                         </p>
                     </div>
                 </section>
@@ -127,7 +174,7 @@ function MyFilesPage() {
                         <input
                             type="file"
                             multiple
-                            accept="image/*,video/mp4,text/plain,.txt"
+                            accept="image/*,audio/*,video/mp4,text/*,.txt,.md,.csv,.tsv,.json,.xml,.rtf,.pdf,.doc,.docx,.odt"
                             onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []))}
                             disabled={uploading}
                         />
@@ -150,7 +197,7 @@ function MyFilesPage() {
                     </button>
                 </form>
 
-                <p className={styles.fileHint}>Images, MP4 and TXT · up to 50 MB per file</p>
+                <p className={styles.fileHint}>Images, audio, MP4 and text documents · up to 50 MB per file</p>
 
                 {error && (
                     <div className={styles.message} role="alert">
@@ -169,10 +216,29 @@ function MyFilesPage() {
                         {files.map((file) => (
                             <article className={styles.card} key={file.id}>
                                 {file.mime_type?.startsWith('image/') && file.url ? (
-                                    <img className={styles.preview} src={file.url} alt="" />
+                                    <button
+                                        className={styles.previewButton}
+                                        type="button"
+                                        onClick={() => setZoomedImage(file)}
+                                        aria-label={`Zoom ${file.file_name}`}
+                                    >
+                                        <img
+                                            className={styles.preview}
+                                            src={file.url}
+                                            alt={file.file_name}
+                                        />
+                                        <span className={styles.zoomLabel}>Zoom</span>
+                                    </button>
+                                ) : file.mime_type?.startsWith('audio/') && file.url ? (
+                                    <div className={styles.audioPreview}>
+                                        <span>AUDIO</span>
+                                        <audio controls preload="metadata" src={file.url}>
+                                            Your browser does not support audio playback.
+                                        </audio>
+                                    </div>
                                 ) : (
                                     <div className={styles.fileType}>
-                                        {file.mime_type === 'video/mp4' ? 'MP4' : 'TXT'}
+                                        {getFileTypeLabel(file)}
                                     </div>
                                 )}
 
@@ -225,6 +291,42 @@ function MyFilesPage() {
                     </section>
                 )}
             </div>
+
+            {zoomedImage && (
+                <div
+                    className={styles.lightbox}
+                    role="presentation"
+                    onMouseDown={(event) => {
+                        if (event.currentTarget === event.target) {
+                            setZoomedImage(null);
+                        }
+                    }}
+                >
+                    <div
+                        className={styles.lightboxPanel}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={zoomedImage.file_name}
+                    >
+                        <button
+                            className={styles.lightboxClose}
+                            type="button"
+                            onClick={() => setZoomedImage(null)}
+                            aria-label="Close image preview"
+                        >
+                            ×
+                        </button>
+
+                        <img
+                            className={styles.lightboxImage}
+                            src={zoomedImage.url}
+                            alt={zoomedImage.file_name}
+                        />
+
+                        <p>{zoomedImage.file_name}</p>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

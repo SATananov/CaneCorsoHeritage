@@ -24,6 +24,30 @@ function formatMemberSince(value) {
     }).format(new Date(value));
 }
 
+function getSharedFileLabel(file) {
+    if (file.mime_type?.startsWith('audio/')) {
+        return 'AUDIO';
+    }
+
+    if (file.mime_type === 'video/mp4') {
+        return 'MP4';
+    }
+
+    if (file.mime_type === 'application/pdf') {
+        return 'PDF';
+    }
+
+    if (
+        file.mime_type === 'application/msword'
+        || file.mime_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        || file.mime_type === 'application/vnd.oasis.opendocument.text'
+    ) {
+        return 'DOC';
+    }
+
+    return 'TEXT';
+}
+
 function UserDetailsPage() {
     const { userId } = useParams();
     const navigate = useNavigate();
@@ -153,9 +177,16 @@ function UserDetailsPage() {
                                         <article className={styles.fileCard} key={file.id}>
                                             {file.mime_type?.startsWith('image/') && file.url ? (
                                                 <img src={file.url} alt="" />
+                                            ) : file.mime_type?.startsWith('audio/') && file.url ? (
+                                                <div className={styles.sharedAudio}>
+                                                    <span>AUDIO</span>
+                                                    <audio controls preload="metadata" src={file.url}>
+                                                        Your browser does not support audio playback.
+                                                    </audio>
+                                                </div>
                                             ) : (
                                                 <div className={styles.fileType}>
-                                                    {file.mime_type === 'video/mp4' ? 'MP4' : 'TXT'}
+                                                    {getSharedFileLabel(file)}
                                                 </div>
                                             )}
 

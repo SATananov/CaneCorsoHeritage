@@ -85,7 +85,17 @@ function AuthPreparationSection({ mode = 'login' }) {
                 password: '',
             }));
         } catch (error) {
-            setErrorMessage(error.message || 'Authentication request failed.');
+            const message = error?.message || '';
+
+            if (message === 'Failed to fetch') {
+                setErrorMessage('Connection problem. Please try again.');
+            } else if (message === 'Invalid login credentials') {
+                setErrorMessage('Incorrect email or password.');
+            } else if (message === 'Email not confirmed') {
+                setErrorMessage('Please confirm your email before signing in.');
+            } else {
+                setErrorMessage(message || 'Unable to continue right now.');
+            }
         } finally {
             setSubmitting(false);
         }
@@ -175,7 +185,9 @@ function AuthPreparationSection({ mode = 'login' }) {
 
                                 <button type="submit" disabled={submitting}>
                                     {submitting
-                                        ? 'Please wait...'
+                                        ? isLogin
+                                            ? 'Signing in...'
+                                            : 'Creating account...'
                                         : isLogin
                                             ? 'Sign in'
                                             : 'Create account'}
@@ -196,12 +208,6 @@ function AuthPreparationSection({ mode = 'login' }) {
                                     {successMessage}
                                 </p>
                             )}
-
-                            <p className={styles.statusNote}>
-                                {isLogin
-                                    ? 'Your Supabase session stays available after a page refresh.'
-                                    : 'Your public profile is created together with your Supabase account.'}
-                            </p>
 
                             <Link
                                 className={styles.switchLink}
