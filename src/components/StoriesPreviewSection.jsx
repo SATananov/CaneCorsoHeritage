@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import AddStoryModal from './AddStoryModal';
 import LoadingSpinner from './LoadingSpinner';
 import PreviewCard from './PreviewCard';
-import StoryDeleteModal from './StoryDeleteModal';
 import { fetchStories } from '../services/storyService';
-import styles from './StoriesPreviewSection.module.css';
 
 const fallbackStories = [
     {
@@ -36,8 +33,6 @@ function StoriesPreviewSection() {
     const [stories, setStories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUsingFallback, setIsUsingFallback] = useState(false);
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [storyToDelete, setStoryToDelete] = useState(null);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -66,12 +61,6 @@ function StoriesPreviewSection() {
         };
     }, []);
 
-    const refreshStoriesAfterMutation = async () => {
-        const data = await fetchStories();
-        setStories(data);
-        setIsUsingFallback(false);
-    };
-
     return (
         <section className="visitor-section" aria-labelledby="stories-feature-title">
             <div className="site-container">
@@ -94,14 +83,6 @@ function StoriesPreviewSection() {
                     <h2>Discover the stories.</h2>
                 </div>
 
-                {!isLoading && !isUsingFallback && (
-                    <div className={styles.createAction}>
-                        <button type="button" onClick={() => setIsCreateOpen(true)}>
-                            Share a Story
-                        </button>
-                    </div>
-                )}
-
                 <div className="story-preview-grid">
                     {isLoading ? (
                         <LoadingSpinner label="Loading stories..." />
@@ -118,31 +99,11 @@ function StoriesPreviewSection() {
                                         ? undefined
                                         : () => navigate(`/stories/${story._id}`)
                                 }
-                                onDelete={
-                                    isUsingFallback
-                                        ? undefined
-                                        : () => setStoryToDelete(story)
-                                }
                             />
                         ))
                     )}
                 </div>
             </div>
-
-            {isCreateOpen && (
-                <AddStoryModal
-                    onClose={() => setIsCreateOpen(false)}
-                    onCreated={refreshStoriesAfterMutation}
-                />
-            )}
-
-            {storyToDelete && (
-                <StoryDeleteModal
-                    story={storyToDelete}
-                    onClose={() => setStoryToDelete(null)}
-                    onDeleted={refreshStoriesAfterMutation}
-                />
-            )}
         </section>
     );
 }

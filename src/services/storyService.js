@@ -1,9 +1,22 @@
-const STORIES_API_URL = 'http://localhost:3030/jsonstore/stories';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+const localStoriesUrl = 'http://localhost:3030/jsonstore/stories';
 
 export async function fetchStories(options = {}) {
-    const response = await fetch(STORIES_API_URL, {
-        signal: options.signal,
-    });
+    if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Supabase configuration is missing.');
+    }
+
+    const response = await fetch(
+        `${supabaseUrl}/rest/v1/stories?select=*&status=eq.published&order=display_order.asc`,
+        {
+            headers: {
+                apikey: supabaseKey,
+            },
+            signal: options.signal,
+        }
+    );
 
     if (!response.ok) {
         throw new Error('Unable to load stories.');
@@ -11,23 +24,46 @@ export async function fetchStories(options = {}) {
 
     const data = await response.json();
 
-    return Object.values(data ?? {});
+    return data.map((story) => ({
+        ...story,
+        _id: story.id,
+    }));
 }
 
 export async function fetchStoryById(storyId, options = {}) {
-    const response = await fetch(`${STORIES_API_URL}/${storyId}`, {
-        signal: options.signal,
-    });
+    if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Supabase configuration is missing.');
+    }
+
+    const response = await fetch(
+        `${supabaseUrl}/rest/v1/stories?select=*&id=eq.${encodeURIComponent(storyId)}&status=eq.published&limit=1`,
+        {
+            headers: {
+                apikey: supabaseKey,
+            },
+            signal: options.signal,
+        }
+    );
 
     if (!response.ok) {
         throw new Error('Unable to load story details.');
     }
 
-    return response.json();
+    const data = await response.json();
+    const story = data[0];
+
+    if (!story) {
+        throw new Error('Story not found.');
+    }
+
+    return {
+        ...story,
+        _id: story.id,
+    };
 }
 
 export async function createStory(storyData) {
-    const response = await fetch(STORIES_API_URL, {
+    const response = await fetch(localStoriesUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -43,7 +79,7 @@ export async function createStory(storyData) {
 }
 
 export async function deleteStory(storyId) {
-    const response = await fetch(`${STORIES_API_URL}/${storyId}`, {
+    const response = await fetch(`${localStoriesUrl}/${storyId}`, {
         method: 'DELETE',
     });
 

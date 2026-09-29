@@ -8,9 +8,7 @@ Cane Corso Heritage is a React application dedicated to the history, function, i
 The application is designed as a focused heritage experience and can also become part of the larger USG Cane Corso Platform:
 
 https://usg-cane-corso-platform.com/
-
 ## Current application
-
 - Home experience with an automatic visual slider
 - Client-side routing with React Router
 - Shared application layout with Header, Footer and `Outlet`
@@ -22,10 +20,10 @@ https://usg-cane-corso-platform.com/
 - 404 fallback route
 - Guarded `My Stories` route prepared for a future Supabase session
 - Route-based lazy loading with `React.lazy` and `Suspense`
-- Stories collection loaded through a REST API
-- Create Story flow with POST and automatic list refresh
-- Delete Story flow with confirmation and automatic list refresh
-- Heritage content loaded with the Fetch API
+- Stories collection loaded from Supabase REST
+- Story details loaded from Supabase REST by story ID
+- Public Story reads restricted to published records
+- Heritage content loaded from Supabase REST
 - AbortController cleanup for route and collection fetch requests
 - About USG section
 - Help section
@@ -38,7 +36,6 @@ https://usg-cane-corso-platform.com/
 - CSS Modules for locally scoped styles
 - Loading, success and error states
 - Responsive layout for desktop and mobile
-
 ## Main routes
 
 - `/` — Home
@@ -52,19 +49,23 @@ https://usg-cane-corso-platform.com/
 - `/login` — Login preparation
 - `/register` — Register preparation
 - `/my-stories` — guarded route reserved for authenticated members
-
 ## Authentication preparation
 
 Login and Register are UI preparation only. Supabase authentication is not connected yet and no credentials are processed. The guarded route is intentionally wired to redirect guests to `/login`; the current placeholder session is `null` until the real Supabase session milestone.
+## Supabase data access
 
-## Stories API
+Published Heritage articles and published Stories are read through the Supabase REST API.
 
-The Stories collection is available through:
+Local configuration is provided through `.env.local`:
 
-`http://localhost:3030/jsonstore/stories`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
 
-The included data service starts with the seeded Stories collection. Runtime changes are kept in memory, so restarting the service restores the seeded data.
+`.env.local` is ignored by Git and is not part of the repository.
 
+Public Story reads are limited by Row Level Security to records with `status = 'published'`.
+
+Story create and delete operations are intentionally deferred until the authentication/write milestone. The local Stories server and write service code remain in the project for that later course step; they are not required to browse the current application.
 ## Run the application
 
 Install dependencies:
@@ -73,13 +74,7 @@ Install dependencies:
 npm install
 ```
 
-Start the Stories data service in one terminal:
-
-```bash
-npm run server
-```
-
-Start the React application in another terminal:
+Start the React application:
 
 ```bash
 npm run dev
@@ -87,6 +82,11 @@ npm run dev
 
 Open the address shown by Vite in the terminal.
 
+The preserved local Stories service can still be started when it is needed for the later write-flow course work:
+
+```bash
+npm run server
+```
 ## Project structure
 
 - `src/components` — reusable interface components
@@ -94,8 +94,9 @@ Open the address shown by Vite in the terminal.
 - `src/layouts` — shared route layouts
 - `src/routing` — route guard components
 - `src/services` — data access functions
-- `public/data` — Heritage content
-- `server` — Stories data service
+- `public/data` — lightweight public preview data
+- `content-source` — non-public source content used to prepare Heritage data
+- `server` — preserved local Stories service for later authenticated write-flow work
 
 ## Repository
 
