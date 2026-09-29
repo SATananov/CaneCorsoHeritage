@@ -1,0 +1,86 @@
+.rating {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(212, 175, 55, 0.14);
+}
+
+.summary {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.summary strong {
+    color: #f8f5ef;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 0.9rem;
+}
+
+.summary span,
+.note,
+.status,
+.error {
+    font-size: 0.62rem;
+}
+
+.summary span,
+.note {
+    color: rgba(248, 245, 239, 0.5);
+}
+
+.stars {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.star {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 9px;
+    background: rgba(7, 7, 9, 0.62);
+    color: rgba(248, 245, 239, 0.28);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.star:hover:not(:disabled),
+.star:focus-visible:not(:disabled),
+.starActive {
+    border-color: rgba(212, 175, 55, 0.58);
+    background: rgba(212, 175, 55, 0.1);
+    color: #d4af37;
+}
+
+.star:disabled {
+    cursor: default;
+}
+
+.note,
+.status,
+.error {
+    display: block;
+    margin-top: 8px;
+}
+
+.note a {
+    color: #d4af37;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.note a:hover,
+.note a:focus-visible {
+    text-decoration: underline;
+}
+
+.status {
+    color: #d4af37;
+}
+
+.error {
+    color: #e5b8b8;
+}

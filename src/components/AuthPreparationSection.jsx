@@ -13,6 +13,7 @@ function AuthPreparationSection({ mode = 'login' }) {
 
     const [formData, setFormData] = useState({
         displayName: '',
+        username: '',
         email: '',
         password: '',
     });
@@ -36,6 +37,7 @@ function AuthPreparationSection({ mode = 'login' }) {
         event.preventDefault();
 
         const displayName = formData.displayName.trim();
+        const username = formData.username.trim().toLowerCase();
         const email = formData.email.trim();
         const password = formData.password;
 
@@ -46,6 +48,16 @@ function AuthPreparationSection({ mode = 'login' }) {
 
         if (!isLogin && displayName.length < 2) {
             setErrorMessage('Name must be at least 2 characters.');
+            return;
+        }
+
+        if (
+            !isLogin
+            && !/^[a-z0-9][a-z0-9._-]{2,29}$/.test(username)
+        ) {
+            setErrorMessage(
+                'Username must be 3–30 characters using letters, numbers, dot, dash or underscore.',
+            );
             return;
         }
 
@@ -70,7 +82,12 @@ function AuthPreparationSection({ mode = 'login' }) {
                 return;
             }
 
-            const data = await register(displayName, email, password);
+            const data = await register(
+                displayName,
+                username,
+                email,
+                password,
+            );
 
             if (data.session) {
                 navigate('/my-stories', { replace: true });
@@ -93,6 +110,11 @@ function AuthPreparationSection({ mode = 'login' }) {
                 setErrorMessage('Incorrect email or password.');
             } else if (message === 'Email not confirmed') {
                 setErrorMessage('Please confirm your email before signing in.');
+            } else if (
+                message === 'Username already in use.'
+                || message.toLowerCase().includes('username')
+            ) {
+                setErrorMessage('This public username is already in use.');
             } else {
                 setErrorMessage(message || 'Unable to continue right now.');
             }
@@ -113,7 +135,7 @@ function AuthPreparationSection({ mode = 'login' }) {
                         <p>
                             {isLogin
                                 ? 'Sign in to reach your private member area and continue your work.'
-                                : 'Create your member profile with a name, email and password.'}
+                                : 'Create your member profile with a name, public username, email and password.'}
                         </p>
 
                         {guardedFrom && isLogin && (
@@ -143,18 +165,33 @@ function AuthPreparationSection({ mode = 'login' }) {
 
                             <form className={styles.authForm} onSubmit={handleSubmit}>
                                 {!isLogin && (
-                                    <label>
-                                        <span>Name</span>
-                                        <input
-                                            type="text"
-                                            name="displayName"
-                                            autoComplete="name"
-                                            placeholder="Your name"
-                                            value={formData.displayName}
-                                            onChange={handleChange}
-                                            disabled={submitting}
-                                        />
-                                    </label>
+                                    <>
+                                        <label>
+                                            <span>Name</span>
+                                            <input
+                                                type="text"
+                                                name="displayName"
+                                                autoComplete="name"
+                                                placeholder="Your name"
+                                                value={formData.displayName}
+                                                onChange={handleChange}
+                                                disabled={submitting}
+                                            />
+                                        </label>
+
+                                        <label>
+                                            <span>Public username</span>
+                                            <input
+                                                type="text"
+                                                name="username"
+                                                autoComplete="username"
+                                                placeholder="stefan.tananov"
+                                                value={formData.username}
+                                                onChange={handleChange}
+                                                disabled={submitting}
+                                            />
+                                        </label>
+                                    </>
                                 )}
 
                                 <label>

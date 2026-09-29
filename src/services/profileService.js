@@ -1,5 +1,8 @@
+import { supabase } from '../lib/supabaseClient';
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
 export async function fetchProfiles(options = {}) {
     if (!supabaseUrl || !supabaseKey) {
@@ -7,7 +10,7 @@ export async function fetchProfiles(options = {}) {
     }
 
     const response = await fetch(
-        `${supabaseUrl}/rest/v1/profiles?select=id,display_name,avatar_url,avatar_path,bio,created_at,last_seen_at&order=display_name.asc`,
+        `${supabaseUrl}/rest/v1/profiles?select=id,display_name,username,avatar_url,avatar_path,bio,created_at,last_seen_at&order=display_name.asc`,
         {
             headers: { apikey: supabaseKey },
             signal: options.signal,
@@ -27,7 +30,7 @@ export async function fetchProfileById(userId, options = {}) {
     }
 
     const response = await fetch(
-        `${supabaseUrl}/rest/v1/profiles?select=id,display_name,avatar_url,avatar_path,bio,created_at,last_seen_at&id=eq.${encodeURIComponent(userId)}&limit=1`,
+        `${supabaseUrl}/rest/v1/profiles?select=id,display_name,username,avatar_url,avatar_path,bio,created_at,updated_at,last_seen_at&id=eq.${encodeURIComponent(userId)}&limit=1`,
         {
             headers: { apikey: supabaseKey },
             signal: options.signal,
@@ -40,6 +43,45 @@ export async function fetchProfileById(userId, options = {}) {
 
     const data = await response.json();
     return data[0] ?? null;
+}
+
+export async function fetchPublicContacts(options = {}) {
+    let query = supabase
+        .from('profile_public_contacts')
+        .select('user_id,email,show_email,updated_at')
+        .eq('show_email', true);
+
+    if (options.signal) {
+        query = query.abortSignal(options.signal);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        throw new Error(error.message || 'Unable to load public contact details.');
+    }
+
+    return data ?? [];
+}
+
+export async function fetchProfilePublicContact(userId, options = {}) {
+    let query = supabase
+        .from('profile_public_contacts')
+        .select('user_id,email,show_email,updated_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (options.signal) {
+        query = query.abortSignal(options.signal);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        throw new Error(error.message || 'Unable to load profile contact details.');
+    }
+
+    return data;
 }
 
 export async function fetchPublishedStoriesByAuthor(userId, options = {}) {
@@ -60,6 +102,141 @@ export async function fetchPublishedStoriesByAuthor(userId, options = {}) {
     }
 
     return response.json();
+}
+
+export async function updateOwnProfile(
+    userId,
+    {
+        displayName,
+        username,
+        bio,
+    },
+) {
+    const { data, error } = await supabase
+        .from('profiles')
+        .update({
+            display_name: displayName.trim() || null,
+            username: username.trim().toLowerCase(),
+            bio: bio.trim() || null,
+            updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId)
+        .select('id,display_name,username,avatar_url,avatar_path,bio,created_at,updated_at,last_seen_at')
+        .single();
+
+    if (error) {
+        if (error.code === '23505') {
+            throw new Error('This username is already in use.');
+        }
+
+        throw new Error(error.message || 'Unable to update your profile.');
+    }
+
+    return data;
+}
+
+export async function saveProfilePublicContact(
+    userId,
+    email,
+    showEmail,
+) {
+    const cleanEmail = email.trim();
+
+    const { data, error } = await supabase
+        .from('profile_public_contacts')
+        .upsert({
+            user_id: userId,
+            email: cleanEmail || null,
+            show_email: Boolean(cleanEmail && showEmail),
+            updated_at: new Date().toISOString(),
+        }, {
+            onConflict: 'user_id',
+        })
+        .select()
+        .single();
+
+    if (error) {
+        throw new Error(error.message || 'Unable to update public contact settings.');
+    }
+
+    return data;
+}
+
+export async function uploadProfileAvatar(
+    userId,
+    file,
+    previousAvatarPath,
+) {
+    if (!file?.type?.startsWith('image/')) {
+        throw new Error('Please choose an image file.');
+    }
+
+    if (file.size > MAX_AVATAR_SIZE) {
+        throw new Error('Avatar image must be 5 MB or smaller.');
+    }
+
+    const extension = file.name.includes('.')
+        ? file.name.split('.').pop().toLowerCase()
+        : 'jpg';
+    const storagePath = `${userId}/avatar-${Date.now()}.${extension}`;
+
+    const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(storagePath, file, {
+            contentType: file.type,
+            upsert: false,
+        });
+
+    if (uploadError) {
+        throw new Error(uploadError.message || 'Unable to upload avatar.');
+    }
+
+    const { data: publicUrlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(storagePath);
+
+    const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+            avatar_path: storagePath,
+            avatar_url: publicUrlData.publicUrl,
+            updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+    if (profileError) {
+        await supabase.storage.from('avatars').remove([storagePath]);
+        throw new Error(profileError.message || 'Unable to save avatar.');
+    }
+
+    if (previousAvatarPath && previousAvatarPath !== storagePath) {
+        await supabase.storage.from('avatars').remove([previousAvatarPath]);
+    }
+}
+
+export async function removeProfileAvatar(userId, avatarPath) {
+    if (avatarPath) {
+        const { error: storageError } = await supabase.storage
+            .from('avatars')
+            .remove([avatarPath]);
+
+        if (storageError) {
+            throw new Error(storageError.message || 'Unable to remove avatar file.');
+        }
+    }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({
+            avatar_path: null,
+            avatar_url: null,
+            updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+    if (error) {
+        throw new Error(error.message || 'Unable to remove avatar.');
+    }
 }
 
 export function getProfileAvatarUrl(profile) {

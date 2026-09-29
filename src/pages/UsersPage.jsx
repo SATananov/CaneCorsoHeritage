@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { fetchProfiles, getProfileAvatarUrl } from '../services/profileService';
+import {
+    fetchProfiles,
+    fetchPublicContacts,
+    getProfileAvatarUrl,
+} from '../services/profileService';
+import identityStyles from './MemberIdentity.module.css';
 import styles from './UserProfiles.module.css';
 
 function getInitial(displayName) {
@@ -10,6 +15,7 @@ function getInitial(displayName) {
 
 function UsersPage() {
     const [profiles, setProfiles] = useState([]);
+    const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -18,8 +24,13 @@ function UsersPage() {
 
         const loadProfiles = async () => {
             try {
-                const data = await fetchProfiles({ signal: controller.signal });
-                setProfiles(data);
+                const [profileData, contactData] = await Promise.all([
+                    fetchProfiles({ signal: controller.signal }),
+                    fetchPublicContacts({ signal: controller.signal }),
+                ]);
+
+                setProfiles(profileData);
+                setContacts(contactData);
             } catch (loadError) {
                 if (loadError.name !== 'AbortError') {
                     setError('Unable to load the member directory right now.');
@@ -64,6 +75,9 @@ function UsersPage() {
                         {profiles.map((profile) => {
                             const avatarUrl = getProfileAvatarUrl(profile);
                             const displayName = profile.display_name || 'USG Member';
+                            const contact = contacts.find(
+                                (item) => item.user_id === profile.id,
+                            );
 
                             return (
                                 <Link
@@ -82,6 +96,14 @@ function UsersPage() {
                                     <div className={styles.memberCopy}>
                                         <span className={styles.memberLabel}>Member profile</span>
                                         <h2>{displayName}</h2>
+                                        <span className={identityStyles.username}>
+                                            @{profile.username}
+                                        </span>
+                                        {contact?.email && (
+                                            <span className={identityStyles.email}>
+                                                {contact.email}
+                                            </span>
+                                        )}
                                         <p>
                                             {profile.bio?.trim()
                                                 || 'Cane Corso Heritage community member.'}

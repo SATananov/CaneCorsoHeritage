@@ -48,13 +48,30 @@ function AuthProvider({ children }) {
         return data;
     }
 
-    async function register(displayName, email, password) {
+    async function register(displayName, username, email, password) {
+        const cleanUsername = username.trim().toLowerCase();
+
+        const { data: existingProfiles, error: usernameError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('username', cleanUsername)
+            .limit(1);
+
+        if (usernameError) {
+            throw usernameError;
+        }
+
+        if (existingProfiles.length > 0) {
+            throw new Error('Username already in use.');
+        }
+
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: {
                     display_name: displayName,
+                    username: cleanUsername,
                 },
             },
         });

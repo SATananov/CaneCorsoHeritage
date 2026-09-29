@@ -21,6 +21,12 @@ function AuthActions(props) {
             <div className={props.className} role="group" aria-label={props.ariaLabel}>
                 <NavLink
                     className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
+                    to={`/users/${user.id}`}
+                >
+                    My Profile
+                </NavLink>
+                <NavLink
+                    className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
                     to="/my-stories"
                 >
                     My Stories

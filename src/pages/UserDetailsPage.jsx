@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ProfileEditor from '../components/ProfileEditor';
+import useAuth from '../hooks/useAuth';
+import MediaRating from '../components/MediaRating';
 import { fetchCommunityFilesByUser } from '../services/fileService';
 import {
     fetchProfileById,
+    fetchProfilePublicContact,
     fetchPublishedStoriesByAuthor,
     getProfileAvatarUrl,
 } from '../services/profileService';
+import identityStyles from './MemberIdentity.module.css';
 import styles from './UserProfiles.module.css';
 
 function getInitial(displayName) {
@@ -51,9 +56,12 @@ function getSharedFileLabel(file) {
 function UserDetailsPage() {
     const { userId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [profile, setProfile] = useState(null);
     const [stories, setStories] = useState([]);
     const [sharedFiles, setSharedFiles] = useState([]);
+    const [publicContact, setPublicContact] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -63,10 +71,11 @@ function UserDetailsPage() {
 
         const loadProfile = async () => {
             try {
-                const [profileData, storyData, fileData] = await Promise.all([
+                const [profileData, storyData, fileData, contactData] = await Promise.all([
                     fetchProfileById(userId, { signal: controller.signal }),
                     fetchPublishedStoriesByAuthor(userId, { signal: controller.signal }),
                     fetchCommunityFilesByUser(userId),
+                    fetchProfilePublicContact(userId, { signal: controller.signal }),
                 ]);
 
                 if (!profileData) {
@@ -78,6 +87,7 @@ function UserDetailsPage() {
                     setProfile(profileData);
                     setStories(storyData);
                     setSharedFiles(fileData);
+                    setPublicContact(contactData);
                 }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && active) {
@@ -96,7 +106,7 @@ function UserDetailsPage() {
             active = false;
             controller.abort();
         };
-    }, [userId]);
+    }, [userId, refreshKey]);
 
     const displayName = profile?.display_name || 'USG Member';
     const avatarUrl = getProfileAvatarUrl(profile);
@@ -131,6 +141,14 @@ function UserDetailsPage() {
                             <div className={styles.profileCopy}>
                                 <p className={styles.eyebrow}>Member profile</p>
                                 <h1>{displayName}</h1>
+                                <p className={identityStyles.profileUsername}>
+                                    @{profile.username}
+                                </p>
+                                {publicContact?.show_email && publicContact.email && (
+                                    <p className={identityStyles.profileEmail}>
+                                        {publicContact.email}
+                                    </p>
+                                )}
                                 <p className={styles.bio}>
                                     {profile.bio?.trim()
                                         || 'This member has not added a public biography yet.'}
@@ -140,6 +158,16 @@ function UserDetailsPage() {
                                 )}
                             </div>
                         </article>
+
+                        {user?.id === profile.id && (
+                            <ProfileEditor
+                                key={`${profile.id}-${profile.updated_at}-${publicContact?.updated_at || ''}`}
+                                profile={profile}
+                                contact={publicContact}
+                                currentEmail={user.email}
+                                onSaved={() => setRefreshKey((value) => value + 1)}
+                            />
+                        )}
 
                         <section className={styles.storySection} aria-labelledby="member-stories-title">
                             <div className={styles.sectionHeading}>
@@ -196,6 +224,14 @@ function UserDetailsPage() {
                                                     <a href={file.url} target="_blank" rel="noreferrer">
                                                         Open file →
                                                     </a>
+                                                )}
+
+                                                {(file.mime_type?.startsWith('image/')
+                                                    || file.mime_type?.startsWith('audio/')) && (
+                                                    <MediaRating
+                                                        fileId={file.id}
+                                                        ownerId={file.user_id}
+                                                    />
                                                 )}
                                             </div>
                                         </article>

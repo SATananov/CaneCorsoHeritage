@@ -1,0 +1,28 @@
+.username {
+    display: block;
+    margin-top: 6px;
+    color: #d4af37;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.email {
+    display: block;
+    margin-top: 5px;
+    color: rgba(248, 245, 239, 0.52);
+    font-size: 0.68rem;
+    overflow-wrap: anywhere;
+}
+
+.profileUsername {
+    margin: 8px 0 0;
+    color: #d4af37;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.profileEmail {
+    margin: 7px 0 0;
+    color: rgba(248, 245, 239, 0.58);
+    font-size: 0.76rem;
+}
