@@ -25,6 +25,7 @@ function Header() {
                     <NavLink className={getNavClassName} to="/" end>Home</NavLink>
                     <NavLink className={getNavClassName} to="/stories">Stories</NavLink>
                     <NavLink className={getNavClassName} to="/heritage">Heritage</NavLink>
+                    <NavLink className={getNavClassName} to="/users">Members</NavLink>
                     <NavLink className={getNavClassName} to="/about">About USG</NavLink>
                     <NavLink className={getNavClassName} to="/help">Help</NavLink>
 

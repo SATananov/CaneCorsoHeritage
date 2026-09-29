@@ -15,6 +15,8 @@ const HelpPage = lazy(() => import('./pages/HelpPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const MyStoriesPage = lazy(() => import('./pages/MyStoriesPage'));
+const UsersPage = lazy(() => import('./pages/UsersPage'));
+const UserDetailsPage = lazy(() => import('./pages/UserDetailsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function App() {
@@ -38,6 +40,11 @@ function App() {
                     <Route path="heritage">
                         <Route index element={<HeritagePage />} />
                         <Route path=":slug" element={<HeritageArticlePage />} />
+                    </Route>
+
+                    <Route path="users">
+                        <Route index element={<UsersPage />} />
+                        <Route path=":userId" element={<UserDetailsPage />} />
                     </Route>
 
                     <Route path="about" element={<AboutPage />} />
