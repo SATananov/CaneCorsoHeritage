@@ -7,6 +7,24 @@ import useAuth from '../hooks/useAuth';
 import { fetchMyStories } from '../services/storyService';
 import styles from './MyStoriesPage.module.css';
 
+
+function getStoryStatusLabel(story) {
+    if (story.visibility === 'private') {
+        return 'My Own · Private';
+    }
+
+    switch (story.moderation_status) {
+        case 'pending':
+            return 'Community · Pending approval';
+        case 'rejected':
+            return 'Community · Rejected';
+        case 'hidden':
+            return 'Community · Hidden by administrator';
+        default:
+            return 'Community · Approved';
+    }
+}
+
 function MyStoriesPage() {
     const { user } = useAuth();
     const displayName = user?.user_metadata?.display_name || 'USG Member';
@@ -99,16 +117,13 @@ function MyStoriesPage() {
 
                 {!isLoading && !error && stories.length > 0 && (
                     <section className={styles.grid} aria-label="Your stories">
-                        {stories.map((story) => {
-                            const isPrivate = story.visibility === 'private';
-
-                            return (
+                        {stories.map((story) => (
                                 <article className={styles.card} key={story._id}>
                                     <p className={styles.eyebrow}>{story.eyebrow}</p>
                                     <h2>{story.title}</h2>
                                     <p className={styles.description}>{story.description}</p>
                                     <p className={styles.status}>
-                                        {isPrivate ? 'My Own · Private' : 'Community · Public'}
+                                        {getStoryStatusLabel(story)}
                                     </p>
 
                                     <div className={styles.actions}>
@@ -125,8 +140,7 @@ function MyStoriesPage() {
                                         </button>
                                     </div>
                                 </article>
-                            );
-                        })}
+                        ))}
                     </section>
                 )}
             </div>

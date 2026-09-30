@@ -6,6 +6,7 @@ function AuthProvider({ children }) {
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [role, setRole] = useState('user');
+    const [accountStatus, setAccountStatus] = useState('active');
     const [roleLoading, setRoleLoading] = useState(true);
 
     useEffect(() => {
@@ -15,6 +16,7 @@ function AuthProvider({ children }) {
             if (!userId) {
                 if (active) {
                     setRole('user');
+                    setAccountStatus('active');
                     setRoleLoading(false);
                 }
                 return;
@@ -26,7 +28,7 @@ function AuthProvider({ children }) {
 
             const { data, error } = await supabase
                 .from('user_roles')
-                .select('role')
+                .select('role,account_status')
                 .eq('user_id', userId)
                 .maybeSingle();
 
@@ -37,8 +39,10 @@ function AuthProvider({ children }) {
             if (error) {
                 console.error('Unable to load account role.', error);
                 setRole('user');
+                setAccountStatus('active');
             } else {
                 setRole(data?.role ?? 'user');
+                setAccountStatus(data?.account_status ?? 'active');
             }
 
             setRoleLoading(false);
@@ -50,7 +54,7 @@ function AuthProvider({ children }) {
             }
 
             if (error) {
-                console.error('Unable to restore the Supabase session.', error);
+                console.error('Unable to restore the account session.', error);
             }
 
             const nextSession = data?.session ?? null;
@@ -121,7 +125,6 @@ function AuthProvider({ children }) {
         return data;
     }
 
-
     async function requestPasswordReset(email) {
         const redirectTo = `${window.location.origin}/update-password`;
 
@@ -159,8 +162,10 @@ function AuthProvider({ children }) {
         user: session?.user ?? null,
         loading,
         role,
+        accountStatus,
         roleLoading,
         isAdmin: role === 'admin',
+        isActive: accountStatus === 'active',
         login,
         register,
         requestPasswordReset,

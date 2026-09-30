@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../hooks/useAuth';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import styles from '../components/AuthPreparationSection.module.css';
 
 function ForgotPasswordPage() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'recovery', key);
     const { requestPasswordReset } = useAuth();
     const [email, setEmail] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -15,7 +19,7 @@ function ForgotPasswordPage() {
         const cleanEmail = email.trim();
 
         if (!cleanEmail) {
-            setErrorMessage('Email is required.');
+            setErrorMessage(t('emailRequired'));
             return;
         }
 
@@ -25,15 +29,13 @@ function ForgotPasswordPage() {
 
         try {
             await requestPasswordReset(cleanEmail);
-            setSuccessMessage(
-                'If this email belongs to an account, a password recovery link will be sent.',
-            );
+            setSuccessMessage(t('recoverySent'));
         } catch (error) {
             const message = error?.message || '';
             setErrorMessage(
                 message === 'Failed to fetch'
-                    ? 'Connection problem. Please try again.'
-                    : message || 'Unable to request a password reset right now.',
+                    ? t('connectionProblem')
+                    : message || t('requestError'),
             );
         } finally {
             setSubmitting(false);
@@ -46,12 +48,9 @@ function ForgotPasswordPage() {
                 <div className="site-container">
                     <div className={styles.authShell}>
                         <div className={styles.authIntro}>
-                            <p className={styles.eyebrow}>Account recovery</p>
-                            <h2 id="password-recovery-title">Reset your password.</h2>
-                            <p>
-                                Enter the email used for your Cane Corso Heritage account.
-                                We will send you a secure link to reset your password.
-                            </p>
+                            <p className={styles.eyebrow}>{t('accountRecovery')}</p>
+                            <h2 id="password-recovery-title">{t('resetTitle')}</h2>
+                            <p>{t('resetIntro')}</p>
                         </div>
 
                         <div className={`${styles.authGrid} ${styles.authGridSingle}`}>
@@ -59,17 +58,18 @@ function ForgotPasswordPage() {
                                 <div className={styles.cardHeading}>
                                     <span>01</span>
                                     <div>
-                                        <p>Password recovery</p>
-                                        <h3>Request link</h3>
+                                        <p>{t('passwordRecovery')}</p>
+                                        <h3>{t('requestLink')}</h3>
                                     </div>
                                 </div>
 
                                 <form className={styles.authForm} onSubmit={handleSubmit}>
                                     <label>
-                                        <span>Email</span>
+                                        <span>{t('email')}</span>
                                         <input
                                             type="email"
-                                            autoComplete="email"
+                                            name="email"
+                                            autoComplete="username"
                                             placeholder="you@example.com"
                                             value={email}
                                             onChange={(event) => {
@@ -82,7 +82,7 @@ function ForgotPasswordPage() {
                                     </label>
 
                                     <button type="submit" disabled={submitting}>
-                                        {submitting ? 'Sending...' : 'Send recovery link'}
+                                        {submitting ? t('sending') : t('sendRecoveryLink')}
                                     </button>
                                 </form>
 
@@ -93,13 +93,16 @@ function ForgotPasswordPage() {
                                 )}
 
                                 {successMessage && (
-                                    <p className={`${styles.formMessage} ${styles.formSuccess}`} aria-live="polite">
+                                    <p
+                                        className={`${styles.formMessage} ${styles.formSuccess}`}
+                                        aria-live="polite"
+                                    >
                                         {successMessage}
                                     </p>
                                 )}
 
                                 <Link className={styles.switchLink} to="/login">
-                                    Back to login
+                                    {t('backLogin')}
                                 </Link>
                             </article>
                         </div>

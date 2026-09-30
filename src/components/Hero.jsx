@@ -1,24 +1,29 @@
 import { Link } from 'react-router';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 
 function Hero() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'hero', key);
+
     return (
         <section className="hero">
             <div className="site-container">
                 <div className="hero-shell">
                     <div className="hero-copy-panel">
-                        <p className="hero-kicker">Welcome to Cane Corso Heritage</p>
+                        <p className="hero-kicker">{t('kicker')}</p>
 
-                        <h1>Enter the world of Cane Corso Heritage.</h1>
+                        <h1>{t('title')}</h1>
 
-                        <p className="hero-lead">Discover the stories, history and heritage of Cane Corso.</p>
+                        <p className="hero-lead">{t('lead')}</p>
 
                         <div className="hero-actions">
                             <Link className="button button-primary" to="/stories">
-                                Explore Stories
+                                {t('stories')}
                             </Link>
 
                             <Link className="button button-outline" to="/about">
-                                About the project
+                                {t('about')}
                             </Link>
                         </div>
                     </div>

@@ -1,9 +1,16 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
+import GuestAccessPrompt from '../components/GuestAccessPrompt';
 import useAuth from '../hooks/useAuth';
 
 function RequireAdmin() {
     const location = useLocation();
-    const { user, loading, roleLoading, isAdmin } = useAuth();
+    const {
+        user,
+        loading,
+        roleLoading,
+        isAdmin,
+        isActive,
+    } = useAuth();
 
     if (loading || roleLoading) {
         return (
@@ -14,16 +21,10 @@ function RequireAdmin() {
     }
 
     if (!user) {
-        return (
-            <Navigate
-                to="/login"
-                replace
-                state={{ from: location }}
-            />
-        );
+        return <GuestAccessPrompt location={location} admin />;
     }
 
-    if (!isAdmin) {
+    if (!isAdmin || !isActive) {
         return <Navigate to="/" replace />;
     }
 

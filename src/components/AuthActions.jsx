@@ -1,10 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
-import { NavLink } from 'react-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router';
 import useAuth from '../hooks/useAuth';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import { fetchProfileById, getProfileAvatarUrl } from '../services/profileService';
 
 function AuthActions(props) {
-    const { user, loading, roleLoading, isAdmin, logout } = useAuth();
+    const navigate = useNavigate();
+    const { language } = useLanguage();
+    const t = useCallback(
+        (key) => getTranslation(language, 'account', key),
+        [language],
+    );
+    const { user, loading, roleLoading, isAdmin, isActive, logout } = useAuth();
     const [profileState, setProfileState] = useState({
         userId: null,
         profile: null,
@@ -51,7 +59,7 @@ function AuthActions(props) {
             || user.user_metadata?.display_name?.trim()
             || user.user_metadata?.username?.trim()
             || user.email?.split('@')[0]
-            || 'Member';
+            || t('member');
 
         const avatarUrl = getProfileAvatarUrl(profile);
         const initials = displayName
@@ -62,13 +70,14 @@ function AuthActions(props) {
             .join('') || 'U';
 
         return { displayName, avatarUrl, initials };
-    }, [profile, user]);
+    }, [profile, user, t]);
 
     async function handleLogout() {
         try {
             await logout();
+            navigate('/', { replace: true });
         } catch (error) {
-            window.alert(error.message || 'Unable to sign out.');
+            window.alert(error.message || t('logoutError'));
         }
     }
 
@@ -83,33 +92,33 @@ function AuthActions(props) {
                     className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
                     to={`/users/${user.id}`}
                 >
-                    My Profile
+                    {t('myProfile')}
                 </NavLink>
                 <NavLink
                     className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
                     to="/my-stories"
                 >
-                    My Stories
+                    {t('myStories')}
                 </NavLink>
                 <NavLink
                     className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
                     to="/my-files"
                 >
-                    My Files
+                    {t('myFiles')}
                 </NavLink>
                 {isAdmin && (
                     <NavLink
                         className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
                         to="/admin"
                     >
-                        Admin
+                        {t('admin')}
                     </NavLink>
                 )}
                 {identity && (
                     <NavLink
                         className="signed-in-user"
                         to={`/users/${user.id}`}
-                        aria-label={`Signed in as ${identity.displayName}`}
+                        aria-label={`${t('signedInAs')} ${identity.displayName}`}
                     >
                         <span className="signed-in-user-avatar" aria-hidden="true">
                             {identity.avatarUrl ? (
@@ -118,7 +127,7 @@ function AuthActions(props) {
                         </span>
                         <span className="signed-in-user-copy">
                             <strong>{identity.displayName}</strong>
-                            <small>{isAdmin ? 'Administrator' : 'Member'}</small>
+                            <small>{!isActive ? t('inactive') : isAdmin ? t('administrator') : t('member')}</small>
                         </span>
                     </NavLink>
                 )}
@@ -127,7 +136,7 @@ function AuthActions(props) {
                     type="button"
                     onClick={handleLogout}
                 >
-                    Logout
+                    {t('logout')}
                 </button>
             </div>
         );
@@ -139,13 +148,13 @@ function AuthActions(props) {
                 className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
                 to="/login"
             >
-                Login
+                {t('login')}
             </NavLink>
             <NavLink
                 className={({ isActive }) => `register-button${isActive ? ' auth-route-active' : ''}`}
                 to="/register"
             >
-                Register
+                {t('register')}
             </NavLink>
         </div>
     );

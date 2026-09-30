@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { supabase } from '../lib/supabaseClient';
 import useAuth from '../hooks/useAuth';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import styles from '../components/AuthPreparationSection.module.css';
 
 function UpdatePasswordPage() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'recovery', key);
     const navigate = useNavigate();
     const { updatePassword, logout } = useAuth();
     const [recoveryReady, setRecoveryReady] = useState(false);
@@ -25,7 +29,7 @@ function UpdatePasswordPage() {
             }
 
             if (error) {
-                setErrorMessage(error.message || 'Unable to verify the recovery session.');
+                setErrorMessage(error.message || t('verifyError'));
                 setRecoveryReady(false);
             } else {
                 setRecoveryReady(Boolean(data?.session));
@@ -45,12 +49,12 @@ function UpdatePasswordPage() {
         event.preventDefault();
 
         if (password.length < 10) {
-            setErrorMessage('Use at least 10 characters for the new password.');
+            setErrorMessage(t('useAtLeastTen'));
             return;
         }
 
         if (password !== confirmPassword) {
-            setErrorMessage('The passwords do not match.');
+            setErrorMessage(t('mismatch'));
             return;
         }
 
@@ -68,8 +72,8 @@ function UpdatePasswordPage() {
             const message = error?.message || '';
             setErrorMessage(
                 message === 'Failed to fetch'
-                    ? 'Connection problem. Please try again.'
-                    : message || 'Unable to update the password right now.',
+                    ? t('connectionProblem')
+                    : message || t('updateError'),
             );
         } finally {
             setSubmitting(false);
@@ -82,12 +86,9 @@ function UpdatePasswordPage() {
                 <div className="site-container">
                     <div className={styles.authShell}>
                         <div className={styles.authIntro}>
-                            <p className={styles.eyebrow}>Secure account recovery</p>
-                            <h2 id="update-password-title">Choose a new password.</h2>
-                            <p>
-                                Open this page from your password recovery email,
-                                then choose a new password for the account.
-                            </p>
+                            <p className={styles.eyebrow}>{t('secureRecovery')}</p>
+                            <h2 id="update-password-title">{t('updateTitle')}.</h2>
+                            <p>{t('updatePageIntro')}</p>
                         </div>
 
                         <div className={`${styles.authGrid} ${styles.authGridSingle}`}>
@@ -95,21 +96,22 @@ function UpdatePasswordPage() {
                                 <div className={styles.cardHeading}>
                                     <span>02</span>
                                     <div>
-                                        <p>Password recovery</p>
-                                        <h3>New password</h3>
+                                        <p>{t('passwordRecovery')}</p>
+                                        <h3>{t('newPassword')}</h3>
                                     </div>
                                 </div>
 
                                 {checkingSession ? (
                                     <p className={styles.statusNote} aria-live="polite">
-                                        Verifying recovery session...
+                                        {t('verifying')}
                                     </p>
                                 ) : recoveryReady ? (
                                     <form className={styles.authForm} onSubmit={handleSubmit}>
                                         <label>
-                                            <span>New password</span>
+                                            <span>{t('newPassword')}</span>
                                             <input
                                                 type="password"
+                                                name="newPassword"
                                                 autoComplete="new-password"
                                                 value={password}
                                                 onChange={(event) => {
@@ -121,9 +123,10 @@ function UpdatePasswordPage() {
                                         </label>
 
                                         <label>
-                                            <span>Confirm new password</span>
+                                            <span>{t('confirmNewPassword')}</span>
                                             <input
                                                 type="password"
+                                                name="confirmPassword"
                                                 autoComplete="new-password"
                                                 value={confirmPassword}
                                                 onChange={(event) => {
@@ -135,13 +138,12 @@ function UpdatePasswordPage() {
                                         </label>
 
                                         <button type="submit" disabled={submitting}>
-                                            {submitting ? 'Updating...' : 'Set new password'}
+                                            {submitting ? t('updating') : t('setNewPassword')}
                                         </button>
                                     </form>
                                 ) : (
                                     <p className={`${styles.formMessage} ${styles.formError}`} role="alert">
-                                        This recovery link is missing, expired or no longer has a valid session.
-                                        Request a new password recovery email and try again.
+                                        {t('recoveryExpired')}
                                     </p>
                                 )}
 
@@ -153,7 +155,7 @@ function UpdatePasswordPage() {
 
                                 {!recoveryReady && !checkingSession && (
                                     <Link className={styles.switchLink} to="/forgot-password">
-                                        Request a new recovery link
+                                        {t('requestNewLink')}
                                     </Link>
                                 )}
                             </article>

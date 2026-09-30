@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import styles from './PreviewCard.module.css';
 import actionStyles from './PreviewCardActions.module.css';
 
 function PreviewCard(props) {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'previewCard', key);
     const [showDetails, setShowDetails] = useState(false);
     const hasExternalDetails = typeof props.onDetails === 'function';
     const hasDeleteAction = typeof props.onDelete === 'function';
@@ -30,20 +34,20 @@ function PreviewCard(props) {
                 <button
                     type="button"
                     aria-expanded={hasExternalDetails ? undefined : showDetails}
-                    aria-label={`${hasExternalDetails || !showDetails ? 'Details about' : 'Hide details about'} ${props.title}`}
+                    aria-label={`${hasExternalDetails || !showDetails ? t('detailsAbout') : t('hideDetailsAbout')} ${props.title}`}
                     onClick={detailsClickHandler}
                 >
-                    {hasExternalDetails ? 'Details' : showDetails ? 'Hide details' : 'Details'}
+                    {hasExternalDetails ? t('details') : showDetails ? t('hideDetails') : t('details')}
                 </button>
 
                 {hasDeleteAction && (
                     <button
                         className={actionStyles.deleteButton}
                         type="button"
-                        aria-label={`Delete ${props.title}`}
+                        aria-label={`${t('deleteLabel')} ${props.title}`}
                         onClick={props.onDelete}
                     >
-                        Delete
+                        {t('delete')}
                     </button>
                 )}
             </div>

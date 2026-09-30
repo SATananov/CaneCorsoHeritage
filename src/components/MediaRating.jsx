@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../hooks/useAuth';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import {
     fetchFileRatings,
     saveFileRating,
@@ -10,6 +12,12 @@ import styles from './MediaRating.module.css';
 const ratingValues = [1, 2, 3, 4, 5];
 
 function MediaRating({ fileId, ownerId }) {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'mediaRating', key);
+    const format = (key, values) => Object.entries(values).reduce(
+        (text, [name, value]) => text.replace(`{${name}}`, value),
+        t(key),
+    );
     const { user } = useAuth();
     const [ratingInfo, setRatingInfo] = useState({
         average: 0,
@@ -41,7 +49,7 @@ function MediaRating({ fileId, ownerId }) {
                 }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && active) {
-                    setError('Unable to load ratings.');
+                    setError(t('loadError'));
                 }
             }
         };
@@ -73,7 +81,7 @@ function MediaRating({ fileId, ownerId }) {
             const nextInfo = await fetchFileRatings(fileId, user.id);
             setRatingInfo(nextInfo);
         } catch (saveError) {
-            setError(saveError.message || 'Unable to save your rating.');
+            setError(saveError.message || t('saveError'));
         } finally {
             setSaving(false);
         }
@@ -87,18 +95,18 @@ function MediaRating({ fileId, ownerId }) {
                         <strong>{ratingInfo.average.toFixed(1)} / 5</strong>
                         <span>
                             {ratingInfo.count}{' '}
-                            {ratingInfo.count === 1 ? 'rating' : 'ratings'}
+                            {ratingInfo.count === 1 ? t('rating') : t('ratings')}
                         </span>
                     </>
                 ) : (
                     <>
-                        <strong>New</strong>
-                        <span>No ratings yet</span>
+                        <strong>{t('new')}</strong>
+                        <span>{t('noRatings')}</span>
                     </>
                 )}
             </div>
 
-            <div className={styles.stars} aria-label="File rating">
+            <div className={styles.stars} aria-label={t('label')}>
                 {ratingValues.map((value) => (
                     <button
                         className={
@@ -108,7 +116,7 @@ function MediaRating({ fileId, ownerId }) {
                         }
                         key={value}
                         type="button"
-                        aria-label={`Rate ${value} out of 5`}
+                        aria-label={format('rateOutOf', { value })}
                         aria-pressed={ratingInfo.userRating === value}
                         disabled={!user || saving || isOwnFile}
                         onClick={() => ratingHandler(value)}
@@ -120,21 +128,21 @@ function MediaRating({ fileId, ownerId }) {
 
             {isOwnFile ? (
                 <span className={styles.note}>
-                    You cannot rate your own file.
+                    {t('ownFile')}
                 </span>
             ) : user ? (
                 <span className={styles.note}>
                     {ratingInfo.userRating > 0
-                        ? `Your rating: ${ratingInfo.userRating} / 5`
-                        : 'Rate this file'}
+                        ? format('yourRating', { rating: ratingInfo.userRating })
+                        : t('rateFile')}
                 </span>
             ) : (
                 <span className={styles.note}>
-                    <Link to="/login">Sign in</Link> to rate
+                    <Link to="/login">{t('signIn')}</Link> {t('signInToRate')}
                 </span>
             )}
 
-            {saving && <span className={styles.status}>Saving...</span>}
+            {saving && <span className={styles.status}>{t('saving')}</span>}
             {error && <span className={styles.error}>{error}</span>}
         </div>
     );

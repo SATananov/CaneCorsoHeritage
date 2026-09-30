@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import {
     fetchProfiles,
     fetchPublicContacts,
@@ -14,6 +16,8 @@ function getInitial(displayName) {
 }
 
 function UsersPage() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'members', key);
     const [profiles, setProfiles] = useState([]);
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -33,7 +37,7 @@ function UsersPage() {
                 setContacts(contactData);
             } catch (loadError) {
                 if (loadError.name !== 'AbortError') {
-                    setError('Unable to load the member directory right now.');
+                    setError(t('loadError'));
                 }
             } finally {
                 if (!controller.signal.aborted) {
@@ -53,12 +57,12 @@ function UsersPage() {
         <main className={styles.page}>
             <div className={styles.shell}>
                 <header className={styles.pageHeader}>
-                    <p className={styles.eyebrow}>USG community</p>
-                    <h1>Members</h1>
-                    <p>Meet the people who share stories, experience and Cane Corso heritage.</p>
+                    <p className={styles.eyebrow}>{t('kicker')}</p>
+                    <h1>{t('title')}</h1>
+                    <p>{t('intro')}</p>
                 </header>
 
-                {loading && <LoadingSpinner label="Loading members..." />}
+                {loading && <LoadingSpinner label={t('loading')} />}
 
                 {error && (
                     <div className={styles.message} role="alert">
@@ -67,14 +71,14 @@ function UsersPage() {
                 )}
 
                 {!loading && !error && profiles.length === 0 && (
-                    <div className={styles.message}>No public member profiles yet.</div>
+                    <div className={styles.message}>{t('empty')}</div>
                 )}
 
                 {!loading && !error && profiles.length > 0 && (
-                    <section className={styles.memberGrid} aria-label="Member directory">
+                    <section className={styles.memberGrid} aria-label={t('directoryLabel')}>
                         {profiles.map((profile) => {
                             const avatarUrl = getProfileAvatarUrl(profile);
-                            const displayName = profile.display_name || 'USG Member';
+                            const displayName = profile.display_name || t('defaultName');
                             const contact = contacts.find(
                                 (item) => item.user_id === profile.id,
                             );
@@ -94,7 +98,7 @@ function UsersPage() {
                                     </div>
 
                                     <div className={styles.memberCopy}>
-                                        <span className={styles.memberLabel}>Member profile</span>
+                                        <span className={styles.memberLabel}>{t('profileLabel')}</span>
                                         <h2>{displayName}</h2>
                                         <span className={identityStyles.username}>
                                             @{profile.username}
@@ -106,9 +110,9 @@ function UsersPage() {
                                         )}
                                         <p>
                                             {profile.bio?.trim()
-                                                || 'Cane Corso Heritage community member.'}
+                                                || t('defaultBio')}
                                         </p>
-                                        <span className={styles.detailsLink}>View profile →</span>
+                                        <span className={styles.detailsLink}>{t('viewProfile')}</span>
                                     </div>
                                 </Link>
                             );

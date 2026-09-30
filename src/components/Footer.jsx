@@ -1,6 +1,11 @@
 import { Link } from 'react-router';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 
 function Footer() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'footer', key);
+
     return (
         <footer className="site-footer">
             <div className="site-container footer-inner">
@@ -17,8 +22,8 @@ function Footer() {
                 </div>
 
                 <nav className="footer-nav" aria-label="Footer navigation">
-                    <Link to="/about">About USG</Link>
-                    <Link to="/help">Help</Link>
+                    <Link to="/about">{t('about')}</Link>
+                    <Link to="/help">{t('help')}</Link>
                 </nav>
 
                 <p className="footer-legal">

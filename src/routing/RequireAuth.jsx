@@ -1,11 +1,12 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
+import GuestAccessPrompt from '../components/GuestAccessPrompt';
 import useAuth from '../hooks/useAuth';
 
 function RequireAuth() {
     const location = useLocation();
-    const { user, loading } = useAuth();
+    const { user, loading, roleLoading, isActive } = useAuth();
 
-    if (loading) {
+    if (loading || roleLoading) {
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">Checking account...</div>
@@ -14,13 +15,11 @@ function RequireAuth() {
     }
 
     if (!user) {
-        return (
-            <Navigate
-                to="/login"
-                replace
-                state={{ from: location }}
-            />
-        );
+        return <GuestAccessPrompt location={location} />;
+    }
+
+    if (!isActive) {
+        return <Navigate to="/" replace />;
     }
 
     return <Outlet />;

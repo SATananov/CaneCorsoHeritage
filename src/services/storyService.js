@@ -53,7 +53,7 @@ export async function fetchStories(options = {}) {
     checkSupabaseConfig();
 
     const response = await fetch(
-        `${supabaseUrl}/rest/v1/stories?select=*&status=eq.published&visibility=eq.community&order=display_order.asc,created_at.desc`,
+        `${supabaseUrl}/rest/v1/stories?select=*&status=eq.published&visibility=eq.community&moderation_status=eq.approved&order=display_order.asc,created_at.desc`,
         {
             headers: {
                 apikey: supabaseKey,
@@ -129,6 +129,9 @@ export async function createStory(storyData) {
             ...storyData,
             author_id: session.user.id,
             status: 'published',
+            moderation_status: storyData.visibility === 'community' ? 'pending' : 'approved',
+            moderated_at: null,
+            moderated_by: null,
         }),
     });
 
@@ -156,6 +159,9 @@ export async function updateStory(storyId, storyData) {
                 ...storyData,
                 author_id: session.user.id,
                 status: 'published',
+                moderation_status: storyData.visibility === 'community' ? 'pending' : 'approved',
+                moderated_at: null,
+                moderated_by: null,
                 updated_at: new Date().toISOString(),
             }),
         },

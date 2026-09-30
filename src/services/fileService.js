@@ -163,6 +163,9 @@ export async function uploadUserFiles(
                 mime_type: mimeType,
                 file_size: file.size,
                 visibility,
+                moderation_status: visibility === 'community' ? 'pending' : 'approved',
+                moderated_at: null,
+                moderated_by: null,
             })
             .select()
             .single();
@@ -212,6 +215,7 @@ export async function fetchCommunityFilesByUser(userId) {
         .select('*')
         .eq('user_id', userId)
         .eq('visibility', 'community')
+        .eq('moderation_status', 'approved')
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -226,6 +230,9 @@ export async function updateUserFileVisibility(fileId, visibility) {
         .from('user_files')
         .update({
             visibility,
+            moderation_status: visibility === 'community' ? 'pending' : 'approved',
+            moderated_at: null,
+            moderated_by: null,
             updated_at: new Date().toISOString(),
         })
         .eq('id', fileId);
@@ -240,6 +247,9 @@ export async function syncStoryFilesVisibility(storyId, visibility) {
         .from('user_files')
         .update({
             visibility,
+            moderation_status: visibility === 'community' ? 'pending' : 'approved',
+            moderated_at: null,
+            moderated_by: null,
             updated_at: new Date().toISOString(),
         })
         .eq('story_id', storyId);

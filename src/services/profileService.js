@@ -84,13 +84,71 @@ export async function fetchProfilePublicContact(userId, options = {}) {
     return data;
 }
 
+
+export async function fetchOwnPrivateProfileDetails(userId, options = {}) {
+    let query = supabase
+        .from('profile_private_details')
+        .select('user_id,first_name,last_name,country,city,phone,updated_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (options.signal) {
+        query = query.abortSignal(options.signal);
+    }
+
+    const { data, error } = await query;
+
+    if (options.signal?.aborted) {
+        return null;
+    }
+
+    if (error) {
+        throw new Error(error.message || 'Unable to load private profile details.');
+    }
+
+    return data;
+}
+
+export async function saveOwnPrivateProfileDetails(
+    userId,
+    {
+        firstName,
+        lastName,
+        country,
+        city,
+        phone,
+    },
+) {
+    const { data, error } = await supabase
+        .from('profile_private_details')
+        .upsert({
+            user_id: userId,
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            country: country.trim(),
+            city: city.trim(),
+            phone: phone.trim() || null,
+            updated_at: new Date().toISOString(),
+        }, {
+            onConflict: 'user_id',
+        })
+        .select()
+        .single();
+
+    if (error) {
+        throw new Error(error.message || 'Unable to update private profile details.');
+    }
+
+    return data;
+}
+
 export async function fetchPublishedStoriesByAuthor(userId, options = {}) {
     if (!supabaseUrl || !supabaseKey) {
         throw new Error('Supabase configuration is missing.');
     }
 
     const response = await fetch(
-        `${supabaseUrl}/rest/v1/stories?select=id,eyebrow,title,description,created_at&author_id=eq.${encodeURIComponent(userId)}&status=eq.published&order=created_at.desc`,
+        `${supabaseUrl}/rest/v1/stories?select=id,eyebrow,title,description,created_at&author_id=eq.${encodeURIComponent(userId)}&status=eq.published&visibility=eq.community&moderation_status=eq.approved&order=created_at.desc`,
         {
             headers: { apikey: supabaseKey },
             signal: options.signal,

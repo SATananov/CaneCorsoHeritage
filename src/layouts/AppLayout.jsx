@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import ProfileCompletionNotice from '../components/ProfileCompletionNotice';
 
 const routeTitles = {
     '/': 'Cane Corso Heritage',
@@ -49,6 +50,7 @@ function AppLayout() {
     return (
         <>
             <Header />
+            <ProfileCompletionNotice />
             <Outlet />
             <Footer />
         </>

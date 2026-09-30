@@ -1,26 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import { getHeritageArticleBySlug, getHeritagePreview } from '../services/heritageService';
 import styles from './DetailsPage.module.css';
 
-const categoryLabels = {
-    stories: 'True Story',
-    'heritage-history': 'Heritage & History',
-    understanding: 'Understanding Cane Corso',
-    'living-care': 'Living & Care',
-    research: 'USG Research',
-};
-
-function getEyebrow(article) {
-    if (article.content_type === 'heritage-story') {
-        return 'Dr. Flavio Bruno · Heritage Story';
-    }
-
-    return categoryLabels[article.category] ?? article.eyebrow ?? 'Cane Corso Heritage';
-}
-
 function HeritageArticlePage() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'heritageDetails', key);
+    const categoryLabels = {
+        stories: t('trueStory'),
+        'heritage-history': t('heritageHistory'),
+        understanding: t('understanding'),
+        'living-care': t('livingCare'),
+        research: t('research'),
+    };
+    const getEyebrow = (item) => {
+        if (item.content_type === 'heritage-story') {
+            return t('heritageStory');
+        }
+        return categoryLabels[item.category] ?? item.eyebrow ?? t('defaultEyebrow');
+    };
     const { slug } = useParams();
     const navigate = useNavigate();
     const [article, setArticle] = useState(null);
@@ -40,14 +41,14 @@ function HeritageArticlePage() {
                 const match = libraryArticle ?? previewArticle;
 
                 if (!match) {
-                    setError('This Heritage article could not be found.');
+                    setError(t('notFound'));
                     return;
                 }
 
                 setArticle(match);
             } catch (loadError) {
                 if (loadError.name !== 'AbortError') {
-                    setError('Unable to load this Heritage article right now.');
+                    setError(t('loadError'));
                 }
             }
         };
@@ -66,10 +67,10 @@ function HeritageArticlePage() {
         <main className={styles.page}>
             <div className={styles.shell}>
                 <button className={styles.backButton} type="button" onClick={() => navigate('/heritage')}>
-                    ← Back to Heritage
+                    {t('back')}
                 </button>
 
-                {!article && !error && <LoadingSpinner label="Loading Heritage article..." />}
+                {!article && !error && <LoadingSpinner label={t('loading')} />}
 
                 {error && (
                     <div className={styles.message} role="alert">
@@ -109,13 +110,13 @@ function HeritageArticlePage() {
                             <div className={styles.meta}>
                                 {article.story_by ? (
                                     <>
-                                        <strong>Story by {article.story_by}</strong>
+                                        <strong>{t('storyBy')} {article.story_by}</strong>
                                         {article.adaptation_by && (
-                                            <span>English adaptation by {article.adaptation_by}</span>
+                                            <span>{t('adaptationBy')} {article.adaptation_by}</span>
                                         )}
                                     </>
                                 ) : article.author ? (
-                                    <strong>By {article.author}</strong>
+                                    <strong>{t('by')} {article.author}</strong>
                                 ) : null}
 
                                 {article.source_credit && <span>{article.source_credit}</span>}

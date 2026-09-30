@@ -5,6 +5,7 @@ import AppLayout from './layouts/AppLayout';
 import RequireAuth from './routing/RequireAuth';
 import RequireGuest from './routing/RequireGuest';
 import RequireAdmin from './routing/RequireAdmin';
+import RequireCompleteProfile from './routing/RequireCompleteProfile';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const StoriesPage = lazy(() => import('./pages/StoriesPage'));
@@ -64,8 +65,10 @@ function App() {
                     <Route path="update-password" element={<UpdatePasswordPage />} />
 
                     <Route element={<RequireAuth />}>
-                        <Route path="my-stories" element={<MyStoriesPage />} />
-                        <Route path="my-files" element={<MyFilesPage />} />
+                        <Route element={<RequireCompleteProfile />}>
+                            <Route path="my-stories" element={<MyStoriesPage />} />
+                            <Route path="my-files" element={<MyFilesPage />} />
+                        </Route>
                     </Route>
 
                     <Route element={<RequireAdmin />}>

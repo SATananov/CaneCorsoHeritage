@@ -3,9 +3,12 @@ import { Link, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProfileEditor from '../components/ProfileEditor';
 import useAuth from '../hooks/useAuth';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import MediaRating from '../components/MediaRating';
 import { fetchCommunityFilesByUser } from '../services/fileService';
 import {
+    fetchOwnPrivateProfileDetails,
     fetchProfileById,
     fetchProfilePublicContact,
     fetchPublishedStoriesByAuthor,
@@ -54,6 +57,8 @@ function getSharedFileLabel(file) {
 }
 
 function UserDetailsPage() {
+    const { language } = useLanguage();
+    const tCompletion = (key) => getTranslation(language, 'completion', key);
     const { userId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -61,6 +66,8 @@ function UserDetailsPage() {
     const [stories, setStories] = useState([]);
     const [sharedFiles, setSharedFiles] = useState([]);
     const [publicContact, setPublicContact] = useState(null);
+    const [privateDetails, setPrivateDetails] = useState(null);
+    const [privateDetailsLoaded, setPrivateDetailsLoaded] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -71,23 +78,96 @@ function UserDetailsPage() {
 
         const loadProfile = async () => {
             try {
-                const [profileData, storyData, fileData, contactData] = await Promise.all([
-                    fetchProfileById(userId, { signal: controller.signal }),
-                    fetchPublishedStoriesByAuthor(userId, { signal: controller.signal }),
-                    fetchCommunityFilesByUser(userId),
-                    fetchProfilePublicContact(userId, { signal: controller.signal }),
-                ]);
+                const profileData = await fetchProfileById(
+                    userId,
+                    { signal: controller.signal },
+                );
 
                 if (!profileData) {
-                    setError('This member profile could not be found.');
+                    if (active) {
+                        setError('This member profile could not be found.');
+                    }
                     return;
                 }
 
-                if (active) {
-                    setProfile(profileData);
-                    setStories(storyData);
-                    setSharedFiles(fileData);
-                    setPublicContact(contactData);
+                if (!active || controller.signal.aborted) {
+                    return;
+                }
+
+                setProfile(profileData);
+
+                if (user?.id === profileData.id) {
+                    try {
+                        const details = await fetchOwnPrivateProfileDetails(
+                            profileData.id,
+                            { signal: controller.signal },
+                        );
+
+                        if (!controller.signal.aborted && active) {
+                            setPrivateDetails(details);
+                            setPrivateDetailsLoaded(true);
+                        }
+                    } catch (privateError) {
+                        if (
+                            !controller.signal.aborted
+                            && privateError?.name !== 'AbortError'
+                            && active
+                        ) {
+                            console.warn(
+                                'Unable to verify required profile details.',
+                                privateError,
+                            );
+                            setPrivateDetails(null);
+                            setPrivateDetailsLoaded(true);
+                        }
+                    }
+                }
+
+                const [storiesResult, filesResult, contactResult] = await Promise.allSettled([
+                    fetchPublishedStoriesByAuthor(
+                        userId,
+                        { signal: controller.signal },
+                    ),
+                    fetchCommunityFilesByUser(userId),
+                    fetchProfilePublicContact(
+                        userId,
+                        { signal: controller.signal },
+                    ),
+                ]);
+
+                if (!active || controller.signal.aborted) {
+                    return;
+                }
+
+                setStories(
+                    storiesResult.status === 'fulfilled'
+                        ? storiesResult.value
+                        : [],
+                );
+
+                setSharedFiles(
+                    filesResult.status === 'fulfilled'
+                        ? filesResult.value
+                        : [],
+                );
+
+                setPublicContact(
+                    contactResult.status === 'fulfilled'
+                        ? contactResult.value
+                        : null,
+                );
+
+                const secondaryErrors = [
+                    storiesResult,
+                    filesResult,
+                    contactResult,
+                ].filter((result) => result.status === 'rejected');
+
+                if (secondaryErrors.length > 0) {
+                    console.warn(
+                        'Member profile loaded with incomplete secondary data.',
+                        secondaryErrors.map((result) => result.reason),
+                    );
                 }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && active) {
@@ -106,11 +186,27 @@ function UserDetailsPage() {
             active = false;
             controller.abort();
         };
-    }, [userId, refreshKey]);
+    }, [user?.id, userId, refreshKey]);
 
     const displayName = profile?.display_name || 'USG Member';
     const avatarUrl = getProfileAvatarUrl(profile);
     const memberSince = formatMemberSince(profile?.created_at);
+    const isOwnProfile = Boolean(user?.id && profile?.id === user.id);
+    const missingRequiredFields = isOwnProfile && privateDetailsLoaded
+        ? [
+            ['first_name', 'firstName'],
+            ['last_name', 'lastName'],
+            ['country', 'country'],
+            ['city', 'city'],
+        ]
+            .filter(([key]) => !privateDetails?.[key]?.trim())
+            .map(([, labelKey]) => tCompletion(labelKey))
+        : [];
+    const profileSetupRequired = (
+        isOwnProfile
+        && privateDetailsLoaded
+        && missingRequiredFields.length > 0
+    );
 
     return (
         <main className={styles.page}>
@@ -129,6 +225,29 @@ function UserDetailsPage() {
 
                 {profile && (
                     <>
+                        {profileSetupRequired && (
+                            <section
+                                className={styles.profileSetupRequired}
+                                aria-labelledby="profile-setup-required-title"
+                            >
+                                <p className={styles.profileSetupKicker}>
+                                    {tCompletion('setupRequired')}
+                                </p>
+                                <h2 id="profile-setup-required-title">
+                                    {tCompletion('setupTitle')}
+                                </h2>
+                                <p>
+                                    {tCompletion('setupCopy')}
+                                    {' '}
+                                    {missingRequiredFields.join(', ')}.
+                                    {tCompletion('setupLock')}
+                                </p>
+                                <strong>
+                                    {tCompletion('setupAction')}
+                                </strong>
+                            </section>
+                        )}
+
                         <article className={styles.profileCard}>
                             <div className={`${styles.avatar} ${styles.profileAvatar}`} aria-hidden="true">
                                 {avatarUrl ? (
@@ -151,7 +270,11 @@ function UserDetailsPage() {
                                 )}
                                 <p className={styles.bio}>
                                     {profile.bio?.trim()
-                                        || 'This member has not added a public biography yet.'}
+                                        || (profileSetupRequired
+                                            ? 'Your public biography is optional. Complete the required profile setup below first.'
+                                            : isOwnProfile
+                                                ? 'You have not added a public biography yet.'
+                                                : 'This member has not added a public biography yet.')}
                                 </p>
                                 {memberSince && (
                                     <p className={styles.memberSince}>Member since {memberSince}</p>
@@ -165,6 +288,7 @@ function UserDetailsPage() {
                                 profile={profile}
                                 contact={publicContact}
                                 currentEmail={user.email}
+                                requiredCompletion={profileSetupRequired}
                                 onSaved={() => setRefreshKey((value) => value + 1)}
                             />
                         )}

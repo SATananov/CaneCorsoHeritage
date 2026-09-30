@@ -1,9 +1,28 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import useAuth from '../hooks/useAuth';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
+import { fetchOwnPrivateProfileDetails } from '../services/profileService';
 import styles from './AuthPreparationSection.module.css';
 
+
+const requiredProfileFields = [
+    'first_name',
+    'last_name',
+    'country',
+    'city',
+];
+
+function isProfileComplete(details) {
+    return requiredProfileFields.every(
+        (field) => details?.[field]?.trim(),
+    );
+}
+
 function AuthPreparationSection({ mode = 'login' }) {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'auth', key);
     const location = useLocation();
     const navigate = useNavigate();
     const { login, register } = useAuth();
@@ -42,12 +61,12 @@ function AuthPreparationSection({ mode = 'login' }) {
         const password = formData.password;
 
         if (!email || !password) {
-            setErrorMessage('Email and password are required.');
+            setErrorMessage(t('emailPasswordRequired'));
             return;
         }
 
         if (!isLogin && displayName.length < 2) {
-            setErrorMessage('Name must be at least 2 characters.');
+            setErrorMessage(t('nameMin'));
             return;
         }
 
@@ -56,13 +75,13 @@ function AuthPreparationSection({ mode = 'login' }) {
             && !/^[a-z0-9][a-z0-9._-]{2,29}$/.test(username)
         ) {
             setErrorMessage(
-                'Username must be 3–30 characters using letters, numbers, dot, dash or underscore.',
+                t('usernameInvalid'),
             );
             return;
         }
 
         if (password.length < 6) {
-            setErrorMessage('Password must be at least 6 characters.');
+            setErrorMessage(t('passwordMin'));
             return;
         }
 
@@ -72,13 +91,30 @@ function AuthPreparationSection({ mode = 'login' }) {
 
         try {
             if (isLogin) {
-                await login(email, password);
+                const data = await login(email, password);
+                const userId = data?.user?.id;
 
-                const returnPath = guardedFrom
-                    ? `${guardedFrom.pathname}${guardedFrom.search || ''}`
-                    : '/my-stories';
+                if (!userId) {
+                    throw new Error(t('unresolvedAccount'));
+                }
 
-                navigate(returnPath, { replace: true });
+                let details = null;
+
+                try {
+                    details = await fetchOwnPrivateProfileDetails(userId);
+                } catch (profileError) {
+                    console.warn(
+                        'Unable to verify profile completion after login.',
+                        profileError,
+                    );
+                }
+
+                if (!isProfileComplete(details)) {
+                    navigate(`/users/${userId}`, { replace: true });
+                    return;
+                }
+
+                navigate('/', { replace: true });
                 return;
             }
 
@@ -89,13 +125,13 @@ function AuthPreparationSection({ mode = 'login' }) {
                 password,
             );
 
-            if (data.session) {
-                navigate('/my-stories', { replace: true });
+            if (data.session?.user?.id) {
+                navigate(`/users/${data.session.user.id}`, { replace: true });
                 return;
             }
 
             setSuccessMessage(
-                'Account created. Check your email if confirmation is required before signing in.',
+                t('confirmEmail'),
             );
             setFormData((current) => ({
                 ...current,
@@ -105,18 +141,18 @@ function AuthPreparationSection({ mode = 'login' }) {
             const message = error?.message || '';
 
             if (message === 'Failed to fetch') {
-                setErrorMessage('Connection problem. Please try again.');
+                setErrorMessage(t('connectionProblem'));
             } else if (message === 'Invalid login credentials') {
-                setErrorMessage('Incorrect email or password.');
+                setErrorMessage(t('badCredentials'));
             } else if (message === 'Email not confirmed') {
-                setErrorMessage('Please confirm your email before signing in.');
+                setErrorMessage(t('emailNotConfirmed'));
             } else if (
                 message === 'Username already in use.'
                 || message.toLowerCase().includes('username')
             ) {
-                setErrorMessage('This public username is already in use.');
+                setErrorMessage(t('usernameUsed'));
             } else {
-                setErrorMessage(message || 'Unable to continue right now.');
+                setErrorMessage(message || t('unableContinue'));
             }
         } finally {
             setSubmitting(false);
@@ -128,19 +164,19 @@ function AuthPreparationSection({ mode = 'login' }) {
             <div className="site-container">
                 <div className={styles.authShell}>
                     <div className={styles.authIntro}>
-                        <p className={styles.eyebrow}>USG member access</p>
+                        <p className={styles.eyebrow}>{t('memberAccess')}</p>
                         <h2 id="account-access-title">
-                            {isLogin ? 'Welcome back.' : 'Join Cane Corso Heritage.'}
+                            {isLogin ? t('welcomeBack') : t('joinTitle')}
                         </h2>
                         <p>
                             {isLogin
-                                ? 'Sign in to reach your private member area and continue your work.'
-                                : 'Create your member profile with a name, public username, email and password.'}
+                                ? t('loginIntro')
+                                : t('registerIntro')}
                         </p>
 
                         {guardedFrom && isLogin && (
                             <p className={styles.routeNotice}>
-                                Sign in to continue to <strong>{guardedFrom.pathname}</strong>.
+                                {t('continueTo')} <strong>{guardedFrom.pathname}</strong>.
                             </p>
                         )}
 
@@ -158,8 +194,8 @@ function AuthPreparationSection({ mode = 'login' }) {
                             <div className={styles.cardHeading}>
                                 <span>{isLogin ? '01' : '02'}</span>
                                 <div>
-                                    <p>{isLogin ? 'Returning member' : 'New member'}</p>
-                                    <h3>{isLogin ? 'Login' : 'Register'}</h3>
+                                    <p>{isLogin ? t('returningMember') : t('newMember')}</p>
+                                    <h3>{isLogin ? t('login') : t('register')}</h3>
                                 </div>
                             </div>
 
@@ -167,12 +203,12 @@ function AuthPreparationSection({ mode = 'login' }) {
                                 {!isLogin && (
                                     <>
                                         <label>
-                                            <span>Name</span>
+                                            <span>{t('name')}</span>
                                             <input
                                                 type="text"
                                                 name="displayName"
                                                 autoComplete="name"
-                                                placeholder="Your name"
+                                                placeholder={t('yourName')}
                                                 value={formData.displayName}
                                                 onChange={handleChange}
                                                 disabled={submitting}
@@ -180,11 +216,11 @@ function AuthPreparationSection({ mode = 'login' }) {
                                         </label>
 
                                         <label>
-                                            <span>Public username</span>
+                                            <span>{t('publicUsername')}</span>
                                             <input
                                                 type="text"
                                                 name="username"
-                                                autoComplete="username"
+                                                autoComplete="nickname"
                                                 placeholder="stefan.tananov"
                                                 value={formData.username}
                                                 onChange={handleChange}
@@ -195,11 +231,11 @@ function AuthPreparationSection({ mode = 'login' }) {
                                 )}
 
                                 <label>
-                                    <span>Email</span>
+                                    <span>{t('email')}</span>
                                     <input
                                         type="email"
                                         name="email"
-                                        autoComplete="email"
+                                        autoComplete="username"
                                         placeholder="you@example.com"
                                         value={formData.email}
                                         onChange={handleChange}
@@ -208,12 +244,12 @@ function AuthPreparationSection({ mode = 'login' }) {
                                 </label>
 
                                 <label>
-                                    <span>Password</span>
+                                    <span>{t('password')}</span>
                                     <input
                                         type="password"
                                         name="password"
                                         autoComplete={isLogin ? 'current-password' : 'new-password'}
-                                        placeholder={isLogin ? 'Your password' : 'Create a password'}
+                                        placeholder={isLogin ? t('yourPassword') : t('createPassword')}
                                         value={formData.password}
                                         onChange={handleChange}
                                         disabled={submitting}
@@ -222,12 +258,10 @@ function AuthPreparationSection({ mode = 'login' }) {
 
                                 <button type="submit" disabled={submitting}>
                                     {submitting
-                                        ? isLogin
-                                            ? 'Signing in...'
-                                            : 'Creating account...'
+                                        ? t('submitting')
                                         : isLogin
-                                            ? 'Sign in'
-                                            : 'Create account'}
+                                            ? t('loginAction')
+                                            : t('registerAction')}
                                 </button>
                             </form>
 
@@ -251,7 +285,7 @@ function AuthPreparationSection({ mode = 'login' }) {
                                     className={styles.switchLink}
                                     to="/forgot-password"
                                 >
-                                    Forgot your password?
+                                    {t('forgotPassword')}
                                 </Link>
                             )}
 
@@ -260,8 +294,8 @@ function AuthPreparationSection({ mode = 'login' }) {
                                 to={isLogin ? '/register' : '/login'}
                             >
                                 {isLogin
-                                    ? 'Need an account? Register'
-                                    : 'Already registered? Login'}
+                                    ? `${t('noAccount')} ${t('register')}`
+                                    : `${t('haveAccount')} ${t('login')}`}
                             </Link>
                         </article>
                     </div>

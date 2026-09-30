@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import {
+    fetchOwnPrivateProfileDetails,
     removeProfileAvatar,
+    saveOwnPrivateProfileDetails,
     saveProfilePublicContact,
     updateOwnProfile,
     uploadProfileAvatar,
@@ -14,11 +18,23 @@ function ProfileEditor({
     contact,
     currentEmail,
     onSaved,
+    requiredCompletion = false,
 }) {
+    const { language } = useLanguage();
+    const t = useCallback(
+        (key) => getTranslation(language, 'profileEditor', key),
+        [language],
+    );
     const [open, setOpen] = useState(false);
     const [displayName, setDisplayName] = useState(profile.display_name || '');
     const [username, setUsername] = useState(profile.username || '');
     const [bio, setBio] = useState(profile.bio || '');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [country, setCountry] = useState('');
+    const [city, setCity] = useState('');
+    const [phone, setPhone] = useState('');
+    const [privateDetailsLoading, setPrivateDetailsLoading] = useState(true);
     const [publicEmail, setPublicEmail] = useState(contact?.email || currentEmail || '');
     const [showEmail, setShowEmail] = useState(Boolean(contact?.show_email));
     const [avatarFile, setAvatarFile] = useState(null);
@@ -26,13 +42,70 @@ function ProfileEditor({
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
+
+    useEffect(() => {
+        const controller = new AbortController();
+
+        async function loadPrivateDetails() {
+            try {
+                const details = await fetchOwnPrivateProfileDetails(
+                    profile.id,
+                    { signal: controller.signal },
+                );
+
+                if (controller.signal.aborted) {
+                    return;
+                }
+
+                setFirstName(details?.first_name || '');
+                setLastName(details?.last_name || '');
+                setCountry(details?.country || '');
+                setCity(details?.city || '');
+                setPhone(details?.phone || '');
+            } catch (loadError) {
+                if (loadError.name !== 'AbortError') {
+                    setError(loadError.message || t('loadPrivateError'));
+                }
+            } finally {
+                if (!controller.signal.aborted) {
+                    setPrivateDetailsLoading(false);
+                }
+            }
+        }
+
+        loadPrivateDetails();
+
+        return () => controller.abort();
+    }, [profile.id, t]);
+
     async function submitHandler(event) {
         event.preventDefault();
 
         const cleanUsername = username.trim().toLowerCase();
 
         if (!USERNAME_PATTERN.test(cleanUsername)) {
-            setError('Username must be 3–30 characters using letters, numbers, dot, dash or underscore.');
+            setError(t('usernameInvalid'));
+            return;
+        }
+
+
+        if (!firstName.trim()) {
+            setError(t('firstRequired'));
+            return;
+        }
+
+        if (!lastName.trim()) {
+            setError(t('lastRequired'));
+            return;
+        }
+
+        if (!country.trim()) {
+            setError(t('countryRequired'));
+            return;
+        }
+
+        if (!city.trim()) {
+            setError(t('cityRequired'));
             return;
         }
 
@@ -45,6 +118,14 @@ function ProfileEditor({
                 displayName,
                 username: cleanUsername,
                 bio,
+            });
+
+            await saveOwnPrivateProfileDetails(profile.id, {
+                firstName,
+                lastName,
+                country,
+                city,
+                phone,
             });
 
             await saveProfilePublicContact(
@@ -61,11 +142,11 @@ function ProfileEditor({
                 );
             }
 
-            setMessage('Profile updated.');
+            setMessage(t('updated'));
             setOpen(false);
             onSaved();
         } catch (saveError) {
-            setError(saveError.message || 'Unable to update your profile.');
+            setError(saveError.message || t('updateError'));
         } finally {
             setSaving(false);
         }
@@ -79,16 +160,18 @@ function ProfileEditor({
         try {
             await removeProfileAvatar(profile.id, profile.avatar_path);
             setAvatarFile(null);
-            setMessage('Avatar removed.');
+            setMessage(t('avatarRemoved'));
             onSaved();
         } catch (removeError) {
-            setError(removeError.message || 'Unable to remove avatar.');
+            setError(removeError.message || t('removeError'));
         } finally {
             setSaving(false);
         }
     }
 
-    if (!open) {
+    const editorOpen = requiredCompletion || open;
+
+    if (!editorOpen) {
         return (
             <div className={styles.closed}>
                 <button
@@ -96,7 +179,7 @@ function ProfileEditor({
                     type="button"
                     onClick={() => setOpen(true)}
                 >
-                    Edit my profile
+                    {t('edit')}
                 </button>
                 {message && <span className={styles.success}>{message}</span>}
                 {error && <span className={styles.error}>{error}</span>}
@@ -108,23 +191,27 @@ function ProfileEditor({
         <section className={styles.panel} aria-labelledby="profile-editor-title">
             <div className={styles.heading}>
                 <div>
-                    <p>Private profile controls</p>
-                    <h2 id="profile-editor-title">Edit my profile</h2>
+                    <p>{t('privateControls')}</p>
+                    <h2 id="profile-editor-title">{t('edit')}</h2>
                 </div>
-                <button
-                    className={styles.closeButton}
-                    type="button"
-                    onClick={() => setOpen(false)}
-                >
-                    Close
-                </button>
+                {!requiredCompletion && (
+                    <button
+                        className={styles.closeButton}
+                        type="button"
+                        onClick={() => setOpen(false)}
+                    >
+                        Close
+                    </button>
+                )}
             </div>
 
             <form className={styles.form} onSubmit={submitHandler}>
                 <label>
-                    <span>Display name</span>
+                    <span>{t('displayName')}</span>
                     <input
                         type="text"
+                        name="displayName"
+                        autoComplete="name"
                         value={displayName}
                         maxLength="80"
                         onChange={(event) => setDisplayName(event.target.value)}
@@ -132,11 +219,13 @@ function ProfileEditor({
                 </label>
 
                 <label>
-                    <span>Public username</span>
+                    <span>{t('publicUsername')}</span>
                     <div className={styles.usernameField}>
                         <span>@</span>
                         <input
                             type="text"
+                            name="publicUsername"
+                            autoComplete="nickname"
                             value={username}
                             maxLength="30"
                             onChange={(event) => setUsername(event.target.value)}
@@ -144,9 +233,82 @@ function ProfileEditor({
                     </div>
                 </label>
 
+
+                <label>
+                    <span>{t('firstName')}</span>
+                    <input
+                        type="text"
+                        name="firstName"
+                        value={firstName}
+                        maxLength="80"
+                        autoComplete="given-name"
+                        required
+                        disabled={privateDetailsLoading}
+                        onChange={(event) => setFirstName(event.target.value)}
+                    />
+                </label>
+
+                <label>
+                    <span>{t('lastName')}</span>
+                    <input
+                        type="text"
+                        name="lastName"
+                        value={lastName}
+                        maxLength="80"
+                        autoComplete="family-name"
+                        required
+                        disabled={privateDetailsLoading}
+                        onChange={(event) => setLastName(event.target.value)}
+                    />
+                </label>
+
+                <label>
+                    <span>{t('country')}</span>
+                    <input
+                        type="text"
+                        name="country"
+                        value={country}
+                        maxLength="80"
+                        autoComplete="country-name"
+                        required
+                        disabled={privateDetailsLoading}
+                        onChange={(event) => setCountry(event.target.value)}
+                    />
+                </label>
+
+                <label>
+                    <span>{t('city')}</span>
+                    <input
+                        type="text"
+                        name="city"
+                        value={city}
+                        maxLength="120"
+                        autoComplete="address-level2"
+                        required
+                        disabled={privateDetailsLoading}
+                        onChange={(event) => setCity(event.target.value)}
+                    />
+                </label>
+
+                <label>
+                    <span>{t('phone')}</span>
+                    <input
+                        type="tel"
+                        name="phone"
+                        value={phone}
+                        maxLength="40"
+                        autoComplete="tel"
+                        disabled={privateDetailsLoading}
+                        onChange={(event) => setPhone(event.target.value)}
+                    />
+                    <small>{t('phoneNote')}</small>
+                </label>
+
                 <label className={styles.fullWidth}>
-                    <span>Public biography</span>
+                    <span>{t('biography')}</span>
                     <textarea
+                        name="bio"
+                        autoComplete="off"
                         value={bio}
                         rows="4"
                         maxLength="600"
@@ -155,35 +317,39 @@ function ProfileEditor({
                 </label>
 
                 <label>
-                    <span>Avatar image</span>
+                    <span>{t('avatar')}</span>
                     <input
                         type="file"
+                        name="avatar"
                         accept="image/*"
                         onChange={(event) => {
                             setAvatarFile(event.target.files?.[0] ?? null);
                         }}
                     />
-                    <small>Image only · up to 5 MB</small>
+                    <small>{t('avatarNote')}</small>
                 </label>
 
                 <label>
-                    <span>Public contact email</span>
+                    <span>{t('publicEmail')}</span>
                     <input
                         type="email"
+                        name="publicEmail"
+                        autoComplete="email"
                         value={publicEmail}
                         maxLength="320"
                         onChange={(event) => setPublicEmail(event.target.value)}
                     />
-                    <small>This stays private unless you enable the checkbox below.</small>
+                    <small>{t('publicEmailNote')}</small>
                 </label>
 
                 <label className={`${styles.checkbox} ${styles.fullWidth}`}>
                     <input
                         type="checkbox"
+                        name="showPublicEmail"
                         checked={showEmail}
                         onChange={(event) => setShowEmail(event.target.checked)}
                     />
-                    <span>Show this email publicly on my member profile</span>
+                    <span>{t('showEmail')}</span>
                 </label>
 
                 {error && (
@@ -206,16 +372,16 @@ function ProfileEditor({
                             disabled={saving}
                             onClick={removeAvatarHandler}
                         >
-                            Remove avatar
+                            {t('removeAvatar')}
                         </button>
                     )}
 
                     <button
                         className={styles.primaryButton}
                         type="submit"
-                        disabled={saving}
+                        disabled={saving || privateDetailsLoading}
                     >
-                        {saving ? 'Saving...' : 'Save profile'}
+                        {privateDetailsLoading ? t('loading') : saving ? t('saving') : t('save')}
                     </button>
                 </div>
             </form>

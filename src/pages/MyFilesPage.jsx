@@ -45,6 +45,24 @@ function getFileTypeLabel(file) {
     return 'TEXT';
 }
 
+
+function getFileVisibilityLabel(file) {
+    if (file.visibility === 'private') {
+        return 'My Own · Private';
+    }
+
+    switch (file.moderation_status) {
+        case 'pending':
+            return 'Community · Pending approval';
+        case 'rejected':
+            return 'Community · Rejected';
+        case 'hidden':
+            return 'Community · Hidden by administrator';
+        default:
+            return 'Community · Approved';
+    }
+}
+
 function MyFilesPage() {
     const { user } = useAuth();
     const [files, setFiles] = useState([]);
@@ -244,7 +262,7 @@ function MyFilesPage() {
 
                                 <div className={styles.cardBody}>
                                     <p className={styles.visibility}>
-                                        {file.visibility === 'community' ? 'Community · Public' : 'My Own · Private'}
+                                        {getFileVisibilityLabel(file)}
                                     </p>
                                     <h2>{file.file_name}</h2>
                                     <p>

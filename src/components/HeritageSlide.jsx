@@ -24,7 +24,7 @@ function SlideContent(props) {
                 <strong>{props.title}</strong>
                 {!props.clone && (
                     <span className="heritage-slide-link">
-                        Explore <span aria-hidden="true">→</span>
+                        {props.exploreLabel} <span aria-hidden="true">→</span>
                     </span>
                 )}
             </span>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import MediaRating from '../components/MediaRating';
 import useAuth from '../hooks/useAuth';
 import { fetchStoryFiles } from '../services/fileService';
@@ -14,6 +16,12 @@ import styles from './DetailsPage.module.css';
 const ratingValues = [1, 2, 3, 4, 5];
 
 function StoryDetailsPage() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'storyDetails', key);
+    const format = (key, values) => Object.entries(values).reduce(
+        (text, [name, value]) => text.replace(`{${name}}`, value),
+        t(key),
+    );
     const { storyId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -51,7 +59,7 @@ function StoryDetailsPage() {
                 }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && active) {
-                    setError('Unable to load this story right now.');
+                    setError(t('loadError'));
                 }
             }
         };
@@ -83,7 +91,7 @@ function StoryDetailsPage() {
             const nextRatingInfo = await fetchStoryRatings(storyId, user.id);
             setRatingInfo(nextRatingInfo);
         } catch (saveError) {
-            setRatingError(saveError.message || 'Unable to save your rating.');
+            setRatingError(saveError.message || t('saveRatingError'));
         } finally {
             setRatingSaving(false);
         }
@@ -104,11 +112,11 @@ function StoryDetailsPage() {
                     type="button"
                     onClick={() => navigate('/stories')}
                 >
-                    ← Back to Stories
+                    {t('back')}
                 </button>
 
                 {!story && !error && (
-                    <LoadingSpinner label="Loading story details..." />
+                    <LoadingSpinner label={t('loading')} />
                 )}
 
                 {error && (
@@ -137,10 +145,10 @@ function StoryDetailsPage() {
                                 <div className={styles.ratingHeading}>
                                     <div>
                                         <p className={styles.ratingKicker}>
-                                            Reader rating
+                                            {t('readerRating')}
                                         </p>
                                         <h2 id="story-rating-title">
-                                            Rate this Story
+                                            {t('rateStory')}
                                         </h2>
                                     </div>
 
@@ -153,14 +161,14 @@ function StoryDetailsPage() {
                                                 <span>
                                                     {ratingInfo.count}{' '}
                                                     {ratingInfo.count === 1
-                                                        ? 'rating'
-                                                        : 'ratings'}
+                                                        ? t('rating')
+                                                        : t('ratings')}
                                                 </span>
                                             </>
                                         ) : (
                                             <>
-                                                <strong>New</strong>
-                                                <span>No ratings yet</span>
+                                                <strong>{t('new')}</strong>
+                                                <span>{t('noRatings')}</span>
                                             </>
                                         )}
                                     </div>
@@ -168,7 +176,7 @@ function StoryDetailsPage() {
 
                                 <div
                                     className={styles.ratingStars}
-                                    aria-label="Story rating"
+                                    aria-label={t('ratingLabel')}
                                 >
                                     {ratingValues.map((value) => (
                                         <button
@@ -179,7 +187,7 @@ function StoryDetailsPage() {
                                             }
                                             key={value}
                                             type="button"
-                                            aria-label={`Rate ${value} out of 5`}
+                                            aria-label={format('rateOutOf', { value })}
                                             aria-pressed={
                                                 ratingInfo.userRating === value
                                             }
@@ -193,18 +201,17 @@ function StoryDetailsPage() {
 
                                 {isOwnStory ? (
                                     <p className={styles.ratingNote}>
-                                        You cannot rate your own Story.
+                                        {t('ownStory')}
                                     </p>
                                 ) : user ? (
                                     <p className={styles.ratingNote}>
                                         {ratingInfo.userRating > 0
-                                            ? `Your rating: ${ratingInfo.userRating} / 5. Choose another star to change it.`
-                                            : 'Choose from 1 to 5 stars. You can change your rating later.'}
+                                            ? format('yourRating', { rating: ratingInfo.userRating })
+                                            : t('chooseRating')}
                                     </p>
                                 ) : (
                                     <p className={styles.ratingNote}>
-                                        <Link to="/login">Sign in</Link> to rate
-                                        this Story.
+                                        <Link to="/login">{t('signIn')}</Link> {t('signInToRate')}
                                     </p>
                                 )}
 
@@ -213,7 +220,7 @@ function StoryDetailsPage() {
                                         className={styles.ratingStatus}
                                         role="status"
                                     >
-                                        Saving rating...
+                                        {t('saving')}
                                     </p>
                                 )}
 
@@ -233,7 +240,7 @@ function StoryDetailsPage() {
                                 className={styles.attachments}
                                 aria-labelledby="story-files-title"
                             >
-                                <h2 id="story-files-title">Attached files</h2>
+                                <h2 id="story-files-title">{t('attachedFiles')}</h2>
 
                                 <div className={styles.attachmentGrid}>
                                     {attachments.map((file) => (
@@ -273,8 +280,7 @@ function StoryDetailsPage() {
                                                     preload="metadata"
                                                     src={file.url}
                                                 >
-                                                    Your browser does not
-                                                    support audio playback.
+                                                    {t('audioUnsupported')}
                                                 </audio>
                                             )}
 
@@ -289,7 +295,7 @@ function StoryDetailsPage() {
                                                         target="_blank"
                                                         rel="noreferrer"
                                                     >
-                                                        Open file
+                                                        {t('openFile')}
                                                     </a>
                                                 )}
 
@@ -310,7 +316,7 @@ function StoryDetailsPage() {
 
                         {story.author && (
                             <p className={styles.meta}>
-                                Story by
+                                {t('storyBy')}
                                 {story.author_id ? (
                                     <Link to={`/users/${story.author_id}`}>
                                         {story.author}

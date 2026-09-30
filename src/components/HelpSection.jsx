@@ -1,41 +1,42 @@
 import { Link } from 'react-router';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 
 function HelpSection() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'help', key);
+
     return (
         <section className="visitor-section visitor-section-alt" aria-labelledby="help-title">
             <div className="site-container">
                 <div className="visitor-section-heading" id="help">
-                    <p className="section-kicker">Help</p>
-                    <h2 id="help-title">Explore, read and share.</h2>
+                    <p className="section-kicker">{t('kicker')}</p>
+                    <h2 id="help-title">{t('title')}</h2>
                     <p>
-                        Browse Stories, Heritage and About USG. Open the content that interests you
-                        and share a story when you have something worth preserving.
+                        {t('intro')}
                     </p>
                 </div>
 
                 <div className="help-grid">
                     <article className="help-card">
                         <span>01</span>
-                        <h3>Explore</h3>
-                        <p>Start from Home and discover Stories, Heritage and About USG.</p>
-                        <Link className="help-topic-link" to="/help/explore">Explore help →</Link>
+                        <h3>{t('exploreTitle')}</h3>
+                        <p>{t('exploreText')}</p>
+                        <Link className="help-topic-link" to="/help/explore">{t('exploreLink')}</Link>
                     </article>
 
                     <article className="help-card">
                         <span>02</span>
-                        <h3>Read</h3>
-                        <p>Open any Story or Heritage card to discover the full details.</p>
-                        <Link className="help-topic-link" to="/help/read">Reading help →</Link>
+                        <h3>{t('readTitle')}</h3>
+                        <p>{t('readText')}</p>
+                        <Link className="help-topic-link" to="/help/read">{t('readLink')}</Link>
                     </article>
 
                     <article className="help-card help-card-join">
                         <span>03</span>
-                        <h3>Share</h3>
-                        <p>
-                            Add a story to the collection and preserve meaningful Cane Corso
-                            experiences.
-                        </p>
-                        <Link className="help-topic-link" to="/help/share">Sharing help →</Link>
+                        <h3>{t('shareTitle')}</h3>
+                        <p>{t('shareText')}</p>
+                        <Link className="help-topic-link" to="/help/share">{t('shareLink')}</Link>
                     </article>
                 </div>
             </div>
