@@ -95,7 +95,7 @@ function AuthPreparationSection({ mode = 'login' }) {
             }
 
             setSuccessMessage(
-                'Account created. Check your email if Supabase asks you to confirm the registration.',
+                'Account created. Check your email if confirmation is required before signing in.',
             );
             setFormData((current) => ({
                 ...current,
@@ -244,6 +244,15 @@ function AuthPreparationSection({ mode = 'login' }) {
                                 >
                                     {successMessage}
                                 </p>
+                            )}
+
+                            {isLogin && (
+                                <Link
+                                    className={styles.switchLink}
+                                    to="/forgot-password"
+                                >
+                                    Forgot your password?
+                                </Link>
                             )}
 
                             <Link

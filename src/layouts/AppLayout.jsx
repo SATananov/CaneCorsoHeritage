@@ -11,7 +11,11 @@ const routeTitles = {
     '/help': 'Help | Cane Corso Heritage',
     '/login': 'Login | Cane Corso Heritage',
     '/register': 'Register | Cane Corso Heritage',
+    '/forgot-password': 'Password Recovery | Cane Corso Heritage',
+    '/update-password': 'Update Password | Cane Corso Heritage',
     '/my-stories': 'My Stories | Cane Corso Heritage',
+    '/my-files': 'My Files | Cane Corso Heritage',
+    '/admin': 'Administration | Cane Corso Heritage',
 };
 
 function getRouteTitle(pathname) {

@@ -4,6 +4,7 @@ import './App.css';
 import AppLayout from './layouts/AppLayout';
 import RequireAuth from './routing/RequireAuth';
 import RequireGuest from './routing/RequireGuest';
+import RequireAdmin from './routing/RequireAdmin';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const StoriesPage = lazy(() => import('./pages/StoriesPage'));
@@ -14,10 +15,13 @@ const AboutPage = lazy(() => import('./pages/AboutPage'));
 const HelpPage = lazy(() => import('./pages/HelpPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'));
 const MyStoriesPage = lazy(() => import('./pages/MyStoriesPage'));
 const MyFilesPage = lazy(() => import('./pages/MyFilesPage'));
 const UsersPage = lazy(() => import('./pages/UsersPage'));
 const UserDetailsPage = lazy(() => import('./pages/UserDetailsPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function App() {
@@ -56,9 +60,16 @@ function App() {
                         <Route path="register" element={<RegisterPage />} />
                     </Route>
 
+                    <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="update-password" element={<UpdatePasswordPage />} />
+
                     <Route element={<RequireAuth />}>
                         <Route path="my-stories" element={<MyStoriesPage />} />
                         <Route path="my-files" element={<MyFilesPage />} />
+                    </Route>
+
+                    <Route element={<RequireAdmin />}>
+                        <Route path="admin" element={<AdminPage />} />
                     </Route>
 
                     <Route path="*" element={<NotFoundPage />} />
