@@ -1,13 +1,13 @@
-import { Navigate, Outlet } from 'react-router';
+﻿import { Navigate, Outlet } from 'react-router';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import useAuth from '../hooks/useAuth';
 
 function RequireAdmin() {
-    const { user, profile, loading } = useAuth();
+    const { user, loading, roleLoading, isAdmin } = useAuth();
     const { language } = useLanguage();
 
-    if (loading) {
+    if (loading || roleLoading) {
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">
@@ -17,7 +17,7 @@ function RequireAdmin() {
         );
     }
 
-    if (!user || profile?.role !== 'admin') {
+    if (!user || !isAdmin) {
         return <Navigate to="/" replace />;
     }
 
