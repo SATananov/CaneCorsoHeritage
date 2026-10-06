@@ -6,6 +6,7 @@ import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import MediaRating from '../components/MediaRating';
+import CommentsSection from '../components/CommentsSection';
 import { fetchCommunityFilesByUser } from '../services/fileService';
 import {
     fetchOwnPrivateProfileDetails,
@@ -364,6 +365,11 @@ function UserDetailsPage() {
                                                         ownerId={file.user_id}
                                                     />
                                                 )}
+
+                                                <CommentsSection
+                                                    targetType="file"
+                                                    targetId={file.id}
+                                                />
                                             </div>
                                         </article>
                                     ))}

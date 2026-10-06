@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CommentsSection from '../components/CommentsSection';
 import { useLanguage } from '../context/languageContext';
 import useAuth from '../hooks/useAuth';
 import { getTranslation } from '../i18n/translations';
@@ -204,6 +205,11 @@ function MyFilesPage() {
                                         <button className={styles.deleteButton} type="button" onClick={() => deleteHandler(file)}>{t('delete')}</button>
                                     </div>
                                 </div>
+
+                                <CommentsSection
+                                    targetType="file"
+                                    targetId={file.id}
+                                />
                             </article>
                         ))}
                     </section>
