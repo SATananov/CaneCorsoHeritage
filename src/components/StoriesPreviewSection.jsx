@@ -1,15 +1,28 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import LoadingSpinner from './LoadingSpinner';
 import PreviewCard from './PreviewCard';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import { fetchStories } from '../services/storyService';
+import { localizeStoryCollection } from '../services/storyTranslationService';
+
+const LEGACY_EDITORIAL_STORY_TITLES = new Set([
+    'Where every story begins',
+    'The bond that stays',
+    'Stories carried forward',
+]);
 
 function StoriesPreviewSection() {
     const navigate = useNavigate();
     const { language } = useLanguage();
-    const t = (key) => getTranslation(language, 'publicStories', key);
+    const t = useCallback((key) => getTranslation(language, 'publicStories', key), [language]);
+    const tm = (key) => getTranslation(language, 'memberProfile', key);
+    const displayEyebrow = (story) => story.eyebrow === 'Community'
+        ? tm('communityEyebrow')
+        : story.eyebrow === 'My Own'
+            ? tm('privateEyebrow')
+            : story.eyebrow;
     const [stories, setStories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUsingFallback, setIsUsingFallback] = useState(false);
@@ -36,7 +49,7 @@ function StoriesPreviewSection() {
             description: t('fallbackLegacyDescription'),
             details: t('fallbackLegacyDetails'),
         },
-    ], [language]);
+    ], [t]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -44,7 +57,16 @@ function StoriesPreviewSection() {
         const loadStories = async () => {
             try {
                 const data = await fetchStories({ signal: controller.signal });
-                setStories(data);
+                const communityStories = data.filter(
+                    (story) => !LEGACY_EDITORIAL_STORY_TITLES.has(story.title),
+                );
+                const localizedCommunityStories = await localizeStoryCollection(communityStories, language);
+
+                if (controller.signal.aborted) {
+                    return;
+                }
+
+                setStories([...fallbackStories, ...localizedCommunityStories]);
                 setIsUsingFallback(false);
             } catch (loadError) {
                 if (loadError.name !== 'AbortError') {
@@ -63,7 +85,7 @@ function StoriesPreviewSection() {
         return () => {
             controller.abort();
         };
-    }, [fallbackStories]);
+    }, [fallbackStories, language]);
 
     return (
         <section className="visitor-section" aria-labelledby="stories-feature-title">
@@ -91,12 +113,12 @@ function StoriesPreviewSection() {
                         stories.map((story) => (
                             <PreviewCard
                                 key={story._id}
-                                eyebrow={story.eyebrow}
+                                eyebrow={displayEyebrow(story)}
                                 title={story.title}
                                 description={story.description}
                                 details={story.details}
                                 onDetails={
-                                    isUsingFallback
+                                    isUsingFallback || LEGACY_EDITORIAL_STORY_TITLES.has(story.title) || story._id?.endsWith('-story')
                                         ? undefined
                                         : () => navigate(`/stories/${story._id}`)
                                 }

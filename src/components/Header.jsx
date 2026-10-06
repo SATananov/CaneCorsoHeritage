@@ -22,7 +22,7 @@ function Header() {
                     <span className="brand-copy">
                         <small>
                             Unico Suo Genere
-                            <sup className="brand-trademark" aria-label="trademark">&trade;</sup>
+                            <sup className="brand-trademark" aria-label={getTranslation(language, 'systemUi', 'trademark')}>&trade;</sup>
                         </small>
                         <strong>Cane Corso Heritage</strong>
                     </span>

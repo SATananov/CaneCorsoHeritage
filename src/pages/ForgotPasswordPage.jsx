@@ -35,7 +35,7 @@ function ForgotPasswordPage() {
             setErrorMessage(
                 message === 'Failed to fetch'
                     ? t('connectionProblem')
-                    : message || t('requestError'),
+                    : t('requestError'),
             );
         } finally {
             setSubmitting(false);

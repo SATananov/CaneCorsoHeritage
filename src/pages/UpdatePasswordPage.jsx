@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { supabase } from '../lib/supabaseClient';
 import useAuth from '../hooks/useAuth';
@@ -8,7 +8,7 @@ import styles from '../components/AuthPreparationSection.module.css';
 
 function UpdatePasswordPage() {
     const { language } = useLanguage();
-    const t = (key) => getTranslation(language, 'recovery', key);
+    const t = useCallback((key) => getTranslation(language, 'recovery', key), [language]);
     const navigate = useNavigate();
     const { updatePassword, logout } = useAuth();
     const [recoveryReady, setRecoveryReady] = useState(false);
@@ -29,7 +29,7 @@ function UpdatePasswordPage() {
             }
 
             if (error) {
-                setErrorMessage(error.message || t('verifyError'));
+                setErrorMessage(t('verifyError'));
                 setRecoveryReady(false);
             } else {
                 setRecoveryReady(Boolean(data?.session));
@@ -43,7 +43,7 @@ function UpdatePasswordPage() {
         return () => {
             active = false;
         };
-    }, []);
+    }, [t]);
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -73,7 +73,7 @@ function UpdatePasswordPage() {
             setErrorMessage(
                 message === 'Failed to fetch'
                     ? t('connectionProblem')
-                    : message || t('updateError'),
+                    : t('updateError'),
             );
         } finally {
             setSubmitting(false);

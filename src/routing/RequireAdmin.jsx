@@ -1,30 +1,23 @@
-import { Navigate, Outlet, useLocation } from 'react-router';
-import GuestAccessPrompt from '../components/GuestAccessPrompt';
+import { Navigate, Outlet } from 'react-router';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import useAuth from '../hooks/useAuth';
 
 function RequireAdmin() {
-    const location = useLocation();
-    const {
-        user,
-        loading,
-        roleLoading,
-        isAdmin,
-        isActive,
-    } = useAuth();
+    const { user, profile, loading } = useAuth();
+    const { language } = useLanguage();
 
-    if (loading || roleLoading) {
+    if (loading) {
         return (
             <main className="route-loading" aria-live="polite">
-                <div className="site-container">Checking administrator access...</div>
+                <div className="site-container">
+                    {getTranslation(language, 'systemUi', 'checkingAdmin')}
+                </div>
             </main>
         );
     }
 
-    if (!user) {
-        return <GuestAccessPrompt location={location} admin />;
-    }
-
-    if (!isAdmin || !isActive) {
+    if (!user || profile?.role !== 'admin') {
         return <Navigate to="/" replace />;
     }
 

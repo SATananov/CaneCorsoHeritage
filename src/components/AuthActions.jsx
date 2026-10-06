@@ -76,8 +76,8 @@ function AuthActions(props) {
         try {
             await logout();
             navigate('/', { replace: true });
-        } catch (error) {
-            window.alert(error.message || t('logoutError'));
+        } catch {
+            window.alert(t('logoutError'));
         }
     }
 

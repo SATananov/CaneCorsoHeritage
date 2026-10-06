@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import { deleteStory } from '../services/storyService';
 import styles from './StoryDeleteModal.module.css';
 
 function StoryDeleteModal({ story, onClose, onDeleted }) {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'storyDelete', key);
     const [error, setError] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -15,7 +19,7 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
             await onDeleted();
             onClose();
         } catch {
-            setError('Unable to delete the story right now.');
+            setError(t('error'));
         } finally {
             setIsDeleting(false);
         }
@@ -30,18 +34,16 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
                 aria-labelledby="delete-story-title"
                 onMouseDown={(event) => event.stopPropagation()}
             >
-                <p className={styles.eyebrow}>Delete Story</p>
-                <h2 id="delete-story-title">Remove this story?</h2>
+                <p className={styles.eyebrow}>{t('kicker')}</p>
+                <h2 id="delete-story-title">{t('title')}</h2>
                 <p className={styles.storyTitle}>{story.title}</p>
-                <p className={styles.message}>
-                    This story will be removed from the Stories collection.
-                </p>
+                <p className={styles.message}>{t('copy')}</p>
 
                 {error && <p className={styles.error} role="alert">{error}</p>}
 
                 <div className={styles.actions}>
                     <button type="button" onClick={onClose} disabled={isDeleting}>
-                        Cancel
+                        {t('cancel')}
                     </button>
                     <button
                         className={styles.confirmButton}
@@ -49,7 +51,7 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
                         onClick={deleteHandler}
                         disabled={isDeleting}
                     >
-                        {isDeleting ? 'Deleting...' : 'Delete Story'}
+                        {isDeleting ? t('deleting') : t('delete')}
                     </button>
                 </div>
             </section>

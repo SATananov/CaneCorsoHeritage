@@ -5,6 +5,7 @@ import { getTranslation } from '../i18n/translations';
 function Footer() {
     const { language } = useLanguage();
     const t = (key) => getTranslation(language, 'footer', key);
+    const ts = (key) => getTranslation(language, 'systemUi', key);
 
     return (
         <footer className="site-footer">
@@ -16,19 +17,19 @@ function Footer() {
                         <strong>Cane Corso Heritage</strong>
                         <span>
                             USG · Unico Suo Genere
-                            <sup className="footer-trademark" aria-label="trademark">&trade;</sup>
+                            <sup className="footer-trademark" aria-label={ts('trademark')}>&trade;</sup>
                         </span>
                     </div>
                 </div>
 
-                <nav className="footer-nav" aria-label="Footer navigation">
+                <nav className="footer-nav" aria-label={ts('footerNavigation')}>
                     <Link to="/about">{t('about')}</Link>
                     <Link to="/help">{t('help')}</Link>
                 </nav>
 
                 <p className="footer-legal">
                     © 2026 <strong>USG</strong> · Unico Suo Genere
-                    <sup className="footer-trademark" aria-label="trademark">&trade;</sup>
+                    <sup className="footer-trademark" aria-label={ts('trademark')}>&trade;</sup>
                     <span aria-hidden="true"> · </span>Cane Corso Heritage
                 </p>
             </div>

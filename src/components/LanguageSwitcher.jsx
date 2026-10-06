@@ -1,4 +1,5 @@
 import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 
 const languageLabels = {
     en: 'EN',
@@ -12,9 +13,10 @@ function LanguageSwitcher() {
         setLanguage,
         supportedLanguages,
     } = useLanguage();
+    const label = getTranslation(language, 'systemUi', 'languageSelection');
 
     return (
-        <div className="language-switcher" aria-label="Language selection">
+        <div className="language-switcher" aria-label={label}>
             {supportedLanguages.map((code) => (
                 <button
                     key={code}

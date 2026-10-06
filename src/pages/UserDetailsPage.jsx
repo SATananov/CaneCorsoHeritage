@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProfileEditor from '../components/ProfileEditor';
@@ -21,12 +21,14 @@ function getInitial(displayName) {
     return displayName?.trim()?.charAt(0)?.toUpperCase() || 'U';
 }
 
-function formatMemberSince(value) {
+function formatMemberSince(value, language) {
     if (!value) {
         return '';
     }
 
-    return new Intl.DateTimeFormat('en', {
+    const locale = language === 'bg' ? 'bg-BG' : language === 'it' ? 'it-IT' : 'en-GB';
+
+    return new Intl.DateTimeFormat(locale, {
         month: 'long',
         year: 'numeric',
     }).format(new Date(value));
@@ -59,6 +61,11 @@ function getSharedFileLabel(file) {
 function UserDetailsPage() {
     const { language } = useLanguage();
     const tCompletion = (key) => getTranslation(language, 'completion', key);
+    const t = useCallback((key) => getTranslation(language, 'memberProfile', key), [language]);
+    const format = (key, values) => Object.entries(values).reduce(
+        (text, [name, value]) => text.replace(`{${name}}`, value),
+        t(key),
+    );
     const { userId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -85,7 +92,7 @@ function UserDetailsPage() {
 
                 if (!profileData) {
                     if (active) {
-                        setError('This member profile could not be found.');
+                        setError(t('notFound'));
                     }
                     return;
                 }
@@ -171,7 +178,7 @@ function UserDetailsPage() {
                 }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && active) {
-                    setError('Unable to load this member profile right now.');
+                    setError(t('loadError'));
                 }
             } finally {
                 if (active && !controller.signal.aborted) {
@@ -186,11 +193,11 @@ function UserDetailsPage() {
             active = false;
             controller.abort();
         };
-    }, [user?.id, userId, refreshKey]);
+    }, [refreshKey, t, user?.id, userId]);
 
-    const displayName = profile?.display_name || 'USG Member';
+    const displayName = profile?.display_name || t('defaultMember');
     const avatarUrl = getProfileAvatarUrl(profile);
-    const memberSince = formatMemberSince(profile?.created_at);
+    const memberSince = formatMemberSince(profile?.created_at, language);
     const isOwnProfile = Boolean(user?.id && profile?.id === user.id);
     const missingRequiredFields = isOwnProfile && privateDetailsLoaded
         ? [
@@ -212,10 +219,10 @@ function UserDetailsPage() {
         <main className={styles.page}>
             <div className={styles.detailsShell}>
                 <button className={styles.backButton} type="button" onClick={() => navigate('/users')}>
-                    ← Back to Members
+                    {t('back')}
                 </button>
 
-                {loading && <LoadingSpinner label="Loading member profile..." />}
+                {loading && <LoadingSpinner label={t('loading')} />}
 
                 {error && (
                     <div className={styles.message} role="alert">
@@ -258,7 +265,7 @@ function UserDetailsPage() {
                             </div>
 
                             <div className={styles.profileCopy}>
-                                <p className={styles.eyebrow}>Member profile</p>
+                                <p className={styles.eyebrow}>{t('profile')}</p>
                                 <h1>{displayName}</h1>
                                 <p className={identityStyles.profileUsername}>
                                     @{profile.username}
@@ -271,13 +278,13 @@ function UserDetailsPage() {
                                 <p className={styles.bio}>
                                     {profile.bio?.trim()
                                         || (profileSetupRequired
-                                            ? 'Your public biography is optional. Complete the required profile setup below first.'
+                                            ? t('ownBioSetup')
                                             : isOwnProfile
-                                                ? 'You have not added a public biography yet.'
-                                                : 'This member has not added a public biography yet.')}
+                                                ? t('ownBioEmpty')
+                                                : t('memberBioEmpty'))}
                                 </p>
                                 {memberSince && (
-                                    <p className={styles.memberSince}>Member since {memberSince}</p>
+                                    <p className={styles.memberSince}>{format('memberSince', { date: memberSince })}</p>
                                 )}
                             </div>
                         </article>
@@ -295,20 +302,20 @@ function UserDetailsPage() {
 
                         <section className={styles.storySection} aria-labelledby="member-stories-title">
                             <div className={styles.sectionHeading}>
-                                <p className={styles.eyebrow}>Published work</p>
-                                <h2 id="member-stories-title">Stories by {displayName}</h2>
+                                <p className={styles.eyebrow}>{t('publishedWork')}</p>
+                                <h2 id="member-stories-title">{format('storiesBy', { name: displayName })}</h2>
                             </div>
 
                             {stories.length === 0 ? (
-                                <div className={styles.message}>No published stories from this member yet.</div>
+                                <div className={styles.message}>{t('noStories')}</div>
                             ) : (
                                 <div className={styles.storyGrid}>
                                     {stories.map((story) => (
                                         <article className={styles.storyCard} key={story.id}>
-                                            <span>{story.eyebrow || 'Story'}</span>
+                                            <span>{story.eyebrow === 'Community' ? t('communityEyebrow') : story.eyebrow === 'My Own' ? t('privateEyebrow') : story.eyebrow || t('story')}</span>
                                             <h3>{story.title}</h3>
                                             <p>{story.description}</p>
-                                            <Link to={`/stories/${story.id}`}>View story →</Link>
+                                            <Link to={`/stories/${story.id}`}>{t('viewStory')}</Link>
                                         </article>
                                     ))}
                                 </div>
@@ -317,12 +324,12 @@ function UserDetailsPage() {
 
                         <section className={styles.storySection} aria-labelledby="member-files-title">
                             <div className={styles.sectionHeading}>
-                                <p className={styles.eyebrow}>Shared files</p>
-                                <h2 id="member-files-title">Public files by {displayName}</h2>
+                                <p className={styles.eyebrow}>{t('sharedFiles')}</p>
+                                <h2 id="member-files-title">{format('filesBy', { name: displayName })}</h2>
                             </div>
 
                             {sharedFiles.length === 0 ? (
-                                <div className={styles.message}>No public files from this member yet.</div>
+                                <div className={styles.message}>{t('noFiles')}</div>
                             ) : (
                                 <div className={styles.fileGrid}>
                                     {sharedFiles.map((file) => (
@@ -333,7 +340,7 @@ function UserDetailsPage() {
                                                 <div className={styles.sharedAudio}>
                                                     <span>AUDIO</span>
                                                     <audio controls preload="metadata" src={file.url}>
-                                                        Your browser does not support audio playback.
+                                                        {t('audioUnsupported')}
                                                     </audio>
                                                 </div>
                                             ) : (
@@ -346,7 +353,7 @@ function UserDetailsPage() {
                                                 <strong>{file.file_name}</strong>
                                                 {file.url && (
                                                     <a href={file.url} target="_blank" rel="noreferrer">
-                                                        Open file →
+                                                        {t('openFile')}
                                                     </a>
                                                 )}
 

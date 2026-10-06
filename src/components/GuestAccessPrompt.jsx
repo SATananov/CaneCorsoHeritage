@@ -36,7 +36,7 @@ function GuestAccessPrompt({ location, admin = false }) {
                             to="/login"
                             state={destination ? { from: destination } : undefined}
                         >
-                            Login
+                            {t('login')}
                         </NavLink>
 
                         {!admin && (
@@ -45,7 +45,7 @@ function GuestAccessPrompt({ location, admin = false }) {
                                 to="/register"
                                 state={destination ? { from: destination } : undefined}
                             >
-                                Register
+                                {t('register')}
                             </NavLink>
                         )}
                     </div>

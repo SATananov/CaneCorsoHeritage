@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import useAuth from '../hooks/useAuth';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import { fetchOwnPrivateProfileDetails } from '../services/profileService';
 
 const requiredFields = [
@@ -19,6 +21,7 @@ function isComplete(details) {
 function RequireCompleteProfile() {
     const location = useLocation();
     const { user } = useAuth();
+    const { language } = useLanguage();
     const [checkState, setCheckState] = useState({
         userId: null,
         checked: false,
@@ -83,7 +86,7 @@ function RequireCompleteProfile() {
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">
-                    Checking profile setup...
+                    {getTranslation(language, 'systemUi', 'checkingProfile')}
                 </div>
             </main>
         );

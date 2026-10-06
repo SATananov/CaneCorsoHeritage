@@ -171,3 +171,29 @@
         flex-wrap: wrap;
     }
 }
+
+.form select {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(198, 157, 31, 0.34);
+    border-radius: 0.9rem;
+    background: #08090a;
+    color: inherit;
+    font: inherit;
+    outline: none;
+}
+
+.form select:focus {
+    border-color: rgba(221, 178, 38, 0.78);
+}
+
+.form select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.form select option {
+    background: #0b0c0d;
+    color: #f2f2ef;
+}

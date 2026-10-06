@@ -5,6 +5,7 @@ import { getTranslation } from '../i18n/translations';
 function Hero() {
     const { language } = useLanguage();
     const t = (key) => getTranslation(language, 'hero', key);
+    const ts = (key) => getTranslation(language, 'systemUi', key);
 
     return (
         <section className="hero">
@@ -28,7 +29,7 @@ function Hero() {
                         </div>
                     </div>
 
-                    <div className="hero-visual" aria-label="Unico Suo Genere visual identity">
+                    <div className="hero-visual" aria-label={ts('visualIdentity')}>
                         <div className="hero-visual-frame">
                             <img
                                 className="hero-main-image"

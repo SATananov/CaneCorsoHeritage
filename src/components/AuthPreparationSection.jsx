@@ -152,7 +152,7 @@ function AuthPreparationSection({ mode = 'login' }) {
             ) {
                 setErrorMessage(t('usernameUsed'));
             } else {
-                setErrorMessage(message || t('unableContinue'));
+                setErrorMessage(t('unableContinue'));
             }
         } finally {
             setSubmitting(false);

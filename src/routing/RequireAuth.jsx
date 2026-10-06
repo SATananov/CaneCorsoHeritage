@@ -1,25 +1,25 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
-import GuestAccessPrompt from '../components/GuestAccessPrompt';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import useAuth from '../hooks/useAuth';
 
 function RequireAuth() {
+    const { user, loading } = useAuth();
     const location = useLocation();
-    const { user, loading, roleLoading, isActive } = useAuth();
+    const { language } = useLanguage();
 
-    if (loading || roleLoading) {
+    if (loading) {
         return (
             <main className="route-loading" aria-live="polite">
-                <div className="site-container">Checking account...</div>
+                <div className="site-container">
+                    {getTranslation(language, 'systemUi', 'checkingAccount')}
+                </div>
             </main>
         );
     }
 
     if (!user) {
-        return <GuestAccessPrompt location={location} />;
-    }
-
-    if (!isActive) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/login" replace state={{ from: location }} />;
     }
 
     return <Outlet />;

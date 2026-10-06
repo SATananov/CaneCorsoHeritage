@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "verify:languages": "node scripts/verify-language-coverage01.mjs"
+    "verify:languages": "node scripts/verify-language-coverage01.mjs && node scripts/verify-language-global-ui02c.mjs && node scripts/verify-language-public-ui02b.mjs && node scripts/verify-language-ui-repair01.mjs && node scripts/verify-language-full-ui03.mjs",
+    "verify:story-translation": "node scripts/verify-story-translation01.mjs",
+    "verify:content-localization": "node scripts/verify-content-localization01.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.109.0",
@@ -25,6 +27,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.6",
     "globals": "^17.12.0",
+    "supabase": "^2.119.0",
     "vite": "^8.3.0"
   }
 }

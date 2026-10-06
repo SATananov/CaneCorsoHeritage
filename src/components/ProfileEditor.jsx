@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import {
+    PROFILE_COUNTRIES,
+    getProfileCities,
+} from '../data/profileLocations';
+import {
     fetchOwnPrivateProfileDetails,
     removeProfileAvatar,
     saveOwnPrivateProfileDetails,
@@ -25,6 +29,10 @@ function ProfileEditor({
         (key) => getTranslation(language, 'profileEditor', key),
         [language],
     );
+    const ts = useCallback(
+        (key) => getTranslation(language, 'systemUi', key),
+        [language],
+    );
     const [open, setOpen] = useState(false);
     const [displayName, setDisplayName] = useState(profile.display_name || '');
     const [username, setUsername] = useState(profile.username || '');
@@ -34,6 +42,18 @@ function ProfileEditor({
     const [country, setCountry] = useState('');
     const [city, setCity] = useState('');
     const [phone, setPhone] = useState('');
+    const cityOptions = getProfileCities(country);
+    const countryOptions = country && !PROFILE_COUNTRIES.includes(country)
+        ? [country, ...PROFILE_COUNTRIES]
+        : PROFILE_COUNTRIES;
+    const visibleCityOptions = city && !cityOptions.includes(city)
+        ? [city, ...cityOptions]
+        : cityOptions;
+
+    const countryChangeHandler = (event) => {
+        setCountry(event.target.value);
+        setCity('');
+    };
     const [privateDetailsLoading, setPrivateDetailsLoading] = useState(true);
     const [publicEmail, setPublicEmail] = useState(contact?.email || currentEmail || '');
     const [showEmail, setShowEmail] = useState(Boolean(contact?.show_email));
@@ -64,7 +84,7 @@ function ProfileEditor({
                 setPhone(details?.phone || '');
             } catch (loadError) {
                 if (loadError.name !== 'AbortError') {
-                    setError(loadError.message || t('loadPrivateError'));
+                    setError(t('loadPrivateError'));
                 }
             } finally {
                 if (!controller.signal.aborted) {
@@ -145,8 +165,8 @@ function ProfileEditor({
             setMessage(t('updated'));
             setOpen(false);
             onSaved();
-        } catch (saveError) {
-            setError(saveError.message || t('updateError'));
+        } catch {
+            setError(t('updateError'));
         } finally {
             setSaving(false);
         }
@@ -162,8 +182,8 @@ function ProfileEditor({
             setAvatarFile(null);
             setMessage(t('avatarRemoved'));
             onSaved();
-        } catch (removeError) {
-            setError(removeError.message || t('removeError'));
+        } catch {
+            setError(t('removeError'));
         } finally {
             setSaving(false);
         }
@@ -200,7 +220,7 @@ function ProfileEditor({
                         type="button"
                         onClick={() => setOpen(false)}
                     >
-                        Close
+                        {ts('close')}
                     </button>
                 )}
             </div>
@@ -264,30 +284,42 @@ function ProfileEditor({
 
                 <label>
                     <span>{t('country')}</span>
-                    <input
-                        type="text"
+                    <select
                         name="country"
                         value={country}
-                        maxLength="80"
                         autoComplete="country-name"
                         required
                         disabled={privateDetailsLoading}
-                        onChange={(event) => setCountry(event.target.value)}
-                    />
+                        onChange={countryChangeHandler}
+                    >
+                        <option value="">{ts('selectCountry')}</option>
+                        {countryOptions.map((countryName) => (
+                            <option key={countryName} value={countryName}>
+                                {countryName}
+                            </option>
+                        ))}
+                    </select>
                 </label>
 
                 <label>
                     <span>{t('city')}</span>
-                    <input
-                        type="text"
+                    <select
                         name="city"
                         value={city}
-                        maxLength="120"
                         autoComplete="address-level2"
                         required
-                        disabled={privateDetailsLoading}
+                        disabled={privateDetailsLoading || !country}
                         onChange={(event) => setCity(event.target.value)}
-                    />
+                    >
+                        <option value="">
+                            {country ? ts('selectCity') : ts('selectCountryFirst')}
+                        </option>
+                        {visibleCityOptions.map((cityName) => (
+                            <option key={cityName} value={cityName}>
+                                {cityName}
+                            </option>
+                        ))}
+                    </select>
                 </label>
 
                 <label>

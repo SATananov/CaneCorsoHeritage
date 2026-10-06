@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import PreviewCard from './PreviewCard';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import { getHeritageArticles, getHeritagePreview } from '../services/heritageService';
+import { localizeHeritageArticles } from '../services/heritageTranslationService';
 
 function HeritagePreviewSection({ catalogMode = false }) {
     const navigate = useNavigate();
     const { language } = useLanguage();
-    const t = (key) => getTranslation(language, 'publicHeritage', key);
+    const t = useCallback((key) => getTranslation(language, 'publicHeritage', key), [language]);
     const [searchParams, setSearchParams] = useSearchParams();
     const [heritageData, setHeritageData] = useState(null);
     const [heritageArticles, setHeritageArticles] = useState(null);
@@ -39,7 +40,7 @@ function HeritagePreviewSection({ catalogMode = false }) {
             details: t('typeDetails'),
             image: '/images/cards/heritage-card.webp',
         },
-    ], [language]);
+    ], [t]);
 
     const categoryLabels = useMemo(() => ({
         stories: t('trueStories'),
@@ -47,7 +48,7 @@ function HeritagePreviewSection({ catalogMode = false }) {
         understanding: t('understanding'),
         'living-care': t('livingCare'),
         research: t('research'),
-    }), [language]);
+    }), [t]);
 
     const selectedCategory = catalogMode ? searchParams.get('category') ?? 'all' : 'all';
 
@@ -60,9 +61,14 @@ function HeritagePreviewSection({ catalogMode = false }) {
                     getHeritagePreview({ signal: controller.signal }),
                     getHeritageArticles({ signal: controller.signal }),
                 ]);
+                const localizedArticles = await localizeHeritageArticles(articles, language);
+
+                if (controller.signal.aborted) {
+                    return;
+                }
 
                 setHeritageData(previewData);
-                setHeritageArticles(articles);
+                setHeritageArticles(localizedArticles);
             } catch (loadError) {
                 if (loadError.name !== 'AbortError') {
                     setHasError(true);
@@ -75,7 +81,7 @@ function HeritagePreviewSection({ catalogMode = false }) {
         return () => {
             controller.abort();
         };
-    }, []);
+    }, [language]);
 
     let heritageIntro = <p>{t('loadingPreview')}</p>;
 
@@ -84,9 +90,9 @@ function HeritagePreviewSection({ catalogMode = false }) {
     } else if (heritageData) {
         heritageIntro = (
             <>
-                <p className="section-kicker">{heritageData.eyebrow}</p>
-                <h2 id="heritage-preview-title">{heritageData.title}</h2>
-                <p>{heritageData.summary}</p>
+                <p className="section-kicker">{t('previewKicker')}</p>
+                <h2 id="heritage-preview-title">{t('previewTitle')}</h2>
+                <p>{t('previewSummary')}</p>
             </>
         );
     }
@@ -108,7 +114,7 @@ function HeritagePreviewSection({ catalogMode = false }) {
     } else {
         heritageSections = featuredArticles?.length === 3
             ? featuredArticles
-            : heritageData?.sections ?? fallbackHeritageSections;
+            : fallbackHeritageSections;
     }
 
     const setCategory = (category) => {

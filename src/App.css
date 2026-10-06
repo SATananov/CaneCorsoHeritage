@@ -3232,3 +3232,106 @@ body {
     border-top: 1px solid rgba(212, 175, 55, 0.18);
     color: rgba(248, 245, 239, 0.86);
 }
+/* Header Language Polish 01 */
+.language-switcher {
+    flex: 0 0 auto;
+    align-self: center;
+    gap: 2px;
+    margin-inline: clamp(8px, 0.9vw, 14px);
+    padding: 2px;
+}
+
+.language-button {
+    min-width: 30px;
+    height: 28px;
+    padding: 0 7px;
+    font-size: 0.64rem;
+}
+
+@media (max-width: 1180px) {
+    .language-switcher {
+        margin-inline: 6px;
+    }
+
+    .language-button {
+        min-width: 28px;
+        padding-inline: 6px;
+    }
+}
+
+@media (max-width: 900px) {
+    .language-switcher {
+        width: fit-content;
+        margin: 4px 0 0;
+        align-self: auto;
+    }
+}
+/* End Header Language Polish 01 */
+/* Header Responsive Balance 01 */
+/*
+   Intermediate desktop/laptop layout:
+   - brand remains stable at the left
+   - public navigation + language selector stay on the first nav row
+   - signed-in account controls move to a second nav row
+   - existing <=1060px responsive rules remain authoritative
+*/
+@media (min-width: 1061px) and (max-width: 1450px) {
+    .header-inner {
+        align-items: center;
+        gap: clamp(16px, 1.8vw, 26px);
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .brand {
+        flex: 0 0 auto;
+        align-self: flex-start;
+    }
+
+    .main-nav {
+        min-width: 0;
+        flex: 1 1 auto;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        column-gap: 4px;
+        row-gap: 8px;
+    }
+
+    .language-switcher {
+        flex: 0 0 auto;
+    }
+
+    .visitor-auth {
+        width: 100%;
+        flex: 0 0 100%;
+        margin-left: 0;
+        padding-top: 2px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+    .signed-in-user {
+        flex: 0 1 auto;
+    }
+}
+
+@media (min-width: 1061px) and (max-width: 1240px) {
+    .header-inner {
+        gap: 14px;
+    }
+
+    .main-nav a {
+        padding-inline: 7px;
+    }
+
+    .language-switcher {
+        margin-inline: 4px;
+    }
+
+    .visitor-auth {
+        gap: 5px;
+    }
+}
+/* End Header Responsive Balance 01 */

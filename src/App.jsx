@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router';
 import './App.css';
+import { useLanguage } from './context/languageContext';
+import { getTranslation } from './i18n/translations';
 import AppLayout from './layouts/AppLayout';
 import RequireAuth from './routing/RequireAuth';
 import RequireGuest from './routing/RequireGuest';
@@ -26,11 +28,14 @@ const AdminPage = lazy(() => import('./pages/AdminPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function App() {
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'systemUi', key);
+
     return (
         <Suspense
             fallback={(
                 <main className="route-loading" aria-live="polite">
-                    <div className="site-container">Loading page...</div>
+                    <div className="site-container">{t('loadingPage')}</div>
                 </main>
             )}
         >

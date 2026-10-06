@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CommentsSection from '../components/CommentsSection';
+import HeritageRating from '../components/heritage/HeritageRating';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import { getHeritageArticleBySlug, getHeritagePreview } from '../services/heritageService';
+import { localizeHeritageArticles } from '../services/heritageTranslationService';
 import styles from './DetailsPage.module.css';
 
 function HeritageArticlePage() {
     const { language } = useLanguage();
-    const t = (key) => getTranslation(language, 'heritageDetails', key);
+    const t = useCallback((key) => getTranslation(language, 'heritageDetails', key), [language]);
     const categoryLabels = {
         stories: t('trueStory'),
         'heritage-history': t('heritageHistory'),
@@ -37,8 +40,11 @@ function HeritageArticlePage() {
                     getHeritagePreview({ signal: controller.signal }),
                 ]);
 
+                const localizedLibrary = libraryArticle
+                    ? (await localizeHeritageArticles([libraryArticle], language))[0]
+                    : null;
                 const previewArticle = preview.sections?.find((item) => item.id === slug);
-                const match = libraryArticle ?? previewArticle;
+                const match = localizedLibrary ?? previewArticle;
 
                 if (!match) {
                     setError(t('notFound'));
@@ -58,7 +64,7 @@ function HeritageArticlePage() {
         return () => {
             controller.abort();
         };
-    }, [slug]);
+    }, [language, slug, t]);
 
     const sections = article?.content?.sections;
     const hasSections = Array.isArray(sections) && sections.length > 0;
@@ -122,6 +128,14 @@ function HeritageArticlePage() {
                                 {article.source_credit && <span>{article.source_credit}</span>}
                             </div>
                         )}
+                        <HeritageRating articleSlug={slug} />
+
+
+
+                        <CommentsSection
+                            targetType="heritage"
+                            targetId={slug}
+                        />
                     </article>
                 )}
             </div>

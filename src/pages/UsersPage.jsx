@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useLanguage } from '../context/languageContext';
@@ -17,7 +17,7 @@ function getInitial(displayName) {
 
 function UsersPage() {
     const { language } = useLanguage();
-    const t = (key) => getTranslation(language, 'members', key);
+    const t = useCallback((key) => getTranslation(language, 'members', key), [language]);
     const [profiles, setProfiles] = useState([]);
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ function UsersPage() {
         return () => {
             controller.abort();
         };
-    }, []);
+    }, [t]);
 
     return (
         <main className={styles.page}>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
@@ -13,7 +13,7 @@ const ratingValues = [1, 2, 3, 4, 5];
 
 function MediaRating({ fileId, ownerId }) {
     const { language } = useLanguage();
-    const t = (key) => getTranslation(language, 'mediaRating', key);
+    const t = useCallback((key) => getTranslation(language, 'mediaRating', key), [language]);
     const format = (key, values) => Object.entries(values).reduce(
         (text, [name, value]) => text.replace(`{${name}}`, value),
         t(key),
@@ -60,7 +60,7 @@ function MediaRating({ fileId, ownerId }) {
             active = false;
             controller.abort();
         };
-    }, [fileId, user?.id]);
+    }, [fileId, user?.id, t]);
 
     const ratingHandler = async (rating) => {
         if (!user || isOwnFile) {
@@ -80,8 +80,8 @@ function MediaRating({ fileId, ownerId }) {
 
             const nextInfo = await fetchFileRatings(fileId, user.id);
             setRatingInfo(nextInfo);
-        } catch (saveError) {
-            setError(saveError.message || t('saveError'));
+        } catch {
+            setError(t('saveError'));
         } finally {
             setSaving(false);
         }

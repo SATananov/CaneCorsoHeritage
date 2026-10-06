@@ -4,11 +4,14 @@ import {
     uploadUserFiles,
 } from '../services/fileService';
 import { createStory, updateStory } from '../services/storyService';
+import { useLanguage } from '../context/languageContext';
+import { getTranslation } from '../i18n/translations';
 import styles from './AddStoryModal.module.css';
 
-function getInitialForm(story) {
+function getInitialForm(story, language) {
     return {
         visibility: story?.visibility ?? 'community',
+        originalLanguage: story?.original_language ?? language,
         title: story?.title ?? '',
         description: story?.description ?? '',
         content: story?.content ?? '',
@@ -16,7 +19,9 @@ function getInitialForm(story) {
 }
 
 function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
-    const [formData, setFormData] = useState(() => getInitialForm(story));
+    const { language } = useLanguage();
+    const t = (key) => getTranslation(language, 'storyForm', key);
+    const [formData, setFormData] = useState(() => getInitialForm(story, language));
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +57,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
         const storyData = {
             eyebrow: formData.visibility === 'community' ? 'Community' : 'My Own',
             visibility: formData.visibility,
+            original_language: formData.originalLanguage,
             title: formData.title.trim(),
             description: formData.description.trim(),
             content: formData.content.trim(),
@@ -64,7 +70,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
             || !storyData.content
             || !storyData.author
         ) {
-            setError('Please complete all text fields.');
+            setError(t('requiredError'));
             return;
         }
 
@@ -88,8 +94,8 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
 
             await onSaved();
             onClose();
-        } catch (submitError) {
-            setError(submitError.message || 'Unable to save the story right now.');
+        } catch {
+            setError(t('saveError'));
         } finally {
             setIsSubmitting(false);
         }
@@ -107,75 +113,90 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                 <button
                     className={styles.closeButton}
                     type="button"
-                    aria-label="Close story form"
+                    aria-label={t('close')}
                     onClick={onClose}
                 >
                     ×
                 </button>
 
                 <div className={styles.heading}>
-                    <p>{isEditing ? 'Edit Story' : 'Add Story'}</p>
+                    <p>{isEditing ? t('editKicker') : t('addKicker')}</p>
                     <h2 id="story-form-title">
-                        {isEditing ? 'Update your story.' : 'Share a new story.'}
+                        {isEditing ? t('editTitle') : t('addTitle')}
                     </h2>
                     <span>
-                        Choose who can see it, write the text and attach images, MP4 or TXT files.
+                        {t('intro')}
                     </span>
                 </div>
 
                 <form className={styles.form} onSubmit={submitHandler}>
                     <div className={styles.formRow}>
                         <label>
-                            Visibility
+                            {t('visibility')}
                             <select
                                 name="visibility"
                                 value={formData.visibility}
                                 onChange={changeHandler}
                                 disabled={isSubmitting}
                             >
-                                <option value="community">Community — visible to everyone</option>
-                                <option value="private">My Own — only visible to me</option>
+                                <option value="community">{t('community')}</option>
+                                <option value="private">{t('private')}</option>
                             </select>
                         </label>
 
                         <label>
-                            Title
+                            {t('title')}
                             <input
                                 name="title"
                                 value={formData.title}
                                 onChange={changeHandler}
                                 disabled={isSubmitting}
-                                placeholder="A story worth preserving"
+                                placeholder={t('titlePlaceholder')}
                             />
                         </label>
                     </div>
 
                     <label>
-                        Short description
+                        {t('originalLanguage')}
+                        <select
+                            name="originalLanguage"
+                            value={formData.originalLanguage}
+                            onChange={changeHandler}
+                            disabled={isSubmitting}
+                        >
+                            <option value="en">{t('languageEnglish')}</option>
+                            <option value="bg">{t('languageBulgarian')}</option>
+                            <option value="it">{t('languageItalian')}</option>
+                        </select>
+                        <span>{t('languageHint')}</span>
+                    </label>
+
+                    <label>
+                        {t('shortDescription')}
                         <textarea
                             name="description"
                             value={formData.description}
                             onChange={changeHandler}
                             disabled={isSubmitting}
                             rows="1"
-                            placeholder="A short introduction for the Story card."
+                            placeholder={t('descriptionPlaceholder')}
                         />
                     </label>
 
                     <label>
-                        Story
+                        {t('story')}
                         <textarea
                             name="content"
                             value={formData.content}
                             onChange={changeHandler}
                             disabled={isSubmitting}
                             rows="3"
-                            placeholder="Write the Story details."
+                            placeholder={t('storyPlaceholder')}
                         />
                     </label>
 
                     <label className={styles.fileField}>
-                        Attach files
+                        {t('attachFiles')}
                         <input
                             type="file"
                             multiple
@@ -183,8 +204,8 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                             onChange={fileChangeHandler}
                             disabled={isSubmitting}
                         />
-                        <span>Images, audio, MP4 and text documents · up to 50 MB per file</span>
-                        <span>Attachments follow this Story visibility.</span>
+                        <span>{t('fileHint')}</span>
+                        <span>{t('attachmentVisibility')}</span>
                     </label>
 
                     {selectedFiles.length > 0 && (
@@ -197,19 +218,19 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
 
                     <div className={styles.formFooter}>
                         <p className={styles.authorNote}>
-                            Publishing as <strong>{authorName}</strong>
+                            {t('publishingAs')} <strong>{authorName}</strong>
                         </p>
 
                         <div className={styles.actions}>
                             <button type="button" onClick={onClose} disabled={isSubmitting}>
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button type="submit" disabled={isSubmitting}>
                                 {isSubmitting
-                                    ? 'Saving...'
+                                    ? t('saving')
                                     : isEditing
-                                        ? 'Save Changes'
-                                        : 'Publish Story'}
+                                        ? t('update')
+                                        : t('publish')}
                             </button>
                         </div>
                     </div>
