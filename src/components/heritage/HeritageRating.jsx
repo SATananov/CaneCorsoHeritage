@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../../hooks/useAuth';
 import { useLanguage } from '../../context/languageContext';
@@ -11,44 +11,11 @@ import styles from '../../pages/DetailsPage.module.css';
 
 const ratingValues = [1, 2, 3, 4, 5];
 
-const copy = {
-    en: {
-        title: 'Rate this article',
-        signInToRate: 'to rate this article.',
-        activeOnly: 'Only active members can rate this article.',
-        adminReadOnly: 'Heritage articles are rated by readers.',
-        chooseRating: 'Choose your rating.',
-        yourRating: 'Your rating: {rating} / 5',
-        loadError: 'Unable to load article ratings.',
-        saveError: 'Unable to save your rating.',
-    },
-    bg: {
-        title: 'Оценете тази статия',
-        signInToRate: 'за да оцените тази статия.',
-        activeOnly: 'Само активни членове могат да оценяват тази статия.',
-        adminReadOnly: 'Heritage статиите се оценяват от читателите.',
-        chooseRating: 'Изберете своята оценка.',
-        yourRating: 'Вашата оценка: {rating} / 5',
-        loadError: 'Оценките на статията не могат да бъдат заредени.',
-        saveError: 'Оценката не можа да бъде запазена.',
-    },
-    it: {
-        title: 'Valuta questo articolo',
-        signInToRate: 'per valutare questo articolo.',
-        activeOnly: 'Solo i membri attivi possono valutare questo articolo.',
-        adminReadOnly: 'Gli articoli Heritage sono valutati dai lettori.',
-        chooseRating: 'Scegli la tua valutazione.',
-        yourRating: 'La tua valutazione: {rating} / 5',
-        loadError: 'Impossibile caricare le valutazioni dell’articolo.',
-        saveError: 'Impossibile salvare la valutazione.',
-    },
-};
-
 function HeritageRating({ articleSlug }) {
     const { language } = useLanguage();
-    const text = copy[language] ?? copy.en;
     const t = (key) => getTranslation(language, 'storyDetails', key);
-    const { user, isAdmin, isActive } = useAuth();
+    const ratingLoadError = t('heritageRatingLoadError');
+    const { user, isActive } = useAuth();
 
     const [ratingInfo, setRatingInfo] = useState({
         average: 0,
@@ -79,7 +46,7 @@ function HeritageRating({ articleSlug }) {
                 }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && active) {
-                    setError(text.loadError);
+                    setError(ratingLoadError);
                 }
             } finally {
                 if (active) {
@@ -94,9 +61,9 @@ function HeritageRating({ articleSlug }) {
             active = false;
             controller.abort();
         };
-    }, [articleSlug, text.loadError, user?.id]);
+    }, [articleSlug, ratingLoadError, user?.id]);
 
-    const canRate = Boolean(user && isActive && !isAdmin);
+    const canRate = Boolean(user && isActive);
 
     const ratingHandler = async (rating) => {
         if (!canRate) {
@@ -121,7 +88,7 @@ function HeritageRating({ articleSlug }) {
 
             setRatingInfo(next);
         } catch {
-            setError(text.saveError);
+            setError(t('heritageRatingSaveError'));
         } finally {
             setSaving(false);
         }
@@ -143,7 +110,7 @@ function HeritageRating({ articleSlug }) {
                         {t('readerRating')}
                     </p>
                     <h2 id="heritage-rating-title">
-                        {text.title}
+                        {t('heritageRatingTitle')}
                     </h2>
                 </div>
 
@@ -187,28 +154,24 @@ function HeritageRating({ articleSlug }) {
                         disabled={!canRate || saving || loading}
                         onClick={() => ratingHandler(value)}
                     >
-                        ★
+                        {String.fromCharCode(9733)}
                     </button>
                 ))}
             </div>
 
             {!user ? (
                 <p className={styles.ratingNote}>
-                    <Link to="/login">{t('signIn')}</Link> {text.signInToRate}
-                </p>
-            ) : isAdmin ? (
-                <p className={styles.ratingNote}>
-                    {text.adminReadOnly}
+                    <Link to="/login">{t('signIn')}</Link> {t('heritageRatingSignIn')}
                 </p>
             ) : !isActive ? (
                 <p className={styles.ratingNote}>
-                    {text.activeOnly}
+                    {t('heritageRatingActiveOnly')}
                 </p>
             ) : (
                 <p className={styles.ratingNote}>
                     {ratingInfo.userRating > 0
-                        ? format(text.yourRating, { rating: ratingInfo.userRating })
-                        : text.chooseRating}
+                        ? format(t('heritageRatingYourRating'), { rating: ratingInfo.userRating })
+                        : t('heritageRatingChoose')}
                 </p>
             )}
 
@@ -228,3 +191,5 @@ function HeritageRating({ articleSlug }) {
 }
 
 export default HeritageRating;
+
+

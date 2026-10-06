@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
@@ -11,6 +11,11 @@ import {
     fetchComments,
     updateComment,
 } from '../services/commentService';
+import {
+    fetchCommentReactions,
+    removeCommentReaction,
+    setCommentReaction,
+} from '../services/commentReactionService';
 import styles from './CommentsSection.module.css';
 
 const MAX_COMMENT_LENGTH = 2000;
@@ -25,7 +30,6 @@ function CommentsSection({ targetType, targetId }) {
     const { language } = useLanguage();
     const {
         user,
-        isAdmin,
         isActive,
     } = useAuth();
     const [comments, setComments] = useState([]);
@@ -36,6 +40,8 @@ function CommentsSection({ targetType, targetId }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [actionId, setActionId] = useState('');
+    const [reactions, setReactions] = useState([]);
+    const [reactionActionId, setReactionActionId] = useState('');
     const [error, setError] = useState('');
 
     const t = (key) => getTranslation(language, 'comments', key);
@@ -68,11 +74,17 @@ function CommentsSection({ targetType, targetId }) {
                     { signal: controller.signal },
                 );
 
+                const nextReactions = await fetchCommentReactions(
+                    nextComments.map((comment) => comment.id),
+                    { signal: controller.signal },
+                );
+
                 if (!active) {
                     return;
                 }
 
                 setComments(nextComments);
+                setReactions(nextReactions);
                 setProfilesById(
                     Object.fromEntries(
                         profiles.map((profile) => [profile.id, profile]),
@@ -103,7 +115,12 @@ function CommentsSection({ targetType, targetId }) {
             nextComments.map((comment) => comment.author_id),
         );
 
+        const nextReactions = await fetchCommentReactions(
+            nextComments.map((comment) => comment.id),
+        );
+
         setComments(nextComments);
+        setReactions(nextReactions);
         setProfilesById(
             Object.fromEntries(
                 profiles.map((profile) => [profile.id, profile]),
@@ -204,6 +221,48 @@ function CommentsSection({ targetType, targetId }) {
         }
     }
 
+    async function toggleReaction(commentId, reaction) {
+        if (!user || !isActive || reactionActionId) {
+            return;
+        }
+
+        const currentReaction = reactions.find(
+            (item) => item.comment_id === commentId && item.user_id === user.id,
+        );
+
+        setReactionActionId(commentId);
+        setError('');
+
+        try {
+            if (currentReaction?.reaction === reaction) {
+                await removeCommentReaction(commentId);
+
+                setReactions((current) => current.filter(
+                    (item) => !(
+                        item.comment_id === commentId
+                        && item.user_id === user.id
+                    ),
+                ));
+            } else {
+                const savedReaction = await setCommentReaction(commentId, reaction);
+
+                setReactions((current) => [
+                    ...current.filter(
+                        (item) => !(
+                            item.comment_id === commentId
+                            && item.user_id === user.id
+                        ),
+                    ),
+                    savedReaction,
+                ]);
+            }
+        } catch {
+            setError(t('reactionError'));
+        } finally {
+            setReactionActionId('');
+        }
+    }
+
     function authorLabel(profile) {
         if (profile?.display_name?.trim()) {
             return profile.display_name.trim();
@@ -252,10 +311,29 @@ function CommentsSection({ targetType, targetId }) {
                         const canManage = Boolean(
                             user?.id
                             && isActive
-                            && (user.id === comment.author_id || isAdmin),
+                            && user.id === comment.author_id,
                         );
                         const isEditing = editingId === comment.id;
                         const isBusy = actionId === comment.id;
+                        const isReactionBusy = reactionActionId === comment.id;
+
+                        const commentReactions = reactions.filter(
+                            (item) => item.comment_id === comment.id,
+                        );
+
+                        const likeCount = commentReactions.filter(
+                            (item) => item.reaction === 'like',
+                        ).length;
+
+                        const dislikeCount = commentReactions.filter(
+                            (item) => item.reaction === 'dislike',
+                        ).length;
+
+                        const myReaction = user?.id
+                            ? commentReactions.find(
+                                (item) => item.user_id === user.id,
+                            )?.reaction ?? ''
+                            : '';
 
                         return (
                             <article className={styles.comment} key={comment.id}>
@@ -337,6 +415,53 @@ function CommentsSection({ targetType, targetId }) {
                                         )}
                                     </>
                                 )}
+
+                                <div
+                                    className={styles.reactions}
+                                    aria-label={t('reactions')}
+                                >
+                                    <button
+                                        className={`${styles.reactionButton} ${
+                                            myReaction === 'like'
+                                                ? styles.reactionActive
+                                                : ''
+                                        }`}
+                                        type="button"
+                                        aria-pressed={myReaction === 'like'}
+                                        aria-label={`${t('like')} (${likeCount})`}
+                                        title={
+                                            user && isActive
+                                                ? t('like')
+                                                : t('signInToReact')
+                                        }
+                                        disabled={!user || !isActive || isReactionBusy}
+                                        onClick={() => toggleReaction(comment.id, 'like')}
+                                    >
+                                        <span aria-hidden="true">👍</span>
+                                        <span>{likeCount}</span>
+                                    </button>
+
+                                    <button
+                                        className={`${styles.reactionButton} ${
+                                            myReaction === 'dislike'
+                                                ? styles.reactionActive
+                                                : ''
+                                        }`}
+                                        type="button"
+                                        aria-pressed={myReaction === 'dislike'}
+                                        aria-label={`${t('dislike')} (${dislikeCount})`}
+                                        title={
+                                            user && isActive
+                                                ? t('dislike')
+                                                : t('signInToReact')
+                                        }
+                                        disabled={!user || !isActive || isReactionBusy}
+                                        onClick={() => toggleReaction(comment.id, 'dislike')}
+                                    >
+                                        <span aria-hidden="true">👎</span>
+                                        <span>{dislikeCount}</span>
+                                    </button>
+                                </div>
                             </article>
                         );
                     })}
@@ -388,3 +513,5 @@ function CommentsSection({ targetType, targetId }) {
 }
 
 export default CommentsSection;
+
+

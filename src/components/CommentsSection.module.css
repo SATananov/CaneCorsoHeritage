@@ -326,3 +326,50 @@
         width: 100%;
     }
 }
+
+.reactions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.reactionButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 58px;
+    min-height: 32px;
+    padding: 4px 10px;
+    border: 1px solid rgba(248, 245, 239, 0.12);
+    border-radius: 999px;
+    background: rgba(7, 7, 9, 0.44);
+    color: rgba(248, 245, 239, 0.68);
+    font: inherit;
+    font-size: 0.68rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        border-color 150ms ease,
+        background 150ms ease,
+        color 150ms ease,
+        opacity 150ms ease;
+}
+
+.reactionButton:hover:not(:disabled),
+.reactionButton:focus-visible:not(:disabled) {
+    border-color: rgba(212, 175, 55, 0.38);
+    color: #f8f5ef;
+}
+
+.reactionActive {
+    border-color: rgba(212, 175, 55, 0.58);
+    background: rgba(212, 175, 55, 0.12);
+    color: #d4af37;
+}
+
+.reactionButton:disabled {
+    cursor: default;
+    opacity: 0.62;
+}
