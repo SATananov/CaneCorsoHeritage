@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CommentsSection from '../components/CommentsSection';
 import { useLanguage } from '../context/languageContext';
@@ -45,6 +45,8 @@ function MyFilesPage() {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [zoomedImage, setZoomedImage] = useState(null);
+    const uploadingRef = useRef(false);
+    const uploadBatchRef = useRef({ userId: null, completed: new WeakSet() });
 
     function getFileVisibilityLabel(file) {
         if (file.visibility === 'private') return t('privateStatus');
@@ -93,21 +95,39 @@ function MyFilesPage() {
 
     async function uploadHandler(event) {
         event.preventDefault();
+        if (uploadingRef.current) return;
         const form = event.currentTarget;
         if (selectedFiles.length === 0) {
             setError(t('chooseError'));
             return;
         }
+        if (uploadBatchRef.current.userId !== user.id) {
+            uploadBatchRef.current = { userId: user.id, completed: new WeakSet() };
+        }
+        const batch = uploadBatchRef.current;
+        let uploadsComplete = false;
+        uploadingRef.current = true;
         try {
             setUploading(true);
             setError('');
-            await uploadUserFiles(selectedFiles, { visibility });
+            // File references survive retries. A newly selected File is a new
+            // upload, even if its name/size match a previous selection.
+            for (const file of selectedFiles) {
+                if (batch.completed.has(file)) continue;
+                await uploadUserFiles([file], { visibility });
+                // The service resolves only after both storage and metadata succeed.
+                batch.completed.add(file);
+            }
+            uploadsComplete = true;
             await refreshFiles();
             setSelectedFiles([]);
             form.reset();
+            uploadBatchRef.current = { userId: user.id, completed: new WeakSet() };
         } catch {
-            setError(t('uploadError'));
+            // Keep completion tracking when a list refresh fails, too.
+            setError(t(uploadsComplete ? 'loadError' : 'uploadError'));
         } finally {
+            uploadingRef.current = false;
             setUploading(false);
         }
     }
