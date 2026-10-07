@@ -67,6 +67,14 @@ function ProfileEditor({
         const controller = new AbortController();
 
         async function loadPrivateDetails() {
+            setPrivateDetailsLoading(true);
+            setError('');
+            setFirstName('');
+            setLastName('');
+            setCountry('');
+            setCity('');
+            setPhone('');
+
             try {
                 const details = await fetchOwnPrivateProfileDetails(
                     profile.id,
@@ -83,8 +91,8 @@ function ProfileEditor({
                 setCity(details?.city || '');
                 setPhone(details?.phone || '');
             } catch (loadError) {
-                if (loadError.name !== 'AbortError') {
-                    setError(t('loadPrivateError'));
+                if (!controller.signal.aborted && loadError.name !== 'AbortError') {
+                    setError('loadPrivateError');
                 }
             } finally {
                 if (!controller.signal.aborted) {
@@ -96,7 +104,7 @@ function ProfileEditor({
         loadPrivateDetails();
 
         return () => controller.abort();
-    }, [profile.id, t]);
+    }, [profile.id]);
 
     async function submitHandler(event) {
         event.preventDefault();
@@ -189,6 +197,8 @@ function ProfileEditor({
         }
     }
 
+    // Translate load failures at render time without reloading editable data.
+    const errorMessage = error === 'loadPrivateError' ? t('loadPrivateError') : error;
     const editorOpen = requiredCompletion || open;
 
     if (!editorOpen) {
@@ -202,7 +212,7 @@ function ProfileEditor({
                     {t('edit')}
                 </button>
                 {message && <span className={styles.success}>{message}</span>}
-                {error && <span className={styles.error}>{error}</span>}
+                {errorMessage && <span className={styles.error}>{errorMessage}</span>}
             </div>
         );
     }
@@ -384,9 +394,9 @@ function ProfileEditor({
                     <span>{t('showEmail')}</span>
                 </label>
 
-                {error && (
+                {errorMessage && (
                     <p className={`${styles.feedback} ${styles.error}`} role="alert">
-                        {error}
+                        {errorMessage}
                     </p>
                 )}
 
