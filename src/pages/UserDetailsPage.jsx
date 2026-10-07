@@ -79,6 +79,24 @@ function UserDetailsPage() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [loadIdentity, setLoadIdentity] = useState({ userId, viewerId: user?.id, refreshKey });
+
+    // Reset before children commit when the requested member or viewer changes.
+    if (
+        loadIdentity.userId !== userId
+        || loadIdentity.viewerId !== user?.id
+        || loadIdentity.refreshKey !== refreshKey
+    ) {
+        setLoadIdentity({ userId, viewerId: user?.id, refreshKey });
+        setLoading(true);
+        setError('');
+        setProfile(null);
+        setStories([]);
+        setSharedFiles([]);
+        setPublicContact(null);
+        setPrivateDetails(null);
+        setPrivateDetailsLoaded(false);
+    }
 
     useEffect(() => {
         const controller = new AbortController();
@@ -91,14 +109,12 @@ function UserDetailsPage() {
                     { signal: controller.signal },
                 );
 
-                if (!profileData) {
-                    if (active) {
-                        setError(t('notFound'));
-                    }
+                if (!active || controller.signal.aborted) {
                     return;
                 }
 
-                if (!active || controller.signal.aborted) {
+                if (!profileData) {
+                    setError('notFound');
                     return;
                 }
 
@@ -129,6 +145,10 @@ function UserDetailsPage() {
                             setPrivateDetailsLoaded(true);
                         }
                     }
+                }
+
+                if (!active || controller.signal.aborted) {
+                    return;
                 }
 
                 const [storiesResult, filesResult, contactResult] = await Promise.allSettled([
@@ -178,8 +198,8 @@ function UserDetailsPage() {
                     );
                 }
             } catch (loadError) {
-                if (loadError.name !== 'AbortError' && active) {
-                    setError(t('loadError'));
+                if (loadError.name !== 'AbortError' && active && !controller.signal.aborted) {
+                    setError('loadError');
                 }
             } finally {
                 if (active && !controller.signal.aborted) {
@@ -194,7 +214,10 @@ function UserDetailsPage() {
             active = false;
             controller.abort();
         };
-    }, [refreshKey, t, user?.id, userId]);
+    }, [refreshKey, user?.id, userId]);
+
+    // Hide the previous route's state even before the new effect runs.
+    const isCurrentMember = loadIdentity.userId === userId;
 
     const displayName = profile?.display_name || t('defaultMember');
     const avatarUrl = getProfileAvatarUrl(profile);
@@ -223,15 +246,15 @@ function UserDetailsPage() {
                     {t('back')}
                 </button>
 
-                {loading && <LoadingSpinner label={t('loading')} />}
+                {(loading || !isCurrentMember) && <LoadingSpinner label={t('loading')} />}
 
-                {error && (
+                {isCurrentMember && error && (
                     <div className={styles.message} role="alert">
-                        {error}
+                        {t(error)}
                     </div>
                 )}
 
-                {profile && (
+                {isCurrentMember && profile && (
                     <>
                         {profileSetupRequired && (
                             <section
