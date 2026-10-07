@@ -1,30 +1,14 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
-import { fetchOwnPrivateProfileDetails } from '../services/profileService';
 import styles from './AuthPreparationSection.module.css';
-
-
-const requiredProfileFields = [
-    'first_name',
-    'last_name',
-    'country',
-    'city',
-];
-
-function isProfileComplete(details) {
-    return requiredProfileFields.every(
-        (field) => details?.[field]?.trim(),
-    );
-}
 
 function AuthPreparationSection({ mode = 'login' }) {
     const { language } = useLanguage();
     const t = (key) => getTranslation(language, 'auth', key);
     const location = useLocation();
-    const navigate = useNavigate();
     const { login, register } = useAuth();
 
     const isLogin = mode === 'login';
@@ -98,23 +82,7 @@ function AuthPreparationSection({ mode = 'login' }) {
                     throw new Error(t('unresolvedAccount'));
                 }
 
-                let details = null;
-
-                try {
-                    details = await fetchOwnPrivateProfileDetails(userId);
-                } catch (profileError) {
-                    console.warn(
-                        'Unable to verify profile completion after login.',
-                        profileError,
-                    );
-                }
-
-                if (!isProfileComplete(details)) {
-                    navigate(`/users/${userId}`, { replace: true });
-                    return;
-                }
-
-                navigate('/', { replace: true });
+                // RequireGuest owns navigation once auth state is updated.
                 return;
             }
 
@@ -126,7 +94,6 @@ function AuthPreparationSection({ mode = 'login' }) {
             );
 
             if (data.session?.user?.id) {
-                navigate(`/users/${data.session.user.id}`, { replace: true });
                 return;
             }
 
@@ -174,7 +141,7 @@ function AuthPreparationSection({ mode = 'login' }) {
                                 : t('registerIntro')}
                         </p>
 
-                        {guardedFrom && isLogin && (
+                        {typeof guardedFrom?.pathname === 'string' && isLogin && (
                             <p className={styles.routeNotice}>
                                 {t('continueTo')} <strong>{guardedFrom.pathname}</strong>.
                             </p>
