@@ -65,6 +65,14 @@ Community Stories are publicly readable. `My Own` Stories are readable only by t
 
 The private `user-files` Storage bucket accepts images, MP4 and TXT files up to 50 MB. File metadata is stored in `user_files`. A file can remain private or be explicitly shared with the Community.
 
+## Security and Row Level Security
+
+Supabase Row Level Security (RLS) is the backend authorization layer for application data. React route guards and UI restrictions improve the user experience, but they are not treated as the security boundary.
+
+RLS was verified directly against the connected Supabase database on 2026-10-07. All 15 application tables in the `public` schema reported `rowsecurity = true`, and active policies were inspected through `pg_policies`. The policies cover public reads where appropriate, authenticated ownership checks, author-only writes, active-member restrictions, moderation rules, rating/reaction ownership and admin-only operations.
+
+The detailed verification matrix and the exact read-only SQL queries used for the check are documented in [`docs/SECURITY_RLS_EVIDENCE.md`](docs/SECURITY_RLS_EVIDENCE.md).
+
 ## Run the application
 
 Install dependencies:
