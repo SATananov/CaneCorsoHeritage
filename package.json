@@ -8,9 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "verify:languages": "node scripts/verify-language-coverage01.mjs && node scripts/verify-language-global-ui02c.mjs && node scripts/verify-language-public-ui02b.mjs && node scripts/verify-language-ui-repair01.mjs && node scripts/verify-language-full-ui03.mjs",
-    "verify:story-translation": "node scripts/verify-story-translation01.mjs",
-    "verify:content-localization": "node scripts/verify-content-localization01.mjs"
+    "verify:languages": "node scripts/verify-language-coverage.mjs && node scripts/verify-language-global-ui.mjs && node scripts/verify-language-public-ui.mjs && node scripts/verify-language-ui-consistency.mjs && node scripts/verify-language-full-ui.mjs",
+    "verify:story-translation": "node scripts/verify-story-translation.mjs",
+    "verify:content-localization": "node scripts/verify-content-localization.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.109.0",

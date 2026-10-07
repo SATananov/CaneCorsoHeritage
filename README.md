@@ -123,7 +123,7 @@ React route guards control navigation and user experience, but backend authoriza
 
 RLS was verified directly against the connected Supabase database on **2026-10-07**. All 15 application tables in the `public` schema reported `rowsecurity = true`, and the active policies were inspected through `pg_policies`.
 
-Detailed evidence and the read-only verification SQL are documented in [`docs/SECURITY_RLS_EVIDENCE.md`](docs/SECURITY_RLS_EVIDENCE.md).
+Detailed evidence and the read-only verification SQL are documented in [`docs/security-rls.md`](docs/security-rls.md).
 
 ## Supabase usage
 
@@ -183,9 +183,9 @@ npm run preview
 
 Detailed technical evidence is kept outside the main README so this page remains concise:
 
-- [`docs/SECURITY_RLS_EVIDENCE.md`](docs/SECURITY_RLS_EVIDENCE.md) — deployed RLS verification
-- [`docs/CONTENT_LOCALIZATION_ARCHITECTURE_01_SETUP.md`](docs/CONTENT_LOCALIZATION_ARCHITECTURE_01_SETUP.md) — content localization architecture
-- [`docs/USER_STORY_TRANSLATION_01_SETUP.md`](docs/USER_STORY_TRANSLATION_01_SETUP.md) — Story translation setup
+- [`docs/security-rls.md`](docs/security-rls.md) — deployed RLS verification
+- [`docs/content-localization.md`](docs/content-localization.md) — content localization architecture
+- [`docs/story-translation.md`](docs/story-translation.md) — Story translation setup
 
 ## Repository
 
