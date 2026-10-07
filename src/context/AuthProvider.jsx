@@ -11,8 +11,16 @@ function AuthProvider({ children }) {
 
     useEffect(() => {
         let active = true;
+        let roleRequestId = 0;
 
         async function loadRole(userId) {
+            if (!active) {
+                return;
+            }
+
+            // Every auth update, including logout, invalidates earlier role reads.
+            const requestId = ++roleRequestId;
+
             if (!userId) {
                 if (active) {
                     setRole('user');
@@ -32,7 +40,7 @@ function AuthProvider({ children }) {
                 .eq('user_id', userId)
                 .maybeSingle();
 
-            if (!active) {
+            if (!active || requestId !== roleRequestId) {
                 return;
             }
 
@@ -48,8 +56,9 @@ function AuthProvider({ children }) {
             setRoleLoading(false);
         }
 
+        const initialSessionRequestId = roleRequestId;
         supabase.auth.getSession().then(({ data, error }) => {
-            if (!active) {
+            if (!active || initialSessionRequestId !== roleRequestId) {
                 return;
             }
 
@@ -66,6 +75,10 @@ function AuthProvider({ children }) {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+            if (!active) {
+                return;
+            }
+
             setSession(nextSession);
             setLoading(false);
             loadRole(nextSession?.user?.id ?? null);
