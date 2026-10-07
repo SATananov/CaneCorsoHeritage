@@ -1,135 +1,192 @@
 # Cane Corso Heritage
 
-**ReactJS · September 2026**
+**ReactJS · September 2026**  
 **Stefan Tananov**
 
-Cane Corso Heritage is a React single-page application dedicated to Cane Corso history, working tradition, identity and community stories.
+Cane Corso Heritage is a React single-page application for preserving and sharing Cane Corso history, working tradition, heritage articles and community stories.
 
-## Current application
+It is currently developed as a standalone application and is planned to become a dedicated section of the broader **USG Cane Corso Platform**, which is under active development at **https://usg-cane-corso-platform.com/**.
 
-- React Router client-side routing with shared layout and lazy-loaded pages
-- Public Home, Stories, Heritage, Members, About USG and Help sections
-- Dynamic Story, Heritage article and Member profile detail routes
-- Supabase authentication with Register, Login, Logout and persistent sessions
-- Guest and authenticated route guards
-- Public Members catalog backed by the `profiles` table
-- Public Story and Heritage reads from Supabase
-- Authenticated Story Create, Read, Update and Delete operations
-- Story ownership through `author_id`
-- Only the story owner can edit or delete their records through Supabase RLS
-- Story visibility with `Community` and `My Own`
-- `My Stories` private workspace for the signed-in member
-- `My Files` private file workspace
-- Image, audio, MP4 and text-document uploads through private Supabase Storage
-- User files are private by default and can be shared with the Community
-- Community files can be displayed from the member profile
-- Story attachments follow the Story visibility setting
-- Controlled forms, loading states, validation and API error states
-- AbortController cleanup for collection and detail requests
-- Responsive layout with reusable React components and CSS Modules
+The project combines public educational content with authenticated community features, member profiles, media sharing, ratings, comments and administration. Supabase provides authentication, PostgreSQL data, Storage and Row Level Security.
 
-## Main routes
+## Main features
 
-- `/` — Home
-- `/stories` — public Community Stories catalog
-- `/stories/:storyId` — Story details
-- `/heritage` — Heritage library
-- `/heritage/:slug` — Heritage article details
-- `/users` — public Members catalog
-- `/users/:userId` — public Member profile
-- `/about` — About USG
-- `/help/:topic?` — Help
-- `/login` — Login for guests
-- `/register` — Registration for guests
-- `/my-stories` — private Story workspace
-- `/my-files` — private user file workspace
+### Public experience
 
-## Authentication and sessions
+- Home, Heritage, Stories, Members, About USG and Help pages
+- Heritage catalog with dynamic article details
+- Community Stories catalog with dynamic Story details
+- Public member catalog and member profile pages
+- Public approved community files and media
+- Ratings for Stories, Heritage articles and supported community files
+- Public comments and comment reactions
+- English, Bulgarian and Italian interface/content localization
 
-Authentication is provided by Supabase Auth. The application restores the current session when it loads and listens for authentication state changes through the shared Auth Context.
+### Authentication and member area
 
-Guests can browse public content. Authenticated users can access the private Story and file workspaces and manage only the records that belong to their account.
+- Register, Login and Logout with persistent Supabase sessions
+- Password recovery and password update flow
+- Guest, authenticated, completed-profile and admin route guards
+- Required profile completion before private member workspaces
+- Personal profile editing, avatar and contact visibility controls
+- `My Stories` workspace with Create, Read, Update and Delete operations
+- `My Files` workspace for private and community files
+- Story attachments stored through Supabase Storage
+- Controlled forms, validation, loading, retry and error states
 
-## Supabase data access
+### Community interaction
 
-The application uses Supabase as its hosted backend.
+- Story, Heritage and file ratings
+- Comments on supported content
+- Like / dislike reactions on comments
+- Ownership-aware edit and delete actions
+- Community visibility and moderation states
 
-Local configuration is provided through `.env.local`:
+### Administration
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-`.env.local` is ignored by Git and is not part of the repository.
-
-Community Stories are publicly readable. `My Own` Stories are readable only by their owner. Authenticated Story writes send the signed-in user's access token and are protected by Row Level Security.
-
-The private `user-files` Storage bucket accepts images, MP4 and TXT files up to 50 MB. File metadata is stored in `user_files`. A file can remain private or be explicitly shared with the Community.
-
-## Security and Row Level Security
-
-Supabase Row Level Security (RLS) is the backend authorization layer for application data. React route guards and UI restrictions improve the user experience, but they are not treated as the security boundary.
-
-RLS was verified directly against the connected Supabase database on 2026-10-07. All 15 application tables in the `public` schema reported `rowsecurity = true`, and active policies were inspected through `pg_policies`. The policies cover public reads where appropriate, authenticated ownership checks, author-only writes, active-member restrictions, moderation rules, rating/reaction ownership and admin-only operations.
-
-The detailed verification matrix and the exact read-only SQL queries used for the check are documented in [`docs/SECURITY_RLS_EVIDENCE.md`](docs/SECURITY_RLS_EVIDENCE.md).
-
-## Run the application
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the React application:
-
-```bash
-npm run dev
-```
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-Run lint checks:
-
-```bash
-npm run lint
-```
+- Admin-only route and moderation dashboard
+- Story and file moderation queues
+- Approve / decline moderation actions
+- Member account status management
+- Admin access to member details and protected moderation operations
 
 ## Architecture
 
-The application follows a small layered React architecture with clear separation between routing, UI, state and backend access.
+The application uses a small layered React architecture. Route pages compose reusable components, Context and custom Hooks manage shared/reusable state, Services isolate backend access, and Supabase provides the remote platform and security layer.
 
-- **Pages** in `src/pages` are route-level screens. They compose features and coordinate page-specific loading, errors and user actions.
-- **Components** in `src/components` contain reusable UI and feature building blocks shared across pages.
-- **Layouts and routing** in `src/layouts` and `src/routing` define shared page chrome, route boundaries and guest/authenticated/admin access rules.
-- **Context** in `src/context` provides application-wide authentication/session state through `AuthProvider`.
-- **Hooks** in `src/hooks` encapsulate reusable React state, effects and detail/translation behaviour without duplicating page logic.
-- **Services** in `src/services` form the data-access layer. Pages and components call these functions instead of talking directly to backend tables in UI code.
-- **Supabase client setup** in `src/lib` centralizes the backend connection used by authentication, database reads/writes, Storage and remote functions.
-- **Supabase** is the hosted backend for Auth, PostgreSQL data, Row Level Security, Storage and server-side operations used by the application.
-- Data flow is primarily **Page/Component → Hook or Service → Supabase → returned state → UI**, keeping rendering concerns separate from backend access.
-- Authorization is enforced both in the React route/UI layer for user experience and, where configured in Supabase, by backend Row Level Security.
-- CSS files and CSS Modules remain external to components, keeping presentation separate from React behaviour.
+```mermaid
+flowchart TD
+    A[User / Browser] --> B[React Router]
+    B --> C[Pages]
+    C --> D[Reusable Components]
+    C --> E[Context & Custom Hooks]
+    D --> F[Services]
+    E --> F
+    F --> G[Supabase]
+    G --> H[Auth]
+    G --> I[PostgreSQL]
+    G --> J[Storage]
+    I --> K[Row Level Security]
+```
 
-## Project structure
+**Primary data flow:** `Page / Component → Hook or Service → Supabase → React state → UI`
 
-- `src/components` — reusable interface components
-- `src/pages` — route-level page components
-- `src/layouts` — shared route layouts
-- `src/routing` — route guard components
-- `src/context` — shared authentication context
+- `src/pages` — route-level screens
+- `src/components` — reusable UI and feature components
+- `src/layouts` — shared application layouts
+- `src/routing` — guest/authenticated/profile/admin route guards
+- `src/context` — authentication and language providers
 - `src/hooks` — reusable React hooks
-- `src/services` — Supabase data and file access functions
+- `src/services` — Supabase data-access and mutation layer
 - `src/lib` — Supabase client setup
-- `public/data` — lightweight public preview data
-- `content-source` — non-public source content used to prepare Heritage data
+- `src/i18n` — global interface translations
+- `content-source` — source content used to prepare Heritage material
+- `docs` — architecture, localization and security evidence
+
+## Main routes
+
+| Route | Access | Purpose |
+| --- | --- | --- |
+| `/` | Public | Home |
+| `/stories` | Public | Community Stories catalog |
+| `/stories/:storyId` | Public / owner-aware | Story details |
+| `/heritage` | Public | Heritage library |
+| `/heritage/:slug` | Public | Heritage article details |
+| `/users` | Public | Members catalog |
+| `/users/:userId` | Public | Member profile |
+| `/about` | Public | About USG |
+| `/help/:topic?` | Public | Help topics |
+| `/login` | Guest | Login |
+| `/register` | Guest | Registration |
+| `/forgot-password` | Public | Password recovery |
+| `/update-password` | Recovery session | Set new password |
+| `/my-stories` | Authenticated + complete profile | Personal Story workspace |
+| `/my-files` | Authenticated + complete profile | Personal file workspace |
+| `/admin` | Admin | Moderation and administration |
+
+## Functional guide
+
+1. A guest can browse Heritage, Stories, Members and other public pages.
+2. A visitor can register or log in through Supabase Auth.
+3. An authenticated member completes the required profile before entering private workspaces.
+4. In **My Stories**, the member can create, edit and delete owned Stories and manage Story visibility/attachments.
+5. In **My Files**, the member can upload files, keep them private or share supported content with the Community.
+6. Logged-in members can interact with eligible public content through ratings, comments and comment reactions.
+7. Public community content is shown according to visibility and moderation state.
+8. Admin users can access the protected moderation dashboard and manage moderation/account actions.
+
+## Authentication and authorization
+
+Authentication is provided by Supabase Auth. The application restores the current session on load and listens for authentication-state changes through the shared Auth Context.
+
+React route guards control navigation and user experience, but backend authorization is enforced by Supabase Row Level Security (RLS).
+
+RLS was verified directly against the connected Supabase database on **2026-10-07**. All 15 application tables in the `public` schema reported `rowsecurity = true`, and the active policies were inspected through `pg_policies`.
+
+Detailed evidence and the read-only verification SQL are documented in [`docs/SECURITY_RLS_EVIDENCE.md`](docs/SECURITY_RLS_EVIDENCE.md).
+
+## Supabase usage
+
+Supabase is used for:
+
+- Authentication and persistent sessions
+- PostgreSQL application data
+- Row Level Security and ownership rules
+- Story, profile, comment, reaction, rating and moderation data
+- File and Story-attachment Storage
+- Remote/server-side operations used by the application
+
+Local configuration is supplied through `.env.local`:
+
+```env
+VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+```
+
+`.env.local` is ignored by Git and is not committed.
+
+## Run locally
+
+Requirements: a current Node.js/npm installation and valid Supabase environment values.
+
+```bash
+npm install
+npm run dev
+```
+
+Production and quality checks:
+
+```bash
+npm run lint
+npm run build
+```
+
+Optional local production preview:
+
+```bash
+npm run preview
+```
+
+## Technology stack
+
+- React 19
+- React Router
+- Vite
+- Supabase JavaScript client
+- Supabase Auth
+- PostgreSQL + Row Level Security
+- Supabase Storage
+- CSS / CSS Modules
+- ESLint
+
+## Project documentation
+
+Detailed technical evidence is kept outside the main README so this page remains concise:
+
+- [`docs/SECURITY_RLS_EVIDENCE.md`](docs/SECURITY_RLS_EVIDENCE.md) — deployed RLS verification
+- [`docs/CONTENT_LOCALIZATION_ARCHITECTURE_01_SETUP.md`](docs/CONTENT_LOCALIZATION_ARCHITECTURE_01_SETUP.md) — content localization architecture
+- [`docs/USER_STORY_TRANSLATION_01_SETUP.md`](docs/USER_STORY_TRANSLATION_01_SETUP.md) — Story translation setup
 
 ## Repository
 
 https://github.com/SATananov/CaneCorsoHeritage
-
-- File library supports common image formats, common audio formats, MP4 video and text/document files.
