@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { setImmediate } from 'node:timers/promises';
 import { runInNewContext } from 'node:vm';
+import { notifyProfileRefresh } from '../src/services/profileRefresh.js';
 
 const source = readFileSync(
     new URL('../src/components/ProfileEditor.jsx', import.meta.url),
@@ -57,6 +58,7 @@ function createHarness() {
 
     const Editor = runInNewContext(`${editorSource}\nProfileEditor;`, {
         AbortController,
+        notifyProfileRefresh,
         PROFILE_COUNTRIES: ['Bulgaria', 'Italy'],
         getProfileCities: () => [],
         useLanguage: () => ({ language }),

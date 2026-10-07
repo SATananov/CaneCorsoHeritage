@@ -4,6 +4,7 @@ import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import { fetchProfileById, getProfileAvatarUrl } from '../services/profileService';
+import { subscribeProfileRefresh } from '../services/profileRefresh';
 
 function AuthActions(props) {
     const navigate = useNavigate();
@@ -24,25 +25,35 @@ function AuthActions(props) {
         }
 
         const userId = user.id;
-        const controller = new AbortController();
+        let activeController;
 
-        fetchProfileById(userId, { signal: controller.signal })
-            .then((profile) => {
-                setProfileState({
-                    userId,
-                    profile,
-                });
-            })
-            .catch((error) => {
-                if (error?.name !== 'AbortError') {
+        async function loadProfile() {
+            activeController?.abort();
+            const controller = new AbortController();
+            activeController = controller;
+
+            try {
+                const profile = await fetchProfileById(userId, { signal: controller.signal });
+                if (!controller.signal.aborted) {
+                    setProfileState({ userId, profile });
+                }
+            } catch (error) {
+                if (!controller.signal.aborted && error?.name !== 'AbortError') {
                     setProfileState({
                         userId,
                         profile: null,
                     });
                 }
-            });
+            }
+        }
 
-        return () => controller.abort();
+        loadProfile();
+        const unsubscribe = subscribeProfileRefresh(userId, loadProfile);
+
+        return () => {
+            unsubscribe();
+            activeController?.abort();
+        };
     }, [user?.id]);
 
     const profile = profileState.userId === user?.id

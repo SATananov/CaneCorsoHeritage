@@ -4,6 +4,7 @@ import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import { fetchOwnPrivateProfileDetails } from '../services/profileService';
+import { subscribeProfileRefresh } from '../services/profileRefresh';
 
 const requiredFieldKeys = [
     ['first_name', 'firstName'],
@@ -37,9 +38,13 @@ function ProfileCompletionNotice() {
         }
 
         const userId = user.id;
-        const controller = new AbortController();
+        let activeController;
 
         async function loadCompletionState() {
+            activeController?.abort();
+            const controller = new AbortController();
+            activeController = controller;
+
             try {
                 const details = await fetchOwnPrivateProfileDetails(
                     userId,
@@ -63,8 +68,12 @@ function ProfileCompletionNotice() {
         }
 
         loadCompletionState();
+        const unsubscribe = subscribeProfileRefresh(userId, loadCompletionState);
 
-        return () => controller.abort();
+        return () => {
+            unsubscribe();
+            activeController?.abort();
+        };
     }, [user?.id]);
 
     const missingFields = useMemo(() => {

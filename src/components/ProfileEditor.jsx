@@ -14,6 +14,7 @@ import {
     uploadProfileAvatar,
 } from '../services/profileService';
 import styles from './ProfileEditor.module.css';
+import { notifyProfileRefresh } from '../services/profileRefresh';
 
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{2,29}$/;
 
@@ -170,6 +171,7 @@ function ProfileEditor({
                 );
             }
 
+            notifyProfileRefresh(profile.id);
             setMessage(t('updated'));
             setOpen(false);
             onSaved();
@@ -187,6 +189,7 @@ function ProfileEditor({
 
         try {
             await removeProfileAvatar(profile.id, profile.avatar_path);
+            notifyProfileRefresh(profile.id);
             setAvatarFile(null);
             setMessage(t('avatarRemoved'));
             onSaved();
