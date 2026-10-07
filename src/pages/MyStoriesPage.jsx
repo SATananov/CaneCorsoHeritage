@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import AddStoryModal from '../components/AddStoryModal';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -20,6 +20,7 @@ function MyStoriesPage() {
     const [showCreate, setShowCreate] = useState(false);
     const [editingStory, setEditingStory] = useState(null);
     const [deletingStory, setDeletingStory] = useState(null);
+    const refreshScopeRef = useRef(null);
 
     function getStoryStatusLabel(story) {
         if (story.visibility === 'private') {
@@ -46,32 +47,39 @@ function MyStoriesPage() {
 
     useEffect(() => {
         const controller = new AbortController();
+        let request = 0;
 
-        async function loadInitialStories() {
+        async function loadStories(errorKey) {
+            if (controller.signal.aborted) return;
+            const currentRequest = ++request;
+            const isCurrent = () => !controller.signal.aborted && currentRequest === request;
+            setIsLoading(true);
+            setError('');
             try {
                 const data = await fetchMyStories(user.id, { signal: controller.signal });
-                if (!controller.signal.aborted) setStories(data);
+                if (isCurrent()) setStories(data);
             } catch (loadError) {
-                if (loadError.name !== 'AbortError' && !controller.signal.aborted) {
-                    setError(t('loadError'));
+                if (loadError.name !== 'AbortError' && isCurrent()) {
+                    setError(t(errorKey));
                 }
             } finally {
-                if (!controller.signal.aborted) setIsLoading(false);
+                if (isCurrent()) setIsLoading(false);
             }
         }
 
-        loadInitialStories();
+        refreshScopeRef.current = {
+            userId: user.id,
+            refresh: () => loadStories('refreshError'),
+        };
+        loadStories('loadError');
         return () => controller.abort();
     }, [t, user.id]);
 
     async function refreshStories() {
-        try {
-            setError('');
-            const data = await fetchMyStories(user.id);
-            setStories(data);
-        } catch {
-            setError(t('refreshError'));
-        }
+        const scope = refreshScopeRef.current;
+        // Same-user saves refresh the current language; old-account callbacks stop here.
+        if (scope?.userId !== user.id) return;
+        await scope.refresh();
     }
 
     return (

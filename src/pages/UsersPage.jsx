@@ -27,16 +27,19 @@ function UsersPage() {
         const controller = new AbortController();
 
         const loadProfiles = async () => {
+            setLoading(true);
+            setError('');
             try {
                 const [profileData, contactData] = await Promise.all([
                     fetchProfiles({ signal: controller.signal }),
                     fetchPublicContacts({ signal: controller.signal }),
                 ]);
 
+                if (controller.signal.aborted) return;
                 setProfiles(profileData);
                 setContacts(contactData);
             } catch (loadError) {
-                if (loadError.name !== 'AbortError') {
+                if (loadError.name !== 'AbortError' && !controller.signal.aborted) {
                     setError(t('loadError'));
                 }
             } finally {

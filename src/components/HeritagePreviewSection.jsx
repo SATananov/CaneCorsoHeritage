@@ -56,11 +56,13 @@ function HeritagePreviewSection({ catalogMode = false }) {
         const controller = new AbortController();
 
         const loadHeritageData = async () => {
+            setHasError(false);
             try {
                 const [previewData, articles] = await Promise.all([
                     getHeritagePreview({ signal: controller.signal }),
                     getHeritageArticles({ signal: controller.signal }),
                 ]);
+                if (controller.signal.aborted) return;
                 const localizedArticles = await localizeHeritageArticles(articles, language);
 
                 if (controller.signal.aborted) {
@@ -70,7 +72,7 @@ function HeritagePreviewSection({ catalogMode = false }) {
                 setHeritageData(previewData);
                 setHeritageArticles(localizedArticles);
             } catch (loadError) {
-                if (loadError.name !== 'AbortError') {
+                if (loadError.name !== 'AbortError' && !controller.signal.aborted) {
                     setHasError(true);
                 }
             }
