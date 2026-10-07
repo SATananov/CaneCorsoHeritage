@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
@@ -27,11 +27,21 @@ const DATE_LOCALES = {
 };
 
 function CommentsSection({ targetType, targetId }) {
+    const { user, isActive } = useAuth();
+
+    return (
+        <CommentsForTarget
+            key={JSON.stringify([targetType, targetId, user?.id ?? null])}
+            targetType={targetType}
+            targetId={targetId}
+            user={user}
+            isActive={isActive}
+        />
+    );
+}
+
+function CommentsForTarget({ targetType, targetId, user, isActive }) {
     const { language } = useLanguage();
-    const {
-        user,
-        isActive,
-    } = useAuth();
     const [comments, setComments] = useState([]);
     const [profilesById, setProfilesById] = useState({});
     const [commentText, setCommentText] = useState('');
@@ -43,6 +53,19 @@ function CommentsSection({ targetType, targetId }) {
     const [reactions, setReactions] = useState([]);
     const [reactionActionId, setReactionActionId] = useState('');
     const [error, setError] = useState('');
+    const scopeRef = useRef(null);
+    const listRequestRef = useRef(0);
+
+    // A target/account change remounts this state; pending work belongs to its scope.
+    useEffect(() => {
+        const scope = { submitting: false };
+        scopeRef.current = scope;
+
+        return () => {
+            scopeRef.current = null;
+            listRequestRef.current += 1;
+        };
+    }, []);
 
     const t = (key) => getTranslation(language, 'comments', key);
 
@@ -57,6 +80,8 @@ function CommentsSection({ targetType, targetId }) {
     useEffect(() => {
         const controller = new AbortController();
         let active = true;
+        const request = ++listRequestRef.current;
+        const isCurrent = () => active && request === listRequestRef.current;
 
         async function loadComments() {
             setLoading(true);
@@ -79,7 +104,7 @@ function CommentsSection({ targetType, targetId }) {
                     { signal: controller.signal },
                 );
 
-                if (!active) {
+                if (!isCurrent()) {
                     return;
                 }
 
@@ -91,11 +116,11 @@ function CommentsSection({ targetType, targetId }) {
                     ),
                 );
             } catch (loadError) {
-                if (loadError.name !== 'AbortError' && active) {
+                if (loadError.name !== 'AbortError' && isCurrent()) {
                     setError(getTranslation(language, 'comments', 'loadError'));
                 }
             } finally {
-                if (active) {
+                if (isCurrent()) {
                     setLoading(false);
                 }
             }
@@ -110,28 +135,44 @@ function CommentsSection({ targetType, targetId }) {
     }, [language, targetId, targetType]);
 
     async function refreshComments() {
-        const nextComments = await fetchComments(targetType, targetId);
-        const profiles = await fetchCommentAuthorProfiles(
-            nextComments.map((comment) => comment.author_id),
-        );
+        const scope = scopeRef.current;
+        if (!scope) return false;
+        const request = ++listRequestRef.current;
+        const isCurrent = () => scopeRef.current === scope
+            && request === listRequestRef.current;
 
-        const nextReactions = await fetchCommentReactions(
-            nextComments.map((comment) => comment.id),
-        );
+        try {
+            const nextComments = await fetchComments(targetType, targetId);
+            const profiles = await fetchCommentAuthorProfiles(
+                nextComments.map((comment) => comment.author_id),
+            );
+            const nextReactions = await fetchCommentReactions(
+                nextComments.map((comment) => comment.id),
+            );
 
-        setComments(nextComments);
-        setReactions(nextReactions);
-        setProfilesById(
-            Object.fromEntries(
-                profiles.map((profile) => [profile.id, profile]),
-            ),
-        );
+            if (!isCurrent()) return false;
+            setComments(nextComments);
+            setReactions(nextReactions);
+            setProfilesById(
+                Object.fromEntries(
+                    profiles.map((profile) => [profile.id, profile]),
+                ),
+            );
+            setError('');
+            return true;
+        } catch (loadError) {
+            if (isCurrent()) throw loadError;
+            return false;
+        } finally {
+            if (isCurrent()) setLoading(false);
+        }
     }
 
     async function submitHandler(event) {
         event.preventDefault();
 
-        if (!user || !isActive || saving) {
+        const scope = scopeRef.current;
+        if (!user || !isActive || saving || !scope || scope.submitting) {
             return;
         }
 
@@ -147,17 +188,31 @@ function CommentsSection({ targetType, targetId }) {
             return;
         }
 
+        scope.submitting = true;
         setSaving(true);
         setError('');
 
         try {
-            await createComment(targetType, targetId, cleanText);
-            await refreshComments();
+            const savedComment = await createComment(targetType, targetId, cleanText);
+            if (scopeRef.current !== scope) return;
+
+            // Creation is committed even if the subsequent list read fails.
             setCommentText('');
+            setComments((current) => [
+                ...current.filter((comment) => comment.id !== savedComment.id),
+                savedComment,
+            ]);
+
+            try {
+                await refreshComments();
+            } catch {
+                if (scopeRef.current === scope) setError(t('loadError'));
+            }
         } catch {
-            setError(t('saveError'));
+            if (scopeRef.current === scope) setError(t('saveError'));
         } finally {
-            setSaving(false);
+            scope.submitting = false;
+            if (scopeRef.current === scope) setSaving(false);
         }
     }
 
