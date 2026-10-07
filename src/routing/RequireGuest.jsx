@@ -48,13 +48,10 @@ function RequireGuest() {
     const location = useLocation();
     const [profileCheck, setProfileCheck] = useState(null);
 
-    if (profileCheck && (loading || profileCheck.userId !== user?.id)) {
-        setProfileCheck(null);
-    }
-
     useEffect(() => {
         if (loading || !user?.id) return undefined;
-        const userId = user.id;
+        const authUser = user;
+        const userId = authUser.id;
         const controller = new AbortController();
 
         async function checkProfile() {
@@ -67,14 +64,14 @@ function RequireGuest() {
                     console.warn('Unable to verify profile completion after login.', error);
                 }
             }
-            if (!controller.signal.aborted) setProfileCheck({ userId, complete });
+            if (!controller.signal.aborted) setProfileCheck({ authUser, userId, complete });
         }
 
         checkProfile();
         return () => controller.abort();
-    }, [loading, user?.id]);
+    }, [loading, user]);
 
-    if (loading || (user && profileCheck?.userId !== user.id)) {
+    if (loading || (user && (profileCheck?.userId !== user.id || profileCheck?.authUser !== user))) {
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">
