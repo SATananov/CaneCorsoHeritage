@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import useAuth from '../hooks/useAuth';
@@ -49,7 +49,16 @@ function formatBytes(bytes) {
 }
 
 function AdminPage() {
-    const { user } = useAuth();
+    const { user, isAdmin, accountStatus } = useAuth();
+    return (
+        <AdminDashboard
+            key={JSON.stringify([user?.id ?? null, isAdmin, accountStatus])}
+            user={user}
+        />
+    );
+}
+
+function AdminDashboard({ user }) {
     const { language } = useLanguage();
     const t = useCallback((key) => getTranslation(language, 'admin', key), [language]);
     const format = (key, values) => Object.entries(values).reduce(
@@ -71,38 +80,45 @@ function AdminPage() {
     const [busyKey, setBusyKey] = useState('');
     const [memberDetails, setMemberDetails] = useState(null);
     const [memberDetailsLoading, setMemberDetailsLoading] = useState(false);
-
-    async function refreshDashboard(options = {}) {
-        const nextData = await fetchAdminDashboard(options);
-        setData(nextData);
-    }
+    const scopeRef = useRef(null);
 
     useEffect(() => {
-        const controller = new AbortController();
-
-        async function loadDashboard() {
+        const scope = { active: true, request: 0, action: false, details: 0 };
+        scopeRef.current = scope;
+        async function reload(afterAction = false) {
+            if (!scope.active || (scope.action && !afterAction)) return false;
+            scope.controller?.abort();
+            const controller = new AbortController();
+            scope.controller = controller;
+            const request = ++scope.request;
+            const isCurrent = () => scope.active && scope.request === request;
             setLoading(true);
             setError('');
-
+            setMessage('');
             try {
-                await refreshDashboard({ signal: controller.signal });
+                const nextData = await fetchAdminDashboard({ signal: controller.signal });
+                if (!isCurrent()) return false;
+                // Publish queues and counts together, only from the latest full cycle.
+                setData(nextData);
+                return true;
             } catch (loadError) {
-                if (controller.signal.aborted || loadError.name === 'AbortError') {
-                    return;
-                }
-
-                setError(t('loadError'));
+                if (isCurrent() && loadError.name !== 'AbortError') setError('loadError');
+                return false;
             } finally {
-                if (!controller.signal.aborted) {
-                    setLoading(false);
-                }
+                if (isCurrent()) setLoading(false);
             }
         }
+        scope.reload = reload;
+        reload();
+        return () => {
+            scope.active = false;
+            scope.controller?.abort();
+        };
+    }, []);
 
-        loadDashboard();
-
-        return () => controller.abort();
-    }, [t]);
+    async function refreshDashboard(afterAction = false) {
+        return scopeRef.current?.reload(afterAction) ?? false;
+    }
 
     const roleByUser = useMemo(() => {
         const result = new Map();
@@ -127,32 +143,30 @@ function AdminPage() {
         return result;
     }, [data]);
 
-    const pendingStories = useMemo(
-        () => (data?.stories ?? []).filter(
-            (story) => story.visibility === 'community' && story.moderation_status === 'pending',
-        ),
-        [data],
-    );
-
-    const pendingFiles = useMemo(
-        () => (data?.files ?? []).filter(
-            (file) => file.visibility === 'community' && file.moderation_status === 'pending',
-        ),
-        [data],
-    );
+    const pendingStories = data?.pendingStories ?? [];
+    const pendingFiles = data?.pendingFiles ?? [];
 
     async function runAction(key, successMessage, action) {
+        const scope = scopeRef.current;
+        if (!scope?.active || scope.action) return;
+        // Lock before React renders disabled controls; invalidate pre-mutation reads.
+        scope.action = true;
+        scope.request += 1;
+        scope.controller?.abort();
         try {
+            setLoading(false);
             setBusyKey(key);
             setError('');
             setMessage('');
             await action();
-            await refreshDashboard();
-            setMessage(successMessage);
+            if (!scope.active) return;
+            const refreshed = await refreshDashboard(true);
+            if (scope.active && refreshed) setMessage(successMessage);
         } catch {
-            setError(t('actionError'));
+            if (scope.active) setError('actionError');
         } finally {
-            setBusyKey('');
+            scope.action = false;
+            if (scope.active) setBusyKey('');
         }
     }
 
@@ -165,11 +179,16 @@ function AdminPage() {
     }
 
     async function openMemberDetails(profile) {
+        const scope = scopeRef.current;
+        if (!scope?.active) return;
+        const request = ++scope.details;
+        const isCurrent = () => scope.active && scope.details === request;
         try {
             setMemberDetailsLoading(true);
             setError('');
             const details = await fetchAdminMemberDetails(profile.id);
 
+            if (!isCurrent()) return;
             setMemberDetails({
                 ...details,
                 display_name: details?.display_name || profile.display_name || null,
@@ -179,13 +198,15 @@ function AdminPage() {
                 files_count: (data?.files ?? []).filter((file) => file.user_id === profile.id).length,
             });
         } catch {
-            setError(t('detailsLoadError'));
+            if (isCurrent()) setError('detailsLoadError');
         } finally {
-            setMemberDetailsLoading(false);
+            if (isCurrent()) setMemberDetailsLoading(false);
         }
     }
 
     function closeMemberDetails() {
+        if (scopeRef.current) scopeRef.current.details += 1;
+        setMemberDetailsLoading(false);
         setMemberDetails(null);
     }
 
@@ -380,7 +401,10 @@ function AdminPage() {
                                 key={id}
                                 className={activeSection === id ? styles.activeNavButton : styles.navButton}
                                 type="button"
-                                onClick={() => setActiveSection(id)}
+                                onClick={() => {
+                                    setActiveSection(id);
+                                    if (error === 'loadError') refreshDashboard();
+                                }}
                             >
                                 {t(id === 'pending' ? 'pendingApprovals' : id)}
                                 {id === 'pending' && data?.counts.pending > 0 && (
@@ -412,7 +436,7 @@ function AdminPage() {
 
                     {error && (
                         <div className={styles.error} role="alert">
-                            {error}
+                            {t(error)}
                         </div>
                     )}
 

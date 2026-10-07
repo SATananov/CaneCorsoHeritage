@@ -12,10 +12,15 @@ const ACCOUNT_STATUSES = new Set([
     'inactive',
 ]);
 
-async function fetchExactCount(table) {
-    const { count, error } = await supabase
+const STORY_COLUMNS = 'id,title,author_id,status,visibility,moderation_status,moderated_at,moderated_by,created_at';
+const FILE_COLUMNS = 'id,user_id,story_id,file_name,storage_path,mime_type,file_size,visibility,moderation_status,moderated_at,moderated_by,created_at';
+
+async function fetchExactCount(table, options) {
+    let query = supabase
         .from(table)
         .select('*', { count: 'exact', head: true });
+    if (options.signal) query = query.abortSignal(options.signal);
+    const { count, error } = await query;
 
     if (error) {
         throw new Error(error.message || `Unable to count ${table}.`);
@@ -24,18 +29,23 @@ async function fetchExactCount(table) {
     return count ?? 0;
 }
 
-async function fetchPendingCount(table) {
-    const { count, error } = await supabase
-        .from(table)
-        .select('*', { count: 'exact', head: true })
-        .eq('visibility', 'community')
-        .eq('moderation_status', 'pending');
-
-    if (error) {
-        throw new Error(error.message || `Unable to count pending ${table}.`);
+async function fetchPendingRows(table, columns, options) {
+    const rows = [];
+    // The moderation queue must not inherit the recent-items limit or API row cap.
+    for (;;) {
+        let query = supabase.from(table).select(columns, { count: 'exact' })
+            .eq('visibility', 'community')
+            .eq('moderation_status', 'pending')
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
+            .range(rows.length, rows.length + 499);
+        if (options.signal) query = query.abortSignal(options.signal);
+        const { data, count, error } = await query;
+        if (error) throw new Error(error.message || `Unable to load pending ${table}.`);
+        if (!data?.length) return rows;
+        rows.push(...data);
+        if (count !== null && count !== undefined && rows.length >= count) return rows;
     }
-
-    return count ?? 0;
 }
 
 async function getCurrentAdmin() {
@@ -49,24 +59,6 @@ async function getCurrentAdmin() {
 }
 
 export async function fetchAdminDashboard(options = {}) {
-    const [
-        members,
-        stories,
-        files,
-        storyRatings,
-        fileRatings,
-        pendingStories,
-        pendingFiles,
-    ] = await Promise.all([
-        fetchExactCount('profiles'),
-        fetchExactCount('stories'),
-        fetchExactCount('user_files'),
-        fetchExactCount('story_ratings'),
-        fetchExactCount('file_ratings'),
-        fetchPendingCount('stories'),
-        fetchPendingCount('user_files'),
-    ]);
-
     let profilesQuery = supabase
         .from('profiles')
         .select('id,display_name,username,created_at')
@@ -80,13 +72,13 @@ export async function fetchAdminDashboard(options = {}) {
 
     let storiesQuery = supabase
         .from('stories')
-        .select('id,title,author_id,status,visibility,moderation_status,moderated_at,moderated_by,created_at')
+        .select(STORY_COLUMNS)
         .order('created_at', { ascending: false })
         .limit(50);
 
     let filesQuery = supabase
         .from('user_files')
-        .select('id,user_id,story_id,file_name,storage_path,mime_type,file_size,visibility,moderation_status,moderated_at,moderated_by,created_at')
+        .select(FILE_COLUMNS)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -116,6 +108,13 @@ export async function fetchAdminDashboard(options = {}) {
         filesResult,
         storyRatingsResult,
         fileRatingsResult,
+        members,
+        stories,
+        files,
+        storyRatings,
+        fileRatings,
+        pendingStories,
+        pendingFiles,
     ] = await Promise.all([
         profilesQuery,
         rolesQuery,
@@ -123,6 +122,13 @@ export async function fetchAdminDashboard(options = {}) {
         filesQuery,
         storyRatingsQuery,
         fileRatingsQuery,
+        fetchExactCount('profiles', options),
+        fetchExactCount('stories', options),
+        fetchExactCount('user_files', options),
+        fetchExactCount('story_ratings', options),
+        fetchExactCount('file_ratings', options),
+        fetchPendingRows('stories', STORY_COLUMNS, options),
+        fetchPendingRows('user_files', FILE_COLUMNS, options),
     ]);
 
     const results = [
@@ -146,10 +152,12 @@ export async function fetchAdminDashboard(options = {}) {
             stories,
             files,
             ratings: storyRatings + fileRatings,
-            pending: pendingStories + pendingFiles,
-            pendingStories,
-            pendingFiles,
+            pending: pendingStories.length + pendingFiles.length,
+            pendingStories: pendingStories.length,
+            pendingFiles: pendingFiles.length,
         },
+        pendingStories,
+        pendingFiles,
         profiles: profilesResult.data ?? [],
         roles: rolesResult.data ?? [],
         stories: storiesResult.data ?? [],
