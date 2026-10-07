@@ -32,17 +32,31 @@ function HeritageArticlePage() {
 
     useEffect(() => {
         const controller = new AbortController();
+        let active = true;
 
         const loadArticle = async () => {
+            setArticle(null);
+            setError('');
+
             try {
                 const [libraryArticle, preview] = await Promise.all([
                     getHeritageArticleBySlug(slug, { signal: controller.signal }),
                     getHeritagePreview({ signal: controller.signal }),
                 ]);
 
+                if (!active) {
+                    return;
+                }
+
                 const localizedLibrary = libraryArticle
                     ? (await localizeHeritageArticles([libraryArticle], language))[0]
                     : null;
+
+                // Localization cannot be aborted; ignore an obsolete load cycle.
+                if (!active) {
+                    return;
+                }
+
                 const previewArticle = preview.sections?.find((item) => item.id === slug);
                 const match = localizedLibrary ?? previewArticle;
 
@@ -53,7 +67,7 @@ function HeritageArticlePage() {
 
                 setArticle(match);
             } catch (loadError) {
-                if (loadError.name !== 'AbortError') {
+                if (active && loadError.name !== 'AbortError') {
                     setError(t('loadError'));
                 }
             }
@@ -62,6 +76,7 @@ function HeritageArticlePage() {
         loadArticle();
 
         return () => {
+            active = false;
             controller.abort();
         };
     }, [language, slug, t]);
