@@ -91,6 +91,22 @@ Run lint checks:
 npm run lint
 ```
 
+## Architecture
+
+The application follows a small layered React architecture with clear separation between routing, UI, state and backend access.
+
+- **Pages** in `src/pages` are route-level screens. They compose features and coordinate page-specific loading, errors and user actions.
+- **Components** in `src/components` contain reusable UI and feature building blocks shared across pages.
+- **Layouts and routing** in `src/layouts` and `src/routing` define shared page chrome, route boundaries and guest/authenticated/admin access rules.
+- **Context** in `src/context` provides application-wide authentication/session state through `AuthProvider`.
+- **Hooks** in `src/hooks` encapsulate reusable React state, effects and detail/translation behaviour without duplicating page logic.
+- **Services** in `src/services` form the data-access layer. Pages and components call these functions instead of talking directly to backend tables in UI code.
+- **Supabase client setup** in `src/lib` centralizes the backend connection used by authentication, database reads/writes, Storage and remote functions.
+- **Supabase** is the hosted backend for Auth, PostgreSQL data, Row Level Security, Storage and server-side operations used by the application.
+- Data flow is primarily **Page/Component → Hook or Service → Supabase → returned state → UI**, keeping rendering concerns separate from backend access.
+- Authorization is enforced both in the React route/UI layer for user experience and, where configured in Supabase, by backend Row Level Security.
+- CSS files and CSS Modules remain external to components, keeping presentation separate from React behaviour.
+
 ## Project structure
 
 - `src/components` — reusable interface components
