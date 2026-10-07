@@ -23,11 +23,15 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
     const t = (key) => getTranslation(language, 'storyForm', key);
     const [formData, setFormData] = useState(() => getInitialForm(story, language));
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const [uploadedFiles, setUploadedFiles] = useState([]);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const createdStoryRef = useRef(null);
     const submittingRef = useRef(false);
+    const uploadedFilesRef = useRef([]);
     const isEditing = Boolean(story);
+    const currentUploads = uploadedFiles.filter((upload) => !story || upload.storyId === story._id);
+    const pendingFiles = selectedFiles.filter((file) => !currentUploads.some((upload) => upload.file === file));
 
     useEffect(() => {
         const previousOverflow = document.body.style.overflow;
@@ -93,11 +97,20 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                 await syncStoryFilesVisibility(savedStory._id, storyData.visibility);
             }
 
-            if (selectedFiles.length > 0) {
-                await uploadUserFiles(selectedFiles, {
+            for (const file of selectedFiles) {
+                // File references identify this selection without filename collisions.
+                // Selecting a file again creates a new attachment; retries reuse it.
+                if (uploadedFilesRef.current.some((upload) => (
+                    upload.file === file && upload.storyId === savedStory._id
+                ))) continue;
+
+                await uploadUserFiles([file], {
                     storyId: savedStory._id,
                     visibility: storyData.visibility,
                 });
+                // Record only after both storage and metadata have succeeded.
+                uploadedFilesRef.current = [...uploadedFilesRef.current, { file, storyId: savedStory._id }];
+                setUploadedFiles(uploadedFilesRef.current);
             }
 
             await onSaved();
@@ -217,10 +230,19 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                         <span>{t('attachmentVisibility')}</span>
                     </label>
 
-                    {selectedFiles.length > 0 && (
+                    {pendingFiles.length > 0 && (
                         <div className={styles.selectedFiles}>
-                            {selectedFiles.map((file) => (
-                                <span key={`${file.name}-${file.size}`}>{file.name}</span>
+                            {pendingFiles.map((file, index) => (
+                                <span key={index}>{file.name}</span>
+                            ))}
+                        </div>
+                    )}
+
+                    {currentUploads.length > 0 && (
+                        <div className={styles.selectedFiles} role="status">
+                            <strong>{getTranslation(language, 'storyDetails', 'attachedFiles')}</strong>
+                            {currentUploads.map(({ file }, index) => (
+                                <span key={index}>{file.name}</span>
                             ))}
                         </div>
                     )}
