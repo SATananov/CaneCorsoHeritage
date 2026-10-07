@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
@@ -12,78 +12,101 @@ import styles from './MediaRating.module.css';
 const ratingValues = [1, 2, 3, 4, 5];
 
 function MediaRating({ fileId, ownerId }) {
+    const { user } = useAuth();
+    return (
+        <MediaRatingForTarget
+            key={JSON.stringify([fileId, user?.id ?? null, ownerId])}
+            fileId={fileId}
+            ownerId={ownerId}
+            user={user}
+        />
+    );
+}
+
+function MediaRatingForTarget({ fileId, ownerId, user }) {
     const { language } = useLanguage();
     const t = useCallback((key) => getTranslation(language, 'mediaRating', key), [language]);
     const format = (key, values) => Object.entries(values).reduce(
         (text, [name, value]) => text.replace(`{${name}}`, value),
         t(key),
     );
-    const { user } = useAuth();
-    const [ratingInfo, setRatingInfo] = useState({
-        average: 0,
-        count: 0,
-        userRating: 0,
-    });
+    const [ratingInfo, setRatingInfo] = useState({ average: 0, count: 0, userRating: 0 });
+    // Unknown state stays gated after errors until a successful reload.
+    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
-    const isOwnFile = Boolean(
-        user?.id
-        && ownerId
-        && user.id === ownerId,
-    );
+    const scopeRef = useRef(null);
+    const isOwnFile = Boolean(user?.id && ownerId && user.id === ownerId);
 
     useEffect(() => {
         const controller = new AbortController();
-        let active = true;
+        const scope = { active: true, busy: false, ready: false, info: null };
+        scopeRef.current = scope;
 
         const loadRatings = async () => {
+            if (!scope.active || scope.busy) return;
+            scope.busy = true;
+            scope.ready = false;
+            setLoading(true);
+            setError('');
             try {
                 const data = await fetchFileRatings(
-                    fileId,
-                    user?.id,
-                    { signal: controller.signal },
+                    fileId, user?.id, { signal: controller.signal },
                 );
-
-                if (active) {
+                if (scope.active) {
+                    scope.info = data;
+                    scope.ready = true;
                     setRatingInfo(data);
+                    setLoading(false);
                 }
             } catch (loadError) {
-                if (loadError.name !== 'AbortError' && active) {
-                    setError(t('loadError'));
+                if (loadError.name !== 'AbortError' && scope.active) {
+                    setError('loadError');
                 }
+            } finally {
+                scope.busy = false;
             }
         };
 
+        scope.reload = loadRatings;
         loadRatings();
-
         return () => {
-            active = false;
+            scope.active = false;
             controller.abort();
         };
-    }, [fileId, user?.id, t]);
+    }, [fileId, user?.id]);
+
+    const retryHandler = () => scopeRef.current?.reload();
 
     const ratingHandler = async (rating) => {
-        if (!user || isOwnFile) {
-            return;
-        }
+        const scope = scopeRef.current;
+        if (!(user && !isOwnFile) || !scope?.active || !scope.ready || scope.busy) return;
 
+        // Lock synchronously, including before React renders the disabled buttons.
+        scope.busy = true;
+        scope.ready = false;
         setSaving(true);
         setError('');
-
+        let saved = false;
         try {
-            await saveFileRating(
-                fileId,
-                user.id,
-                rating,
-                ratingInfo.userRating > 0,
-            );
+            await saveFileRating(fileId, user.id, rating, scope.info.userRating > 0);
+            saved = true;
+            if (!scope.active) return;
 
-            const nextInfo = await fetchFileRatings(fileId, user.id);
-            setRatingInfo(nextInfo);
+            const next = await fetchFileRatings(fileId, user.id);
+            if (!scope.active) return;
+            scope.info = next;
+            scope.ready = true;
+            setRatingInfo(next);
         } catch {
-            setError(t('saveError'));
+            if (scope.active) {
+                // Re-read before another write: even a failed request may have committed.
+                setLoading(true);
+                setError(saved ? 'loadError' : 'saveError');
+            }
         } finally {
-            setSaving(false);
+            scope.busy = false;
+            if (scope.active) setSaving(false);
         }
     };
 
@@ -118,7 +141,7 @@ function MediaRating({ fileId, ownerId }) {
                         type="button"
                         aria-label={format('rateOutOf', { value })}
                         aria-pressed={ratingInfo.userRating === value}
-                        disabled={!user || saving || isOwnFile}
+                        disabled={!user || saving || loading || isOwnFile}
                         onClick={() => ratingHandler(value)}
                     >
                         ★
@@ -143,7 +166,12 @@ function MediaRating({ fileId, ownerId }) {
             )}
 
             {saving && <span className={styles.status}>{t('saving')}</span>}
-            {error && <span className={styles.error}>{error}</span>}
+            {error && <span className={styles.error}>{t(error)}</span>}
+            {error && loading && (
+                <button type="button" onClick={retryHandler} disabled={saving}>
+                    {t('retry')}
+                </button>
+            )}
         </div>
     );
 }

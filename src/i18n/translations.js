@@ -326,6 +326,7 @@ export const translations = {
             heritageRatingChoose: 'Choose your rating.',
             heritageRatingYourRating: 'Your rating: {rating} / 5',
             heritageRatingLoadError: 'Unable to load article ratings.',
+            heritageRatingRetry: 'Reload ratings',
             heritageRatingSaveError: 'Unable to save your rating.',
         },
         heritageDetails: {
@@ -346,6 +347,7 @@ export const translations = {
         },
         mediaRating: {
             loadError: 'Unable to load ratings.',
+            retry: 'Reload ratings',
             saveError: 'Unable to save your rating.',
             rating: 'rating',
             ratings: 'ratings',
@@ -757,6 +759,7 @@ export const translations = {
             heritageRatingChoose: 'Изберете своята оценка.',
             heritageRatingYourRating: 'Вашата оценка: {rating} / 5',
             heritageRatingLoadError: 'Оценките на статията не могат да бъдат заредени.',
+            heritageRatingRetry: 'Зареди оценките отново',
             heritageRatingSaveError: 'Оценката не можа да бъде запазена.',
         },
         heritageDetails: {
@@ -777,6 +780,7 @@ export const translations = {
         },
         mediaRating: {
             loadError: 'Оценките не могат да бъдат заредени.',
+            retry: 'Зареди оценките отново',
             saveError: 'Оценката ви не може да бъде запазена.',
             rating: 'оценка',
             ratings: 'оценки',
@@ -1188,6 +1192,7 @@ export const translations = {
             heritageRatingChoose: 'Scegli la tua valutazione.',
             heritageRatingYourRating: 'La tua valutazione: {rating} / 5',
             heritageRatingLoadError: 'Impossibile caricare le valutazioni dell’articolo.',
+            heritageRatingRetry: 'Ricarica le valutazioni',
             heritageRatingSaveError: 'Impossibile salvare la valutazione.',
         },
         heritageDetails: {
@@ -1208,6 +1213,7 @@ export const translations = {
         },
         mediaRating: {
             loadError: 'Impossibile caricare le valutazioni.',
+            retry: 'Ricarica le valutazioni',
             saveError: 'Impossibile salvare la tua valutazione.',
             rating: 'valutazione',
             ratings: 'valutazioni',
