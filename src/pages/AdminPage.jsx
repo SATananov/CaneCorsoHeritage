@@ -425,7 +425,6 @@ function AdminDashboard({ user }) {
                             <p className={styles.eyebrow}>Cane Corso Heritage</p>
                             <h1>{t('administration')}</h1>
                         </div>
-                        <span className={styles.moderationBadge}>{t('moderationBadge')}</span>
                     </header>
 
                     {message && (
