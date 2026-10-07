@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     syncStoryFilesVisibility,
     uploadUserFiles,
@@ -25,6 +25,8 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const createdStoryRef = useRef(null);
+    const submittingRef = useRef(false);
     const isEditing = Boolean(story);
 
     useEffect(() => {
@@ -52,6 +54,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
 
     const submitHandler = async (event) => {
         event.preventDefault();
+        if (submittingRef.current) return;
         setError('');
 
         const storyData = {
@@ -75,13 +78,18 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
         }
 
         try {
+            submittingRef.current = true;
             setIsSubmitting(true);
 
-            const savedStory = isEditing
-                ? await updateStory(story._id, storyData)
+            const existingStory = story ?? createdStoryRef.current;
+            const savedStory = existingStory
+                ? await updateStory(existingStory._id, storyData)
                 : await createStory(storyData);
 
-            if (isEditing) {
+            // Keep the saved identity even if attachments or completion fail.
+            if (!isEditing) createdStoryRef.current = savedStory;
+
+            if (existingStory) {
                 await syncStoryFilesVisibility(savedStory._id, storyData.visibility);
             }
 
@@ -97,6 +105,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
         } catch {
             setError(t('saveError'));
         } finally {
+            submittingRef.current = false;
             setIsSubmitting(false);
         }
     };
