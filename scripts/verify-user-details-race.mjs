@@ -52,7 +52,11 @@ function harness() {
         console: { warn: (...args) => warnings.push(args) },
         useParams: () => ({ userId }),
         useNavigate: () => () => {},
-        useAuth: () => ({ user: viewerId ? { id: viewerId } : null }),
+        useAuth: () => ({
+            user: viewerId ? { id: viewerId } : null,
+            roleLoading: false,
+            isActive: true,
+        }),
         useLanguage: () => ({ language }),
         getTranslation: (locale, _section, key) => `${locale}:${key}`,
         getProfileAvatarUrl: (profile) => profile?.avatar_url || '',

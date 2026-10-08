@@ -19,8 +19,25 @@ const editorSource = logic('ProfileEditor', 'const USERNAME_PATTERN', '    if (!
     setters: { displayName: setDisplayName, firstName: setFirstName, lastName: setLastName,
         country: setCountry, city: setCity, avatarFile: setAvatarFile }
 }`);
-const noticeSource = logic('ProfileCompletionNotice', 'const requiredFieldKeys', '\n    return (',
-    '{ missingFields, completionState }');
+const noticeComponentSource = readFileSync(
+    new URL('../src/components/ProfileCompletionNotice.jsx', import.meta.url),
+    'utf8',
+);
+const noticeFieldsStart = noticeComponentSource.indexOf('const requiredFieldKeys');
+const noticeFieldsEnd = noticeComponentSource.indexOf('\n\nfunction ActiveProfileCompletionNotice', noticeFieldsStart);
+const noticeActiveStart = noticeComponentSource.indexOf('function ActiveProfileCompletionNotice');
+const noticeRenderGuard = noticeComponentSource.indexOf('\n    if (!completionState.loaded', noticeActiveStart);
+assert.ok(
+    noticeFieldsStart >= 0
+    && noticeFieldsEnd > noticeFieldsStart
+    && noticeActiveStart >= 0
+    && noticeRenderGuard > noticeActiveStart,
+    'Locate active ProfileCompletionNotice logic before JSX',
+);
+const noticeSource = `${noticeComponentSource.slice(noticeFieldsStart, noticeFieldsEnd)}\n\n${noticeComponentSource.slice(noticeActiveStart, noticeRenderGuard)}
+    return { missingFields, completionState };
+}
+ActiveProfileCompletionNotice;`;
 const headerSource = logic('AuthActions', 'function AuthActions', '    if (loading || roleLoading)',
     '{ identity, profile }');
 
@@ -124,7 +141,38 @@ function harness() {
         getTranslation: (_language, _section, key) => key,
         useAuth: () => ({ user, loading: false, roleLoading: false, isActive: true }),
     };
-    const notice = mount(noticeSource, { ...common, fetchOwnPrivateProfileDetails: read('notice') });
+    const noticeDependencies = { ...common, fetchOwnPrivateProfileDetails: read('notice') };
+    let noticeMount = null;
+    let noticeUserId = null;
+    let noticeWrites = 0;
+    const notice = {
+        render() {
+            const eligible = Boolean(user?.id);
+            if (!eligible) {
+                noticeMount?.dispose();
+                noticeMount = null;
+                noticeUserId = null;
+                return null;
+            }
+            if (!noticeMount || noticeUserId !== user.id) {
+                noticeWrites += noticeMount?.writes() || 0;
+                noticeMount?.dispose();
+                noticeUserId = user.id;
+                noticeMount = mount(noticeSource, noticeDependencies, { userId: noticeUserId });
+            }
+            const view = noticeMount.render();
+            return !view.completionState.loaded || view.missingFields.length === 0 ? null : view;
+        },
+        writes() {
+            return noticeWrites + (noticeMount?.writes() || 0);
+        },
+        dispose() {
+            noticeWrites += noticeMount?.writes() || 0;
+            noticeMount?.dispose();
+            noticeMount = null;
+            noticeUserId = null;
+        },
+    };
     const header = mount(headerSource, {
         ...common, fetchProfileById: read('header'), useNavigate: () => () => {},
         getProfileAvatarUrl: (profile) => profile?.avatar_url || '',

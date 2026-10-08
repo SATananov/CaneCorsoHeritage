@@ -13,31 +13,18 @@ const requiredFieldKeys = [
     ['city', 'city'],
 ];
 
-function ProfileCompletionNotice() {
+function ActiveProfileCompletionNotice({ userId }) {
     const { language } = useLanguage();
     const t = useCallback(
         (key) => getTranslation(language, 'completion', key),
         [language],
     );
-    const {
-        user,
-        loading,
-        roleLoading,
-        isActive,
-    } = useAuth();
-
     const [completionState, setCompletionState] = useState({
-        userId: null,
         loaded: false,
         details: null,
     });
 
     useEffect(() => {
-        if (!user?.id) {
-            return undefined;
-        }
-
-        const userId = user.id;
         let activeController;
 
         async function loadCompletionState() {
@@ -56,7 +43,6 @@ function ProfileCompletionNotice() {
                 }
 
                 setCompletionState({
-                    userId,
                     loaded: true,
                     details,
                 });
@@ -74,31 +60,19 @@ function ProfileCompletionNotice() {
             unsubscribe();
             activeController?.abort();
         };
-    }, [user?.id]);
+    }, [userId]);
 
     const missingFields = useMemo(() => {
-        if (
-            !user?.id
-            || completionState.userId !== user.id
-            || !completionState.loaded
-        ) {
+        if (!completionState.loaded) {
             return [];
         }
 
         return requiredFieldKeys
             .filter(([key]) => !completionState.details?.[key]?.trim())
             .map(([, labelKey]) => t(labelKey));
-    }, [completionState, user?.id, t]);
+    }, [completionState, t]);
 
-    if (
-        loading
-        || roleLoading
-        || !user
-        || !isActive
-        || completionState.userId !== user.id
-        || !completionState.loaded
-        || missingFields.length === 0
-    ) {
+    if (!completionState.loaded || missingFields.length === 0) {
         return null;
     }
 
@@ -118,13 +92,28 @@ function ProfileCompletionNotice() {
 
                 <NavLink
                     className="profile-completion-action"
-                    to={`/users/${user.id}`}
+                    to={`/users/${userId}`}
                 >
                     {t('action')}
                 </NavLink>
             </div>
         </aside>
     );
+}
+
+function ProfileCompletionNotice() {
+    const {
+        user,
+        loading,
+        roleLoading,
+        isActive,
+    } = useAuth();
+
+    if (loading || roleLoading || !user?.id || !isActive) {
+        return null;
+    }
+
+    return <ActiveProfileCompletionNotice key={user.id} userId={user.id} />;
 }
 
 export default ProfileCompletionNotice;
