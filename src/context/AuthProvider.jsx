@@ -109,8 +109,10 @@ function AuthProvider({ children }) {
     }, []);
 
     async function login(email, password) {
+        const normalizedEmail = email.trim().toLowerCase();
+
         const { data, error } = await supabase.auth.signInWithPassword({
-            email,
+            email: normalizedEmail,
             password,
         });
 
@@ -123,6 +125,7 @@ function AuthProvider({ children }) {
 
     async function register(displayName, username, email, password) {
         const cleanUsername = username.trim().toLowerCase();
+        const normalizedEmail = email.trim().toLowerCase();
 
         const { data: existingProfiles, error: usernameError } = await supabase
             .from('profiles')
@@ -139,7 +142,7 @@ function AuthProvider({ children }) {
         }
 
         const { data, error } = await supabase.auth.signUp({
-            email,
+            email: normalizedEmail,
             password,
             options: {
                 data: {
@@ -157,9 +160,10 @@ function AuthProvider({ children }) {
     }
 
     async function requestPasswordReset(email) {
+        const normalizedEmail = email.trim().toLowerCase();
         const redirectTo = `${window.location.origin}/update-password`;
 
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
             redirectTo,
         });
 
