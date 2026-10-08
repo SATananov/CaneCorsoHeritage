@@ -104,6 +104,16 @@ flowchart TD
 | `/my-files` | Authenticated + complete profile | Personal file workspace |
 | `/admin` | Admin | Moderation and administration |
 
+## Live deployment
+
+The production version of the project is deployed and publicly accessible at:
+
+https://cane-corso-heritage.netlify.app
+
+The deployed frontend is built from the `master` branch using `npm run build` and publishes the Vite `dist` output.
+
+Supabase provides authentication, database, storage, RLS-protected data access and server-side project services.
+
 ## Functional guide
 
 1. A guest can browse Heritage, Stories, Members and other public pages.
