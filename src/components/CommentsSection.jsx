@@ -244,9 +244,17 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
         setError('');
 
         try {
-            await updateComment(commentId, cleanText);
-            await refreshComments();
+            const savedComment = await updateComment(commentId, cleanText);
+            setComments((current) => current.map((comment) => (
+                comment.id === commentId ? savedComment : comment
+            )));
             cancelEdit();
+
+            try {
+                await refreshComments();
+            } catch {
+                setError(t('loadError'));
+            }
         } catch {
             setError(t('updateError'));
         } finally {
@@ -264,10 +272,17 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
 
         try {
             await deleteComment(commentId);
-            await refreshComments();
+            setComments((current) => current.filter((comment) => comment.id !== commentId));
+            setReactions((current) => current.filter((item) => item.comment_id !== commentId));
 
             if (editingId === commentId) {
                 cancelEdit();
+            }
+
+            try {
+                await refreshComments();
+            } catch {
+                setError(t('loadError'));
             }
         } catch {
             setError(t('deleteError'));

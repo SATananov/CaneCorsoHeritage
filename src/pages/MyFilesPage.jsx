@@ -134,22 +134,52 @@ function MyFilesPage() {
 
     async function visibilityHandler(file) {
         const nextVisibility = file.visibility === 'community' ? 'private' : 'community';
+        setError('');
+
         try {
-            setError('');
             await updateUserFileVisibility(file.id, nextVisibility);
-            await refreshFiles();
         } catch {
             setError(t('visibilityError'));
+            return;
+        }
+
+        // The mutation is committed even if the reconciliation read fails.
+        setFiles((current) => current.map((item) => (
+            item.id === file.id
+                ? {
+                    ...item,
+                    visibility: nextVisibility,
+                    moderation_status: nextVisibility === 'community' ? 'pending' : 'approved',
+                    moderated_at: null,
+                    moderated_by: null,
+                }
+                : item
+        )));
+
+        try {
+            await refreshFiles();
+        } catch {
+            setError(t('loadError'));
         }
     }
 
     async function deleteHandler(file) {
+        setError('');
+
         try {
-            setError('');
             await deleteUserFile(file);
-            await refreshFiles();
         } catch {
             setError(t('deleteError'));
+            return;
+        }
+
+        // Keep committed deletion visible even when the follow-up read fails.
+        setFiles((current) => current.filter((item) => item.id !== file.id));
+
+        try {
+            await refreshFiles();
+        } catch {
+            setError(t('loadError'));
         }
     }
 
