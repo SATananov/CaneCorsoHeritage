@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import { getStoryDeleteCleanupWarning } from '../i18n/storyDeleteUi';
@@ -10,8 +10,15 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
     const t = (key) => getTranslation(language, 'storyDelete', key);
     const [error, setError] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
+    const deletingRef = useRef(false);
+
+    const closeHandler = () => {
+        if (!deletingRef.current) onClose();
+    };
 
     const deleteHandler = async () => {
+        if (deletingRef.current) return;
+        deletingRef.current = true;
         try {
             setError('');
             setIsDeleting(true);
@@ -33,12 +40,13 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
 
             setError(t('error'));
         } finally {
+            deletingRef.current = false;
             setIsDeleting(false);
         }
     };
 
     return (
-        <div className={styles.backdrop} role="presentation" onMouseDown={onClose}>
+        <div className={styles.backdrop} role="presentation" onMouseDown={closeHandler}>
             <section
                 className={styles.dialog}
                 role="dialog"
@@ -52,7 +60,7 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
                 <p className={styles.message}>{t('copy')}</p>
                 {error && <p className={styles.error} role="alert">{error}</p>}
                 <div className={styles.actions}>
-                    <button type="button" onClick={onClose} disabled={isDeleting}>
+                    <button type="button" onClick={closeHandler} disabled={isDeleting}>
                         {t('cancel')}
                     </button>
                     <button

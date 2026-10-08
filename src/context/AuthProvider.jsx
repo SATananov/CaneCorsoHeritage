@@ -13,6 +13,7 @@ function AuthProvider({ children }) {
     useEffect(() => {
         let active = true;
         let roleRequestId = 0;
+        let resolvedRoleUserId = null;
 
         async function loadRole(userId) {
             if (!active) {
@@ -23,6 +24,7 @@ function AuthProvider({ children }) {
             const requestId = ++roleRequestId;
 
             if (!userId) {
+                resolvedRoleUserId = null;
                 if (active) {
                     setRole('user');
                     setAccountStatus(null);
@@ -31,7 +33,10 @@ function AuthProvider({ children }) {
                 return;
             }
 
-            if (active) {
+            // Keep a verified same-user workspace mounted during background checks.
+            // Account changes still clear authorization until their own read finishes.
+            if (resolvedRoleUserId !== userId) {
+                resolvedRoleUserId = null;
                 setRole('user');
                 setAccountStatus(null);
                 setRoleLoading(true);
@@ -48,10 +53,12 @@ function AuthProvider({ children }) {
             }
 
             if (error) {
+                resolvedRoleUserId = null;
                 console.error('Unable to load account role.', error);
                 setRole('user');
                 setAccountStatus(null);
             } else {
+                resolvedRoleUserId = data ? userId : null;
                 setRole(data?.role ?? 'user');
                 setAccountStatus(data?.account_status ?? null);
             }

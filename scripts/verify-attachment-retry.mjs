@@ -9,11 +9,15 @@ const end = source.search(/\n    return \(\r?\n        <div/);
 assert.ok(start >= 0 && end > start);
 const modalSource = `${source.slice(start, end)}
     return { error, isSubmitting, pendingFiles, currentUploads,
-        changeHandler, fileChangeHandler, submitHandler };
+        changeHandler, fileChangeHandler, submitHandler, closeHandler };
 }
 AddStoryModal;`;
 assert.match(source, /currentUploads\.map\(\(\{ file \}/, 'Completed uploads stay visible separately');
 assert.match(source, /getTranslation\(language, 'storyDetails', 'attachedFiles'\)/);
+assert.match(source, /onMouseDown=\{closeHandler\}/);
+assert.equal((source.match(/onClick=\{closeHandler\}/g) ?? []).length, 2);
+assert.match(source, /aria-label=\{t\('close'\)\}[\s\S]*?onClick=\{closeHandler\}\s+disabled=\{isSubmitting\}/);
+assert.match(source, /onClick=\{closeHandler\} disabled=\{isSubmitting\}/);
 
 // Exercise the real modal AND real single-file service behavior with a mocked SDK.
 // No network, storage, or database clients are imported.
@@ -350,5 +354,41 @@ await test('concurrent submits cannot duplicate a pending upload or create anoth
     assert.equal(h.records.length, 2);
     h.success();
 });
+
+for (const editing of [false, true]) {
+    await test(`${editing ? 'edit' : 'create'} blocks dismissal through save, upload and completion`, async (h) => {
+        const save = deferred(); const upload = deferred(); const complete = deferred();
+        const attachment = file('pending.jpg');
+        h.outcomes[editing ? 'update' : 'create'].push(save.promise);
+        h.outcomes.storage.set(attachment, [upload.promise]);
+        h.outcomes.saved.push(complete.promise);
+        h.change('title', 'Changed title');
+        h.select([attachment]);
+        const staleCloseHandler = h.render().closeHandler;
+        const submission = h.submit();
+        staleCloseHandler();
+        assert.equal(h.calls.close.length, 0, 'Same-tick dismissal must be blocked');
+        for (const stage of [save, upload, complete]) {
+            await setImmediate();
+            assert.equal(h.render().isSubmitting, true);
+            h.render().closeHandler(); staleCloseHandler();
+            assert.equal(h.calls.close.length, 0);
+            stage.resolve();
+        }
+        await submission;
+        assert.equal(h.calls.close.length, 1, 'Successful completion still closes the modal');
+        assert.equal(h.render().isSubmitting, false);
+    }, { editing });
+
+    await test(`${editing ? 'edit' : 'create'} allows dismissal again after mutation failure`, async (h) => {
+        h.change('title', 'Changed title');
+        h.outcomes[editing ? 'update' : 'create'].push(new Error('Save failed'));
+        await h.submit();
+        assert.equal(h.render().isSubmitting, false);
+        assert.equal(h.calls.close.length, 0);
+        h.render().closeHandler();
+        assert.equal(h.calls.close.length, 1);
+    }, { editing });
+}
 
 console.log('ATTACHMENT RETRY 01: PASS');

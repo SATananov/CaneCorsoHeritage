@@ -119,6 +119,9 @@ export async function localizeStoryCollection(stories, language) {
             continue;
         }
 
+        // A failed regeneration must fall back to the current author content.
+        translationsById.delete(story._id);
+
         try {
             const generated = await requestStoryTranslation(story._id, language);
             translationsById.set(story._id, generated);

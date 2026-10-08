@@ -90,6 +90,10 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
         setError('');
     };
 
+    const closeHandler = () => {
+        if (!submittingRef.current) onClose();
+    };
+
     const submitHandler = async (event) => {
         event.preventDefault();
         if (submittingRef.current) return;
@@ -189,7 +193,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
     };
 
     return (
-        <div className={styles.backdrop} role="presentation" onMouseDown={onClose}>
+        <div className={styles.backdrop} role="presentation" onMouseDown={closeHandler}>
             <section
                 className={styles.dialog}
                 role="dialog"
@@ -201,7 +205,8 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                     className={styles.closeButton}
                     type="button"
                     aria-label={t('close')}
-                    onClick={onClose}
+                    onClick={closeHandler}
+                    disabled={isSubmitting}
                 >
                     ×
                 </button>
@@ -318,7 +323,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                         </p>
 
                         <div className={styles.actions}>
-                            <button type="button" onClick={onClose} disabled={isSubmitting}>
+                            <button type="button" onClick={closeHandler} disabled={isSubmitting}>
                                 {t('cancel')}
                             </button>
                             <button type="submit" disabled={isSubmitting}>

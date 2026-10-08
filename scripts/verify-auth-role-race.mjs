@@ -127,8 +127,8 @@ function createHarness() {
             restorations[index].resolve({ data: { session: sessionFor(userId) }, error: null });
             await setImmediate();
         },
-        emit(userId) {
-            listeners.at(-1).callback(userId ? 'SIGNED_IN' : 'SIGNED_OUT', sessionFor(userId));
+        emit(userId, event = userId ? 'SIGNED_IN' : 'SIGNED_OUT') {
+            listeners.at(-1).callback(event, sessionFor(userId));
         },
         async settle(index, role, accountStatus, error = null) {
             assert.ok(requests[index], `Missing role request ${index}`);
@@ -288,4 +288,75 @@ await test('StrictMode-style effect restart rejects completions from the old eff
     assert.deepEqual(h.snapshot(), expected('B', 'user', 'inactive'));
 });
 
-console.log('AUTH ROLE RACE 01: PASS (11 mocked scenarios; no network requests)');
+await test('initial token refresh still waits for verified authorization', async (h) => {
+    await h.restore('A');
+    h.emit('A', 'TOKEN_REFRESHED');
+    assert.deepEqual(h.snapshot(), expected('A', 'user', null, true));
+    await h.settle(0, 'admin', 'active');
+    assert.equal(h.snapshot().roleLoading, true);
+    await h.settle(1, 'user', 'active');
+    assert.deepEqual(h.snapshot(), expected('A', 'user', 'active'));
+});
+
+await test('verified same-user refresh and sign-in keep private routes mounted while rechecking', async (h) => {
+    await h.restore('A');
+    await h.settle(0, 'admin', 'active');
+    for (const [index, event] of ['TOKEN_REFRESHED', 'SIGNED_IN'].entries()) {
+        h.emit('A', event);
+        assert.deepEqual(h.snapshot(), expected('A', 'admin', 'active'));
+        assert.equal(h.requests.length, index + 2, 'Authorization must still be rechecked');
+        await h.settle(index + 1, 'admin', 'active');
+        assert.deepEqual(h.snapshot(), expected('A', 'admin', 'active'));
+    }
+});
+
+for (const [role, status, error] of [
+    ['admin', 'inactive', null],
+    ['user', 'active', null],
+    [null, null, { message: 'Authorization unavailable' }],
+]) {
+    await test(`background check applies revocation/demotion/error: ${role}/${status}`, async (h) => {
+        await h.restore('A');
+        await h.settle(0, 'admin', 'active');
+        h.emit('A', 'TOKEN_REFRESHED');
+        await h.settle(1, role, status, error);
+        assert.deepEqual(h.snapshot(), expected('A', role ?? 'user', status));
+    });
+}
+
+await test('missing background role row fails closed', async (h) => {
+    await h.restore('A');
+    await h.settle(0, 'admin', 'active');
+    h.emit('A', 'TOKEN_REFRESHED');
+    h.requests[1].resolve({ data: null, error: null });
+    await setImmediate();
+    assert.deepEqual(h.snapshot(), expected('A'));
+    h.emit('A', 'TOKEN_REFRESHED');
+    assert.equal(h.snapshot().roleLoading, true);
+});
+
+await test('A to B to A cannot reuse earlier verified authorization', async (h) => {
+    await h.restore('A');
+    await h.settle(0, 'admin', 'active');
+    h.emit('A', 'TOKEN_REFRESHED');
+    h.emit('B');
+    assert.deepEqual(h.snapshot(), expected('B', 'user', null, true));
+    h.emit('A');
+    assert.deepEqual(h.snapshot(), expected('A', 'user', null, true));
+    await h.settle(1, 'admin', 'active');
+    await h.settle(2, 'admin', 'active');
+    assert.equal(h.snapshot().roleLoading, true);
+    await h.settle(3, 'user', 'inactive');
+    assert.deepEqual(h.snapshot(), expected('A', 'user', 'inactive'));
+});
+
+await test('logout during background verification immediately clears authorization', async (h) => {
+    await h.restore('A');
+    await h.settle(0, 'admin', 'active');
+    h.emit('A', 'TOKEN_REFRESHED');
+    h.emit(null);
+    await h.settle(1, 'admin', 'active');
+    assert.deepEqual(h.snapshot(), expected(null));
+});
+
+console.log('AUTH ROLE RACE 01: PASS (19 mocked scenarios; no network requests)');
