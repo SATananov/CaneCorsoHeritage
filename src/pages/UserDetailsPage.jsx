@@ -69,7 +69,7 @@ function UserDetailsPage() {
     );
     const { userId } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, roleLoading, isActive } = useAuth();
     const [profile, setProfile] = useState(null);
     const [stories, setStories] = useState([]);
     const [sharedFiles, setSharedFiles] = useState([]);
@@ -120,7 +120,7 @@ function UserDetailsPage() {
 
                 setProfile(profileData);
 
-                if (user?.id === profileData.id) {
+                if (user?.id === profileData.id && !roleLoading && isActive) {
                     try {
                         const details = await fetchOwnPrivateProfileDetails(
                             profileData.id,
@@ -214,7 +214,7 @@ function UserDetailsPage() {
             active = false;
             controller.abort();
         };
-    }, [refreshKey, user?.id, userId]);
+    }, [isActive, refreshKey, roleLoading, user?.id, userId]);
 
     // Hide the previous route's state even before the new effect runs.
     const isCurrentMember = loadIdentity.userId === userId;
@@ -235,6 +235,8 @@ function UserDetailsPage() {
         : [];
     const profileSetupRequired = (
         isOwnProfile
+        && !roleLoading
+        && isActive
         && privateDetailsLoaded
         && missingRequiredFields.length > 0
     );
@@ -313,7 +315,7 @@ function UserDetailsPage() {
                             </div>
                         </article>
 
-                        {user?.id === profile.id && (
+                        {isOwnProfile && !roleLoading && isActive && (
                             <ProfileEditor
                                 key={`${profile.id}-${profile.updated_at}-${publicContact?.updated_at || ''}`}
                                 profile={profile}

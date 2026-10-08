@@ -43,13 +43,13 @@ function getReturnDestination(from) {
 }
 
 function RequireGuest() {
-    const { user, loading } = useAuth();
+    const { user, loading, roleLoading, isActive } = useAuth();
     const { language } = useLanguage();
     const location = useLocation();
     const [profileCheck, setProfileCheck] = useState(null);
 
     useEffect(() => {
-        if (loading || !user?.id) return undefined;
+        if (loading || roleLoading || !user?.id || !isActive) return undefined;
         const authUser = user;
         const userId = authUser.id;
         const controller = new AbortController();
@@ -69,9 +69,13 @@ function RequireGuest() {
 
         checkProfile();
         return () => controller.abort();
-    }, [loading, user]);
+    }, [isActive, loading, roleLoading, user]);
 
-    if (loading || (user && (profileCheck?.userId !== user.id || profileCheck?.authUser !== user))) {
+    if (
+        loading
+        || (user && roleLoading)
+        || (user && isActive && (profileCheck?.userId !== user.id || profileCheck?.authUser !== user))
+    ) {
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">
@@ -82,6 +86,10 @@ function RequireGuest() {
     }
 
     if (user) {
+        if (!isActive) {
+            return <Navigate to="/" replace />;
+        }
+
         const destination = profileCheck.complete
             ? getReturnDestination(location.state?.from)
             : `/users/${user.id}`;
