@@ -103,6 +103,24 @@ function MyStoriesPage() {
         await scope.refresh();
     }
 
+    async function handleStorySaved(savedStory) {
+        if (!savedStory?._id) return;
+
+        setStories((currentStories) => {
+            const storyExists = currentStories.some((currentStory) => currentStory._id === savedStory._id);
+
+            if (storyExists) {
+                return currentStories.map((currentStory) => (
+                    currentStory._id === savedStory._id ? savedStory : currentStory
+                ));
+            }
+
+            return [savedStory, ...currentStories];
+        });
+        setRefreshError('');
+        await refreshStories();
+    }
+
     async function handleStoryDeleted({ storyId, cleanupWarning = '' }) {
         setStories((currentStories) => currentStories.filter((story) => story._id !== storyId));
         setDeleteNotice(cleanupWarning);
@@ -165,9 +183,28 @@ function MyStoriesPage() {
                 )}
             </div>
 
-            {showCreate && <AddStoryModal authorName={displayName} onClose={() => setShowCreate(false)} onSaved={refreshStories} />}
-            {editingStory && <AddStoryModal story={editingStory} authorName={displayName} onClose={() => setEditingStory(null)} onSaved={refreshStories} />}
-            {deletingStory && <StoryDeleteModal story={deletingStory} onClose={() => setDeletingStory(null)} onDeleted={handleStoryDeleted} />}
+            {showCreate && (
+                <AddStoryModal
+                    authorName={displayName}
+                    onClose={() => setShowCreate(false)}
+                    onSaved={handleStorySaved}
+                />
+            )}
+            {editingStory && (
+                <AddStoryModal
+                    story={editingStory}
+                    authorName={displayName}
+                    onClose={() => setEditingStory(null)}
+                    onSaved={handleStorySaved}
+                />
+            )}
+            {deletingStory && (
+                <StoryDeleteModal
+                    story={deletingStory}
+                    onClose={() => setDeletingStory(null)}
+                    onDeleted={handleStoryDeleted}
+                />
+            )}
         </main>
     );
 }

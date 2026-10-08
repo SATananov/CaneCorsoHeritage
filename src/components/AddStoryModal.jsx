@@ -6,7 +6,21 @@ import {
 import { createStory, updateStory } from '../services/storyService';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
+import {
+    getStoryCompletionRefreshError,
+    getStoryPartialSaveError,
+} from '../i18n/storySaveUi';
 import styles from './AddStoryModal.module.css';
+
+const STORY_DATA_KEYS = [
+    'eyebrow',
+    'visibility',
+    'original_language',
+    'title',
+    'description',
+    'content',
+    'author',
+];
 
 function getInitialForm(story, language) {
     return {
@@ -18,6 +32,24 @@ function getInitialForm(story, language) {
     };
 }
 
+function getCommittedStoryData(story, authorName) {
+    if (!story) return null;
+
+    return {
+        eyebrow: story.visibility === 'community' ? 'Community' : 'My Own',
+        visibility: story.visibility,
+        original_language: story.original_language,
+        title: story.title,
+        description: story.description,
+        content: story.content,
+        author: authorName,
+    };
+}
+
+function storyDataMatches(left, right) {
+    return Boolean(left) && STORY_DATA_KEYS.every((key) => left[key] === right[key]);
+}
+
 function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
     const { language } = useLanguage();
     const t = (key) => getTranslation(language, 'storyForm', key);
@@ -27,6 +59,8 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const createdStoryRef = useRef(null);
+    const committedStoryDataRef = useRef(getCommittedStoryData(story, authorName));
+    const syncedVisibilityRef = useRef(story?.visibility ?? null);
     const submittingRef = useRef(false);
     const uploadedFilesRef = useRef([]);
     const isEditing = Boolean(story);
@@ -59,8 +93,8 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
     const submitHandler = async (event) => {
         event.preventDefault();
         if (submittingRef.current) return;
-        setError('');
 
+        setError('');
         const storyData = {
             eyebrow: formData.visibility === 'community' ? 'Community' : 'My Own',
             visibility: formData.visibility,
@@ -81,42 +115,73 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
             return;
         }
 
+        submittingRef.current = true;
+        setIsSubmitting(true);
+
         try {
-            submittingRef.current = true;
-            setIsSubmitting(true);
-
             const existingStory = story ?? createdStoryRef.current;
-            const savedStory = existingStory
-                ? await updateStory(existingStory._id, storyData)
-                : await createStory(storyData);
+            let savedStory = existingStory;
 
-            // Keep the saved identity even if attachments or completion fail.
-            if (!isEditing) createdStoryRef.current = savedStory;
+            if (!existingStory || !storyDataMatches(committedStoryDataRef.current, storyData)) {
+                try {
+                    savedStory = existingStory
+                        ? await updateStory(existingStory._id, storyData)
+                        : await createStory(storyData);
+                } catch {
+                    setError(t('saveError'));
+                    return;
+                }
 
-            if (existingStory) {
-                await syncStoryFilesVisibility(savedStory._id, storyData.visibility);
+                // Keep the saved identity even if attachments or completion fail.
+                if (!isEditing && !createdStoryRef.current) {
+                    createdStoryRef.current = savedStory;
+                }
+                committedStoryDataRef.current = { ...storyData };
+
+                // A newly created Story has no older attachments whose visibility needs syncing.
+                if (!existingStory) {
+                    syncedVisibilityRef.current = storyData.visibility;
+                }
             }
 
-            for (const file of selectedFiles) {
-                // File references identify this selection without filename collisions.
-                // Selecting a file again creates a new attachment; retries reuse it.
-                if (uploadedFilesRef.current.some((upload) => (
-                    upload.file === file && upload.storyId === savedStory._id
-                ))) continue;
+            try {
+                if (syncedVisibilityRef.current !== storyData.visibility) {
+                    await syncStoryFilesVisibility(savedStory._id, storyData.visibility);
+                    syncedVisibilityRef.current = storyData.visibility;
+                }
 
-                await uploadUserFiles([file], {
-                    storyId: savedStory._id,
-                    visibility: storyData.visibility,
-                });
-                // Record only after both storage and metadata have succeeded.
-                uploadedFilesRef.current = [...uploadedFilesRef.current, { file, storyId: savedStory._id }];
-                setUploadedFiles(uploadedFilesRef.current);
+                for (const file of selectedFiles) {
+                    // File references identify this selection without filename collisions.
+                    // Selecting a file again creates a new attachment; retries reuse it.
+                    if (uploadedFilesRef.current.some((upload) => (
+                        upload.file === file && upload.storyId === savedStory._id
+                    ))) continue;
+
+                    await uploadUserFiles([file], {
+                        storyId: savedStory._id,
+                        visibility: storyData.visibility,
+                    });
+
+                    // Record only after both storage and metadata have succeeded.
+                    uploadedFilesRef.current = [
+                        ...uploadedFilesRef.current,
+                        { file, storyId: savedStory._id },
+                    ];
+                    setUploadedFiles(uploadedFilesRef.current);
+                }
+            } catch {
+                setError(getStoryPartialSaveError(language));
+                return;
             }
 
-            await onSaved();
+            try {
+                await onSaved(savedStory);
+            } catch {
+                setError(getStoryCompletionRefreshError(language));
+                return;
+            }
+
             onClose();
-        } catch {
-            setError(t('saveError'));
         } finally {
             submittingRef.current = false;
             setIsSubmitting(false);
