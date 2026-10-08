@@ -264,14 +264,6 @@ export async function syncStoryFilesVisibility(storyId, visibility) {
 }
 
 export async function deleteUserFile(file) {
-    const { error: storageError } = await supabase.storage
-        .from('user-files')
-        .remove([file.storage_path]);
-
-    if (storageError) {
-        throw new Error(storageError.message || 'Unable to delete the stored file.');
-    }
-
     const { count: metadataCount, error: metadataError } = await supabase
         .from('user_files')
         .delete({ count: 'exact' })
@@ -283,6 +275,14 @@ export async function deleteUserFile(file) {
 
     if (metadataCount !== 1) {
         throw new Error('File deletion did not affect exactly one row.');
+    }
+
+    const { error: storageError } = await supabase.storage
+        .from('user-files')
+        .remove([file.storage_path]);
+
+    if (storageError) {
+        throw new Error(storageError.message || 'File record was deleted, but the stored file could not be cleaned up.');
     }
 }
 

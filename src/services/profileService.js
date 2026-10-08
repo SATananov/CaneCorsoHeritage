@@ -273,16 +273,6 @@ export async function uploadProfileAvatar(
 }
 
 export async function removeProfileAvatar(userId, avatarPath) {
-    if (avatarPath) {
-        const { error: storageError } = await supabase.storage
-            .from('avatars')
-            .remove([avatarPath]);
-
-        if (storageError) {
-            throw new Error(storageError.message || 'Unable to remove avatar file.');
-        }
-    }
-
     const { count, error } = await supabase
         .from('profiles')
         .update({
@@ -298,6 +288,16 @@ export async function removeProfileAvatar(userId, avatarPath) {
 
     if (count !== 1) {
         throw new Error('Avatar removal did not update the profile row.');
+    }
+
+    if (avatarPath) {
+        const { error: storageError } = await supabase.storage
+            .from('avatars')
+            .remove([avatarPath]);
+
+        if (storageError) {
+            throw new Error(storageError.message || 'Avatar was removed from the profile, but the stored file could not be cleaned up.');
+        }
     }
 }
 
