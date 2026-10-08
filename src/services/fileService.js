@@ -171,7 +171,17 @@ export async function uploadUserFiles(
             .single();
 
         if (metadataError) {
-            await supabase.storage.from('user-files').remove([storagePath]);
+            const { error: cleanupError } = await supabase.storage
+                .from('user-files')
+                .remove([storagePath]);
+
+            if (cleanupError) {
+                throw new Error(
+                    `${metadataError.message || `Unable to save ${file.name}.`} `
+                    + `The uploaded file could not be cleaned up: ${cleanupError.message || 'unknown storage cleanup error'}.`,
+                );
+            }
+
             throw new Error(metadataError.message || `Unable to save ${file.name}.`);
         }
 

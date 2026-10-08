@@ -263,7 +263,17 @@ export async function uploadProfileAvatar(
         .eq('id', userId);
 
     if (profileError || profileCount !== 1) {
-        await supabase.storage.from('avatars').remove([storagePath]);
+        const { error: cleanupError } = await supabase.storage
+            .from('avatars')
+            .remove([storagePath]);
+
+        if (cleanupError) {
+            throw new Error(
+                `${profileError?.message || 'Unable to save avatar because the profile was not updated.'} `
+                + `The uploaded avatar could not be cleaned up: ${cleanupError.message || 'unknown storage cleanup error'}.`,
+            );
+        }
+
         throw new Error(profileError?.message || 'Unable to save avatar because the profile was not updated.');
     }
 
