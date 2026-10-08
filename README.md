@@ -115,6 +115,46 @@ flowchart TD
 7. Public community content is shown according to visibility and moderation state.
 8. Admin users can access the protected moderation dashboard and manage moderation/account actions.
 
+## Demo accounts for evaluation
+
+Two dedicated demo accounts are available so evaluators can inspect the authenticated and administrative parts of the application without creating new accounts.
+
+### How to enter the application
+
+1. Start the application with `npm run dev`.
+2. Open the URL printed by Vite in the terminal, normally `http://localhost:5173/`.
+3. Select **Login** from the application header, or open `/login` directly.
+4. Sign in with one of the demo accounts below.
+5. Use **Logout** before switching between the regular-user and admin accounts.
+
+### Regular user demo
+
+- **Email:** `softuniuser@test.com`
+- **Password:** `user123`
+
+Recommended evaluation flow:
+
+- Open `/my-stories` to test authenticated Story CRUD operations.
+- Open `/my-files` to inspect the personal file workspace and uploads.
+- Open public Story, Heritage or supported file content to test ratings, comments and reactions.
+- Open the member/profile area to inspect authenticated profile functionality.
+
+### Admin demo
+
+- **Email:** `SoftUniAdmin@test.com`
+- **Password:** `admin123`
+
+Recommended evaluation flow:
+
+- Open `/admin` after login.
+- Inspect the protected administration dashboard.
+- Review Story and file moderation queues.
+- Test moderation actions and member/account-status management.
+- Confirm that admin-only routes are unavailable to the regular-user account.
+
+> These accounts are dedicated to project evaluation and contain no personal or sensitive data.
+> Please keep the supplied credentials unchanged so the accounts remain available for evaluation.
+
 ## Authentication and authorization
 
 Authentication is provided by Supabase Auth. The application restores the current session on load and listens for authentication-state changes through the shared Auth Context.
