@@ -90,6 +90,8 @@ function harness({ editing = false } = {}) {
         document: { body: { style: { overflow: '' } } },
         useLanguage: () => ({ language: 'en' }),
         getTranslation: (_language, _section, key) => key,
+        getStoryPartialSaveError: () => 'partialSaveError',
+        getStoryCompletionRefreshError: () => 'completionRefreshError',
         useState(initial) {
             const index = cursor++;
             hooks[index] ??= { value: typeof initial === 'function' ? initial() : initial };

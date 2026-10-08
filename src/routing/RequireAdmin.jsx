@@ -4,7 +4,7 @@ import { getTranslation } from '../i18n/translations';
 import useAuth from '../hooks/useAuth';
 
 function RequireAdmin() {
-    const { user, loading, roleLoading, isAdmin } = useAuth();
+    const { user, loading, roleLoading, isAdmin, isActive } = useAuth();
     const { language } = useLanguage();
 
     if (loading || roleLoading) {
@@ -17,7 +17,7 @@ function RequireAdmin() {
         );
     }
 
-    if (!user || !isAdmin) {
+    if (!user || !isAdmin || !isActive) {
         return <Navigate to="/" replace />;
     }
 

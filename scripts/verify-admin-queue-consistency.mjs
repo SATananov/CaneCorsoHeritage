@@ -372,7 +372,7 @@ await test('failed constituent query rejects the whole dashboard; permissions an
     assert.equal(h.calls.writes.length, 0);
     const guard = read('src/routing/RequireAdmin.jsx');
     assert.match(guard, /if \(loading \|\| roleLoading\)/);
-    assert.match(guard, /if \(!user \|\| !isAdmin\)/);
+    assert.match(guard, /if \(!user \|\| !isAdmin \|\| !isActive\)/);
     assert.match(guard, /<Navigate to="\/" replace \/>/);
 });
 
