@@ -56,17 +56,24 @@ The application uses a small layered React architecture. Route pages compose reu
 
 ```mermaid
 flowchart TD
-    A[User / Browser] --> B[React Router]
-    B --> C[Pages]
-    C --> D[Reusable Components]
-    C --> E[Context & Custom Hooks]
-    D --> F[Services]
-    E --> F
-    F --> G[Supabase]
-    G --> H[Auth]
-    G --> I[PostgreSQL]
-    G --> J[Storage]
-    I --> K[Row Level Security]
+    A[User / Browser] --> B[Netlify]
+    B --> C[React + Vite SPA]
+    C --> D[React Router]
+    D --> E[Route Guards]
+    D --> F[Pages]
+
+    F --> G[Reusable Components]
+    F --> H[Context & Custom Hooks]
+
+    G --> I[Services]
+    H --> I
+
+    I --> J[Supabase]
+
+    J --> K[Auth]
+    J --> L[PostgreSQL + RLS]
+    J --> M[Storage]
+    J --> N[Edge Functions]
 ```
 
 **Primary data flow:** `Page / Component → Hook or Service → Supabase → React state → UI`
