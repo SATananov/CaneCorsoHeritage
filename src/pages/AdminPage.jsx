@@ -516,15 +516,18 @@ function AdminDashboard({ user }) {
                                     <tbody>
                                         {data.profiles.map((profile) => {
                                             const roleInfo = roleByUser.get(profile.id);
-                                            const accountStatus = roleInfo?.account_status ?? 'active';
+                                            const role = roleInfo?.role ?? 'unknown';
+                                            const accountStatus = roleInfo?.account_status ?? 'unknown';
+                                            const canChangeAccountStatus = Boolean(roleInfo)
+                                                && ['active', 'inactive'].includes(accountStatus);
                                             const isCurrentAdmin = profile.id === user?.id;
 
                                             return (
                                                 <tr key={profile.id}>
                                                     <td>{profile.display_name || '—'}</td>
                                                     <td>{profile.username || '—'}</td>
-                                                    <td><span className={roleInfo?.role === 'admin' ? styles.adminRole : styles.userRole}>{statusLabel(roleInfo?.role ?? 'user')}</span></td>
-                                                    <td><span className={accountStatus === 'active' ? styles.activeStatus : styles.inactiveStatus}>{statusLabel(accountStatus)}</span></td>
+                                                    <td><span className={role === 'admin' ? styles.adminRole : styles.userRole}>{statusLabel(role)}</span></td>
+                                                    <td><span className={accountStatus === 'active' ? styles.activeStatus : accountStatus === 'inactive' ? styles.inactiveStatus : styles.userRole}>{statusLabel(accountStatus)}</span></td>
                                                     <td>{dateLabel(profile.created_at)}</td>
                                                     <td>
                                                         <div className={styles.rowActions}>
@@ -538,7 +541,7 @@ function AdminDashboard({ user }) {
                                                             </button>
                                                             {isCurrentAdmin ? (
                                                                 <span className={styles.currentAdmin}>{t('currentAdmin')}</span>
-                                                            ) : (
+                                                            ) : canChangeAccountStatus ? (
                                                                 <button
                                                                     className={accountStatus === 'active' ? styles.rejectButton : styles.approveButton}
                                                                     type="button"
@@ -555,7 +558,7 @@ function AdminDashboard({ user }) {
                                                                 >
                                                                     {accountStatus === 'active' ? t('deactivate') : t('reactivate')}
                                                                 </button>
-                                                            )}
+                                                            ) : null}
                                                         </div>
                                                     </td>
                                                 </tr>
