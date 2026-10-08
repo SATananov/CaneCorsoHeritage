@@ -10,7 +10,7 @@ const start = page.indexOf('function AdminDashboard(');
 const end = page.indexOf('    function storyActions(', start);
 assert.ok(start >= 0 && end > start);
 const componentSource = `${page.slice(start, end)}
-    return { data, loading, error, message, busyKey, pendingStories, pendingFiles,
+    return { data, loading, error, message, busyKey, actionsDisabled, pendingStories, pendingFiles,
         refreshDashboard, runAction, openMemberDetails, closeMemberDetails,
         memberDetails, memberDetailsLoading };
 }
@@ -284,12 +284,15 @@ await test('successful mutation plus failed refresh retains last snapshot and re
     h.outcomes.dashboard.push(new Error('Refresh failed'));
     await h.action(() => h.services.moderateStory('story-A', 'approved'));
     assert.equal(h.render().data, before);
-    assert.equal(h.render().error, 'loadError'); assert.equal(h.render().message, '');
+    assert.equal(h.render().error, 'loadError'); assert.equal(h.render().message, 'success');
     assert.equal(h.render().loading, false); assert.equal(h.render().busyKey, '');
+    assert.equal(h.render().actionsDisabled, true, 'Stale admin snapshot must block mutation controls');
     const writes = h.calls.writes.length;
     await h.refresh();
     coherent(h.render().data); assert.equal(h.render().data.counts.pending, 3);
-    assert.equal(h.render().error, ''); assert.equal(h.calls.writes.length, writes);
+    assert.equal(h.render().error, ''); assert.equal(h.render().message, '');
+    assert.equal(h.render().actionsDisabled, false, 'Successful read-only refresh unlocks mutation controls');
+    assert.equal(h.calls.writes.length, writes);
     assert.match(page, /if \(error === 'loadError'\) refreshDashboard\(\)/, 'Existing navigation provides read-only recovery');
 });
 

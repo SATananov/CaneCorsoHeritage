@@ -94,7 +94,7 @@ function AdminDashboard({ user }) {
             const isCurrent = () => scope.active && scope.request === request;
             setLoading(true);
             setError('');
-            setMessage('');
+            if (!afterAction) setMessage('');
             try {
                 const nextData = await fetchAdminDashboard({ signal: controller.signal });
                 if (!isCurrent()) return false;
@@ -145,6 +145,7 @@ function AdminDashboard({ user }) {
 
     const pendingStories = data?.pendingStories ?? [];
     const pendingFiles = data?.pendingFiles ?? [];
+    const actionsDisabled = Boolean(busyKey) || error === 'loadError';
 
     async function runAction(key, successMessage, action) {
         const scope = scopeRef.current;
@@ -160,8 +161,8 @@ function AdminDashboard({ user }) {
             setMessage('');
             await action();
             if (!scope.active) return;
-            const refreshed = await refreshDashboard(true);
-            if (scope.active && refreshed) setMessage(successMessage);
+            setMessage(successMessage);
+            await refreshDashboard(true);
         } catch {
             if (scope.active) setError('actionError');
         } finally {
@@ -220,7 +221,7 @@ function AdminDashboard({ user }) {
                         <button
                             className={styles.approveButton}
                             type="button"
-                            disabled={Boolean(busyKey)}
+                            disabled={actionsDisabled}
                             onClick={() => runAction(
                                 `${keyPrefix}-approve`,
                                 t('storyApproved'),
@@ -232,7 +233,7 @@ function AdminDashboard({ user }) {
                         <button
                             className={styles.rejectButton}
                             type="button"
-                            disabled={Boolean(busyKey)}
+                            disabled={actionsDisabled}
                             onClick={() => confirmAndRun(
                                 format('rejectStoryConfirm', { name: story.title || t('untitled') }),
                                 `${keyPrefix}-reject`,
@@ -249,7 +250,7 @@ function AdminDashboard({ user }) {
                     <button
                         className={styles.secondaryButton}
                         type="button"
-                        disabled={Boolean(busyKey)}
+                        disabled={actionsDisabled}
                         onClick={() => confirmAndRun(
                             format('hideStoryConfirm', { name: story.title || t('untitled') }),
                             `${keyPrefix}-hide`,
@@ -265,7 +266,7 @@ function AdminDashboard({ user }) {
                     <button
                         className={styles.approveButton}
                         type="button"
-                        disabled={Boolean(busyKey)}
+                        disabled={actionsDisabled}
                         onClick={() => runAction(
                             `${keyPrefix}-restore`,
                             t('storyRestored'),
@@ -279,7 +280,7 @@ function AdminDashboard({ user }) {
                 <button
                     className={styles.deleteButton}
                     type="button"
-                    disabled={Boolean(busyKey)}
+                    disabled={actionsDisabled}
                     onClick={() => confirmAndRun(
                         format('deleteStoryConfirm', { name: story.title || t('untitled') }),
                         `${keyPrefix}-delete`,
@@ -303,7 +304,7 @@ function AdminDashboard({ user }) {
                         <button
                             className={styles.approveButton}
                             type="button"
-                            disabled={Boolean(busyKey)}
+                            disabled={actionsDisabled}
                             onClick={() => runAction(
                                 `${keyPrefix}-approve`,
                                 t('fileApproved'),
@@ -315,7 +316,7 @@ function AdminDashboard({ user }) {
                         <button
                             className={styles.rejectButton}
                             type="button"
-                            disabled={Boolean(busyKey)}
+                            disabled={actionsDisabled}
                             onClick={() => confirmAndRun(
                                 format('rejectFileConfirm', { name: file.file_name }),
                                 `${keyPrefix}-reject`,
@@ -332,7 +333,7 @@ function AdminDashboard({ user }) {
                     <button
                         className={styles.secondaryButton}
                         type="button"
-                        disabled={Boolean(busyKey)}
+                        disabled={actionsDisabled}
                         onClick={() => confirmAndRun(
                             format('hideFileConfirm', { name: file.file_name }),
                             `${keyPrefix}-hide`,
@@ -348,7 +349,7 @@ function AdminDashboard({ user }) {
                     <button
                         className={styles.approveButton}
                         type="button"
-                        disabled={Boolean(busyKey)}
+                        disabled={actionsDisabled}
                         onClick={() => runAction(
                             `${keyPrefix}-restore`,
                             t('fileRestored'),
@@ -362,7 +363,7 @@ function AdminDashboard({ user }) {
                 <button
                     className={styles.deleteButton}
                     type="button"
-                    disabled={Boolean(busyKey)}
+                    disabled={actionsDisabled}
                     onClick={() => confirmAndRun(
                         format('deleteFileConfirm', { name: file.file_name }),
                         `${keyPrefix}-delete`,
@@ -541,7 +542,7 @@ function AdminDashboard({ user }) {
                                                                 <button
                                                                     className={accountStatus === 'active' ? styles.rejectButton : styles.approveButton}
                                                                     type="button"
-                                                                    disabled={Boolean(busyKey)}
+                                                                    disabled={actionsDisabled}
                                                                     onClick={() => confirmAndRun(
                                                                         format('deactivateConfirm', { action: accountStatus === 'active' ? t('deactivate') : t('reactivate'), name: profile.display_name || profile.username || t('memberFallback') }),
                                                                         `member-${profile.id}-${accountStatus}`,
