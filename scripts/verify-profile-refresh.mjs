@@ -251,15 +251,26 @@ await test('complete successful save refreshes notice, name and avatar immediate
     assert.equal(h.requests.editor.length, 1, 'Signal does not reload editable draft');
 });
 
-for (const stage of ['public', 'private', 'contact', 'avatar']) {
-    await test(`failed ${stage} save emits no refresh or success`, async (h) => {
+await test('failed first profile write emits no refresh or success', async (h) => {
+    h.change({ avatarFile: { name: 'avatar.jpg' } });
+    h.outcomes.public = [new Error('Save failed')];
+    await h.submit();
+    assert.deepEqual(h.counts(), [1, 1]);
+    assert.equal(h.saved(), 0);
+    assert.equal(h.editor.render().message, '');
+    assert.equal(h.editor.render().errorMessage, 'updateError');
+    assert.equal(h.editor.render().saving, false);
+});
+
+for (const stage of ['private', 'contact', 'avatar']) {
+    await test(`failed ${stage} save after a committed write refreshes persisted state`, async (h) => {
         h.change({ avatarFile: { name: 'avatar.jpg' } });
         h.outcomes[stage] = [new Error('Save failed')];
         await h.submit();
-        assert.deepEqual(h.counts(), [1, 1]);
-        assert.equal(h.saved(), 0);
+        assert.deepEqual(h.counts(), [2, 2]);
+        assert.equal(h.saved(), 1);
         assert.equal(h.editor.render().message, '');
-        assert.equal(h.editor.render().errorMessage, 'updateError');
+        assert.equal(h.editor.render().errorMessage, 'partialUpdate');
         assert.equal(h.editor.render().saving, false);
     });
 }

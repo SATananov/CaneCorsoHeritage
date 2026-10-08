@@ -79,6 +79,7 @@ function UserDetailsPage() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [profileSaveNotice, setProfileSaveNotice] = useState({ userId: null, key: '' });
     const [loadIdentity, setLoadIdentity] = useState({ userId, viewerId: user?.id, refreshKey });
 
     // Reset before children commit when the requested member or viewer changes.
@@ -322,8 +323,19 @@ function UserDetailsPage() {
                                 contact={publicContact}
                                 currentEmail={user.email}
                                 requiredCompletion={profileSetupRequired}
-                                onSaved={() => setRefreshKey((value) => value + 1)}
+                                onSaved={({ partial = false } = {}) => {
+                                    setProfileSaveNotice({
+                                        userId: profile.id,
+                                        key: partial ? 'partialUpdate' : '',
+                                    });
+                                    setRefreshKey((value) => value + 1);
+                                }}
                             />
+                        )}
+                        {profileSaveNotice.userId === profile.id && profileSaveNotice.key && (
+                            <div className={styles.message} role="status">
+                                {getTranslation(language, 'profileEditor', profileSaveNotice.key)}
+                            </div>
                         )}
 
                         <section className={styles.storySection} aria-labelledby="member-stories-title">

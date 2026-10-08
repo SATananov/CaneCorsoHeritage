@@ -142,12 +142,15 @@ function ProfileEditor({
         setMessage('');
         setError('');
 
+        let hasCommittedChanges = false;
+
         try {
             await updateOwnProfile(profile.id, {
                 displayName,
                 username: cleanUsername,
                 bio,
             });
+            hasCommittedChanges = true;
 
             await saveOwnPrivateProfileDetails(profile.id, {
                 firstName,
@@ -174,9 +177,15 @@ function ProfileEditor({
             notifyProfileRefresh(profile.id);
             setMessage(t('updated'));
             setOpen(false);
-            onSaved();
+            onSaved({ partial: false });
         } catch {
-            setError(t('updateError'));
+            if (hasCommittedChanges) {
+                notifyProfileRefresh(profile.id);
+                setError(t('partialUpdate'));
+                onSaved({ partial: true });
+            } else {
+                setError(t('updateError'));
+            }
         } finally {
             setSaving(false);
         }

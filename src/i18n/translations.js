@@ -214,6 +214,7 @@ export const translations = {
             cityRequired: 'City is required.',
             loadPrivateError: 'Unable to load private profile details.',
             updateError: 'Unable to update your profile.',
+            partialUpdate: 'Some changes were saved, but the profile update did not fully complete. Review the refreshed profile and try the remaining changes again.',
             removeError: 'Unable to remove avatar.',
         },
         publicStories: {
@@ -647,6 +648,7 @@ export const translations = {
             cityRequired: 'Градът е задължителен.',
             loadPrivateError: 'Личните данни на профила не могат да бъдат заредени.',
             updateError: 'Профилът не може да бъде обновен.',
+            partialUpdate: 'Някои промени бяха запазени, но обновяването на профила не завърши изцяло. Прегледайте обновения профил и опитайте отново останалите промени.',
             removeError: 'Профилната снимка не може да бъде премахната.',
         },
         publicStories: {
@@ -1080,6 +1082,7 @@ export const translations = {
             cityRequired: 'La città è obbligatoria.',
             loadPrivateError: 'Impossibile caricare i dati privati del profilo.',
             updateError: 'Impossibile aggiornare il profilo.',
+            partialUpdate: 'Alcune modifiche sono state salvate, ma l’aggiornamento del profilo non è stato completato. Controlla il profilo aggiornato e riprova le modifiche rimanenti.',
             removeError: 'Impossibile rimuovere l’immagine profilo.',
         },
         publicStories: {
