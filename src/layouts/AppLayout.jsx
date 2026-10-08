@@ -3,47 +3,18 @@ import { Outlet, useLocation } from 'react-router';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import ProfileCompletionNotice from '../components/ProfileCompletionNotice';
-
-const routeTitles = {
-    '/': 'Cane Corso Heritage',
-    '/stories': 'Stories | Cane Corso Heritage',
-    '/heritage': 'Heritage | Cane Corso Heritage',
-    '/about': 'About USG | Cane Corso Heritage',
-    '/help': 'Help | Cane Corso Heritage',
-    '/login': 'Login | Cane Corso Heritage',
-    '/register': 'Register | Cane Corso Heritage',
-    '/forgot-password': 'Password Recovery | Cane Corso Heritage',
-    '/update-password': 'Update Password | Cane Corso Heritage',
-    '/my-stories': 'My Stories | Cane Corso Heritage',
-    '/my-files': 'My Files | Cane Corso Heritage',
-    '/admin': 'Administration | Cane Corso Heritage',
-};
-
-function getRouteTitle(pathname) {
-    if (routeTitles[pathname]) {
-        return routeTitles[pathname];
-    }
-
-    if (pathname.startsWith('/stories/')) {
-        return 'Story | Cane Corso Heritage';
-    }
-
-    if (pathname.startsWith('/heritage/')) {
-        return 'Heritage Article | Cane Corso Heritage';
-    }
-
-    if (pathname.startsWith('/help/')) {
-        return 'Help | Cane Corso Heritage';
-    }
-
-    return 'Cane Corso Heritage';
-}
+import { useLanguage } from '../context/languageContext';
+import { getPageTitle } from '../i18n/pageTitles';
 
 function AppLayout() {
     const location = useLocation();
+    const { language } = useLanguage();
 
     useEffect(() => {
-        document.title = getRouteTitle(location.pathname);
+        document.title = getPageTitle(language, location.pathname);
+    }, [language, location.pathname]);
+
+    useEffect(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }, [location.pathname]);
 
