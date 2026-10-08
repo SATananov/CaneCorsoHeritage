@@ -42,7 +42,7 @@ function harness(v) {
 
     // Real rating services run against this in-memory SDK, including their
     // insert/update choice and average/count/current-user calculations.
-    function query(mode, payload) {
+    function query(mode, payload, options = {}) {
         const filters = {};
         let signal;
         return {
@@ -71,10 +71,15 @@ function harness(v) {
                         records.push({ ...payload });
                     } else {
                         const row = records.find((row) => row[v.column] === filters[v.column] && row.user_id === filters.user_id);
-                        if (!row) return { error: { message: 'Missing rating' } };
+                        if (!row) {
+                            return { count: options.count === 'exact' ? 0 : null, error: null };
+                        }
                         Object.assign(row, payload);
                     }
-                    return { error: outcome?.committedError ? { message: 'Response lost after commit' } : null };
+                    return {
+                        count: options.count === 'exact' ? 1 : null,
+                        error: outcome?.committedError ? { message: 'Response lost after commit' } : null,
+                    };
                 };
                 return run().then(resolve, reject);
             },
@@ -83,7 +88,7 @@ function harness(v) {
     const supabase = { from: () => ({
         select: () => query('read'),
         insert: (row) => query('insert', row),
-        update: (row) => query('update', row),
+        update: (row, options) => query('update', row, options),
     }) };
     const services = runInNewContext(`${executableService}\n({ ${v.fetch}, ${v.save} });`, { supabase });
 

@@ -173,18 +173,22 @@ export async function moderateStory(storyId, moderationStatus) {
     }
 
     const admin = await getCurrentAdmin();
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('stories')
         .update({
             moderation_status: moderationStatus,
             moderated_at: new Date().toISOString(),
             moderated_by: admin.id,
             updated_at: new Date().toISOString(),
-        })
+        }, { count: 'exact' })
         .eq('id', storyId);
 
     if (error) {
         throw new Error(error.message || 'Unable to moderate this Story.');
+    }
+
+    if (count !== 1) {
+        throw new Error('Story moderation did not affect exactly one row.');
     }
 }
 
@@ -194,18 +198,22 @@ export async function moderateFile(fileId, moderationStatus) {
     }
 
     const admin = await getCurrentAdmin();
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('user_files')
         .update({
             moderation_status: moderationStatus,
             moderated_at: new Date().toISOString(),
             moderated_by: admin.id,
             updated_at: new Date().toISOString(),
-        })
+        }, { count: 'exact' })
         .eq('id', fileId);
 
     if (error) {
         throw new Error(error.message || 'Unable to moderate this file.');
+    }
+
+    if (count !== 1) {
+        throw new Error('File moderation did not affect exactly one row.');
     }
 }
 
@@ -220,15 +228,19 @@ export async function setMemberAccountStatus(userId, accountStatus) {
         throw new Error('The current administrator account cannot be deactivated.');
     }
 
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('user_roles')
         .update({
             account_status: accountStatus,
-        })
+        }, { count: 'exact' })
         .eq('user_id', userId);
 
     if (error) {
         throw new Error(error.message || 'Unable to update this member account.');
+    }
+
+    if (count !== 1) {
+        throw new Error('Member account update did not affect exactly one row.');
     }
 }
 
@@ -245,13 +257,17 @@ export async function adminDeleteFile(file) {
         throw new Error(storageError.message || 'Unable to remove the stored file.');
     }
 
-    const { error: metadataError } = await supabase
+    const { count: metadataCount, error: metadataError } = await supabase
         .from('user_files')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', file.id);
 
     if (metadataError) {
         throw new Error(metadataError.message || 'Unable to delete the file record.');
+    }
+
+    if (metadataCount !== 1) {
+        throw new Error('File deletion did not affect exactly one row.');
     }
 }
 
@@ -288,13 +304,17 @@ export async function adminDeleteStory(storyId) {
         }
     }
 
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('stories')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', storyId);
 
     if (error) {
         throw new Error(error.message || 'Unable to delete this Story.');
+    }
+
+    if (count !== 1) {
+        throw new Error('Story deletion did not affect exactly one row.');
     }
 }
 

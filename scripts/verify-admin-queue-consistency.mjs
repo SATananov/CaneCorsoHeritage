@@ -60,8 +60,8 @@ function harness() {
             limit(value) { spec.limit = value; return this; },
             range(from, to) { spec.range = [from, to]; return this; },
             abortSignal(signal) { spec.signal = signal; return this; },
-            update(value) { spec.mode = 'update'; spec.payload = value; return this; },
-            delete() { spec.mode = 'delete'; return this; },
+            update(value, options = {}) { spec.mode = 'update'; spec.payload = value; spec.mutationOptions = options; return this; },
+            delete(options = {}) { spec.mode = 'delete'; spec.mutationOptions = options; return this; },
             then(resolve, reject) {
                 const execute = async () => {
                     calls.queries.push(spec);
@@ -70,9 +70,13 @@ function harness() {
                         calls.writes.push(spec);
                         const outcome = await outcomes.mutation.shift();
                         if (outcome instanceof Error) return { error: outcome };
+                        const matchedRows = db[table].filter(matches);
                         if (spec.mode === 'delete') db[table] = db[table].filter((row) => !matches(row));
-                        else db[table].filter(matches).forEach((row) => Object.assign(row, spec.payload));
-                        return { error: null };
+                        else matchedRows.forEach((row) => Object.assign(row, spec.payload));
+                        return {
+                            count: spec.mutationOptions?.count === 'exact' ? matchedRows.length : null,
+                            error: null,
+                        };
                     }
                     if (outcomes.query.length) return { error: outcomes.query.shift() };
                     const rows = db[table].filter(matches);

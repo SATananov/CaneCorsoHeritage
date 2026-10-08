@@ -226,7 +226,7 @@ export async function fetchCommunityFilesByUser(userId) {
 }
 
 export async function updateUserFileVisibility(fileId, visibility) {
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('user_files')
         .update({
             visibility,
@@ -234,11 +234,15 @@ export async function updateUserFileVisibility(fileId, visibility) {
             moderated_at: null,
             moderated_by: null,
             updated_at: new Date().toISOString(),
-        })
+        }, { count: 'exact' })
         .eq('id', fileId);
 
     if (error) {
         throw new Error(error.message || 'Unable to update file visibility.');
+    }
+
+    if (count !== 1) {
+        throw new Error('File visibility update did not affect exactly one row.');
     }
 }
 
@@ -268,13 +272,17 @@ export async function deleteUserFile(file) {
         throw new Error(storageError.message || 'Unable to delete the stored file.');
     }
 
-    const { error: metadataError } = await supabase
+    const { count: metadataCount, error: metadataError } = await supabase
         .from('user_files')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', file.id);
 
     if (metadataError) {
         throw new Error(metadataError.message || 'Unable to remove the file record.');
+    }
+
+    if (metadataCount !== 1) {
+        throw new Error('File deletion did not affect exactly one row.');
     }
 }
 

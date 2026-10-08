@@ -156,12 +156,16 @@ export async function deleteComment(commentId) {
 
     await getCurrentUser();
 
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('comments')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', cleanId);
 
     if (error) {
         throw new Error(error.message || 'Unable to delete comment.');
+    }
+
+    if (count !== 1) {
+        throw new Error('Comment deletion did not affect exactly one row.');
     }
 }

@@ -253,18 +253,18 @@ export async function uploadProfileAvatar(
         .from('avatars')
         .getPublicUrl(storagePath);
 
-    const { error: profileError } = await supabase
+    const { count: profileCount, error: profileError } = await supabase
         .from('profiles')
         .update({
             avatar_path: storagePath,
             avatar_url: publicUrlData.publicUrl,
             updated_at: new Date().toISOString(),
-        })
+        }, { count: 'exact' })
         .eq('id', userId);
 
-    if (profileError) {
+    if (profileError || profileCount !== 1) {
         await supabase.storage.from('avatars').remove([storagePath]);
-        throw new Error(profileError.message || 'Unable to save avatar.');
+        throw new Error(profileError?.message || 'Unable to save avatar because the profile was not updated.');
     }
 
     if (previousAvatarPath && previousAvatarPath !== storagePath) {
@@ -283,17 +283,21 @@ export async function removeProfileAvatar(userId, avatarPath) {
         }
     }
 
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('profiles')
         .update({
             avatar_path: null,
             avatar_url: null,
             updated_at: new Date().toISOString(),
-        })
+        }, { count: 'exact' })
         .eq('id', userId);
 
     if (error) {
         throw new Error(error.message || 'Unable to remove avatar.');
+    }
+
+    if (count !== 1) {
+        throw new Error('Avatar removal did not update the profile row.');
     }
 }
 

@@ -187,17 +187,24 @@ export async function deleteStory(storyId) {
     await deleteStoryFiles(storyId);
 
     const response = await fetch(
-        `${supabaseUrl}/rest/v1/stories?id=eq.${encodeURIComponent(storyId)}&author_id=eq.${encodeURIComponent(session.user.id)}`,
+        `${supabaseUrl}/rest/v1/stories?id=eq.${encodeURIComponent(storyId)}&author_id=eq.${encodeURIComponent(session.user.id)}&select=id`,
         {
             method: 'DELETE',
             headers: {
                 apikey: supabaseKey,
                 Authorization: `Bearer ${session.access_token}`,
+                Prefer: 'return=representation',
             },
         },
     );
 
     if (!response.ok) {
         throw new Error('Unable to delete story.');
+    }
+
+    const data = await response.json();
+
+    if (!data[0]) {
+        throw new Error('Story not found or not owned by this account.');
     }
 }

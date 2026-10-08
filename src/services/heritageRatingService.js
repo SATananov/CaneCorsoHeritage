@@ -44,17 +44,21 @@ export async function saveHeritageRating(
     hasExistingRating,
 ) {
     if (hasExistingRating) {
-        const { error } = await supabase
+        const { count, error } = await supabase
             .from('heritage_ratings')
             .update({
                 rating,
                 updated_at: new Date().toISOString(),
-            })
+            }, { count: 'exact' })
             .eq('article_slug', articleSlug)
             .eq('user_id', userId);
 
         if (error) {
             throw new Error(error.message || 'Unable to update your Heritage rating.');
+        }
+
+        if (count !== 1) {
+            throw new Error('Your Heritage rating no longer exists. Refresh and try again.');
         }
 
         return;

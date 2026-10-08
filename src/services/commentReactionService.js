@@ -93,13 +93,17 @@ export async function removeCommentReaction(commentId) {
     const cleanCommentId = normalizeCommentId(commentId);
     const user = await getCurrentUser();
 
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('comment_reactions')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('comment_id', cleanCommentId)
         .eq('user_id', user.id);
 
     if (error) {
         throw new Error(error.message || 'Unable to remove comment reaction.');
+    }
+
+    if (count !== 1) {
+        throw new Error('Comment reaction was not removed because it no longer exists.');
     }
 }

@@ -44,17 +44,21 @@ export async function saveFileRating(
     hasExistingRating,
 ) {
     if (hasExistingRating) {
-        const { error } = await supabase
+        const { count, error } = await supabase
             .from('file_ratings')
             .update({
                 rating,
                 updated_at: new Date().toISOString(),
-            })
+            }, { count: 'exact' })
             .eq('file_id', fileId)
             .eq('user_id', userId);
 
         if (error) {
             throw new Error(error.message || 'Unable to update your rating.');
+        }
+
+        if (count !== 1) {
+            throw new Error('Your rating no longer exists. Refresh and try again.');
         }
 
         return;
