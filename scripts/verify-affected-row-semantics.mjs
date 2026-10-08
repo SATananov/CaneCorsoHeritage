@@ -148,6 +148,7 @@ async function verifyRuntimeSemantics() {
     });
     await fileService.syncStoryFilesVisibility('story-1', 'private');
 
+    const storyEvents = [];
     const sessionSupabase = {
         auth: {
             async getSession() {
@@ -162,14 +163,40 @@ async function verifyRuntimeSemantics() {
                 };
             },
         },
-    };
-
-    let deletedFilesFor = null;
-    const deleteStoryFiles = async (storyId) => {
-        deletedFilesFor = storyId;
+        from(table) {
+            assert.equal(table, 'user_files');
+            return {
+                select(columns) {
+                    assert.equal(columns, 'storage_path');
+                    return {
+                        eq(column, value) {
+                            assert.equal(column, 'story_id');
+                            assert.equal(value, 'story-1');
+                            return Promise.resolve({
+                                data: [{ storage_path: 'story/path.webp' }],
+                                error: null,
+                            });
+                        },
+                    };
+                },
+            };
+        },
+        storage: {
+            from(bucket) {
+                assert.equal(bucket, 'user-files');
+                return {
+                    async remove(paths) {
+                        storyEvents.push('storage-remove');
+                        assert.deepEqual(paths, ['story/path.webp']);
+                        return { error: null };
+                    },
+                };
+            },
+        },
     };
 
     const zeroFetch = async (_url, options) => {
+        storyEvents.push('story-delete');
         assert.equal(options.method, 'DELETE');
         assert.equal(options.headers.Prefer, 'return=representation');
         return {
@@ -182,7 +209,6 @@ async function verifyRuntimeSemantics() {
 
     const storyZero = loadService('src/services/storyService.js', ['deleteStory'], {
         supabase: sessionSupabase,
-        deleteStoryFiles,
         fetch: zeroFetch,
     });
 
@@ -191,9 +217,11 @@ async function verifyRuntimeSemantics() {
         /Story not found or not owned by this account\./,
         'Story delete must reject HTTP success with zero returned rows',
     );
-    assert.equal(deletedFilesFor, 'story-1');
+    assert.deepEqual(storyEvents, ['story-delete'], 'Zero-row Story delete must not clean Storage');
 
+    storyEvents.length = 0;
     const oneFetch = async (url, options) => {
+        storyEvents.push('story-delete');
         assert.match(url, /&select=id$/);
         assert.equal(options.method, 'DELETE');
         assert.equal(options.headers.Prefer, 'return=representation');
@@ -207,12 +235,11 @@ async function verifyRuntimeSemantics() {
 
     const storyOne = loadService('src/services/storyService.js', ['deleteStory'], {
         supabase: sessionSupabase,
-        deleteStoryFiles,
         fetch: oneFetch,
     });
     await storyOne.deleteStory('story-1');
+    assert.deepEqual(storyEvents, ['story-delete', 'storage-remove']);
 }
-
 const adminPath = 'src/services/adminService.js';
 assertSingleRowCount(adminPath, 'moderateStory', 'Story moderation did not affect exactly one row.');
 assertSingleRowCount(adminPath, 'moderateFile', 'File moderation did not affect exactly one row.');

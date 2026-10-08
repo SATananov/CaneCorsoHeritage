@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabaseClient';
-import { deleteStoryFiles } from './fileService';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -184,7 +183,18 @@ export async function deleteStory(storyId) {
     checkSupabaseConfig();
 
     const session = await getSession();
-    await deleteStoryFiles(storyId);
+    const { data: files, error: filesError } = await supabase
+        .from('user_files')
+        .select('storage_path')
+        .eq('story_id', storyId);
+
+    if (filesError) {
+        throw new Error(filesError.message || 'Unable to prepare story files for deletion.');
+    }
+
+    const storagePaths = (files ?? [])
+        .map((file) => file.storage_path)
+        .filter(Boolean);
 
     const response = await fetch(
         `${supabaseUrl}/rest/v1/stories?id=eq.${encodeURIComponent(storyId)}&author_id=eq.${encodeURIComponent(session.user.id)}&select=id`,
@@ -206,5 +216,15 @@ export async function deleteStory(storyId) {
 
     if (!data[0]) {
         throw new Error('Story not found or not owned by this account.');
+    }
+
+    if (storagePaths.length > 0) {
+        const { error: storageError } = await supabase.storage
+            .from('user-files')
+            .remove(storagePaths);
+
+        if (storageError) {
+            throw new Error(storageError.message || 'Story was deleted, but its stored files could not be cleaned up.');
+        }
     }
 }

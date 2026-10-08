@@ -274,7 +274,7 @@ export async function adminDeleteFile(file) {
 export async function adminDeleteStory(storyId) {
     const { data: files, error: filesError } = await supabase
         .from('user_files')
-        .select('id,storage_path')
+        .select('storage_path')
         .eq('story_id', storyId);
 
     if (filesError) {
@@ -284,25 +284,6 @@ export async function adminDeleteStory(storyId) {
     const storagePaths = (files ?? [])
         .map((file) => file.storage_path)
         .filter(Boolean);
-
-    if (storagePaths.length > 0) {
-        const { error: storageError } = await supabase.storage
-            .from('user-files')
-            .remove(storagePaths);
-
-        if (storageError) {
-            throw new Error(storageError.message || 'Unable to remove Story files.');
-        }
-
-        const { error: fileMetadataError } = await supabase
-            .from('user_files')
-            .delete()
-            .eq('story_id', storyId);
-
-        if (fileMetadataError) {
-            throw new Error(fileMetadataError.message || 'Unable to remove Story file records.');
-        }
-    }
 
     const { count, error } = await supabase
         .from('stories')
@@ -315,6 +296,16 @@ export async function adminDeleteStory(storyId) {
 
     if (count !== 1) {
         throw new Error('Story deletion did not affect exactly one row.');
+    }
+
+    if (storagePaths.length > 0) {
+        const { error: storageError } = await supabase.storage
+            .from('user-files')
+            .remove(storagePaths);
+
+        if (storageError) {
+            throw new Error(storageError.message || 'Story was deleted, but its stored files could not be cleaned up.');
+        }
     }
 }
 
