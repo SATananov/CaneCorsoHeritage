@@ -4,11 +4,11 @@ import { getTranslation } from '../i18n/translations';
 import useAuth from '../hooks/useAuth';
 
 function RequireAuth() {
-    const { user, loading } = useAuth();
+    const { user, loading, roleLoading, isActive } = useAuth();
     const location = useLocation();
     const { language } = useLanguage();
 
-    if (loading) {
+    if (loading || roleLoading) {
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">
@@ -20,6 +20,10 @@ function RequireAuth() {
 
     if (!user) {
         return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+
+    if (!isActive) {
+        return <Navigate to="/" replace />;
     }
 
     return <Outlet />;

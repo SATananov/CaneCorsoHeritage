@@ -12,6 +12,8 @@ function guardLogic(path, name) {
         .replace('<Navigate to={destination} replace />', "{ kind: 'redirect', to: destination, replace: true }")
         .replace('<Navigate to="/login" replace state={{ from: location }} />',
             "{ kind: 'redirect', to: '/login', replace: true, state: { from: location } }")
+        .replace('<Navigate to="/" replace />',
+            "{ kind: 'redirect', to: '/', replace: true }")
         .replace('<Outlet />', "{ kind: 'outlet' }");
     assert.ok(!source.includes('<Navigate') && !source.includes('<main'), 'Replace only guard JSX');
     return `${source}\n${name};`;
@@ -112,7 +114,10 @@ function harness({ from = target, mode = 'login', authenticated = false } = {}) 
     const dependencies = {
         AbortController, URL,
         console: { warn: (...args) => warnings.push(args) },
-        useAuth: () => ({ user, loading, login: authCall('login'), register: authCall('register') }),
+        useAuth: () => ({
+            user, loading, roleLoading: false, isActive: true,
+            login: authCall('login'), register: authCall('register'),
+        }),
         useLanguage: () => ({ language }),
         getTranslation: (_language, _section, key) => key,
         useLocation: () => location,

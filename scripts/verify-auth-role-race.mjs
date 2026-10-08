@@ -147,7 +147,7 @@ function createHarness() {
     };
 }
 
-function expected(userId, role = 'user', accountStatus = 'active', roleLoading = false) {
+function expected(userId, role = 'user', accountStatus = null, roleLoading = false) {
     return {
         userId,
         loading: false,
@@ -176,7 +176,7 @@ await test('normal A load and unchanged AuthContext API', async (h) => {
         'updatePassword', 'logout',
     ].sort());
     await h.restore('A');
-    assert.deepEqual(h.snapshot(), expected('A', 'user', 'active', true));
+    assert.deepEqual(h.snapshot(), expected('A', 'user', null, true));
     await h.settle(0, 'admin', 'inactive');
     assert.deepEqual(h.snapshot(), expected('A', 'admin', 'inactive'));
 });
@@ -232,12 +232,12 @@ await test('stale error cannot finish loading for a newer request for the same u
     const writes = h.writeCount();
     await h.settle(0, null, null, { message: 'Old request failed' });
     assert.equal(h.writeCount(), writes);
-    assert.deepEqual(h.snapshot(), expected('A', 'user', 'active', true));
+    assert.deepEqual(h.snapshot(), expected('A', 'user', null, true));
     await h.settle(1, 'admin', 'active');
     assert.deepEqual(h.snapshot(), expected('A', 'admin', 'active'));
 });
 
-await test('current request error preserves existing fallback and finishes loading', async (h) => {
+await test('current request error fails closed and finishes loading', async (h) => {
     await h.restore('A');
     await h.settle(0, null, null, { message: 'Current request failed' });
     assert.deepEqual(h.snapshot(), expected('A'));

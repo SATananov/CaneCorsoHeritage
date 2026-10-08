@@ -6,7 +6,7 @@ function AuthProvider({ children }) {
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [role, setRole] = useState('user');
-    const [accountStatus, setAccountStatus] = useState('active');
+    const [accountStatus, setAccountStatus] = useState(null);
     const [roleLoading, setRoleLoading] = useState(true);
 
     useEffect(() => {
@@ -24,13 +24,15 @@ function AuthProvider({ children }) {
             if (!userId) {
                 if (active) {
                     setRole('user');
-                    setAccountStatus('active');
+                    setAccountStatus(null);
                     setRoleLoading(false);
                 }
                 return;
             }
 
             if (active) {
+                setRole('user');
+                setAccountStatus(null);
                 setRoleLoading(true);
             }
 
@@ -47,10 +49,10 @@ function AuthProvider({ children }) {
             if (error) {
                 console.error('Unable to load account role.', error);
                 setRole('user');
-                setAccountStatus('active');
+                setAccountStatus(null);
             } else {
                 setRole(data?.role ?? 'user');
-                setAccountStatus(data?.account_status ?? 'active');
+                setAccountStatus(data?.account_status ?? null);
             }
 
             setRoleLoading(false);
