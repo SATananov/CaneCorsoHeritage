@@ -30,18 +30,26 @@ function UsersPage() {
             setLoading(true);
             setError('');
             try {
-                const [profileData, contactData] = await Promise.all([
+                const [profileResult, contactResult] = await Promise.allSettled([
                     fetchProfiles({ signal: controller.signal }),
                     fetchPublicContacts({ signal: controller.signal }),
                 ]);
 
                 if (controller.signal.aborted) return;
-                setProfiles(profileData);
-                setContacts(contactData);
-            } catch (loadError) {
-                if (loadError.name !== 'AbortError' && !controller.signal.aborted) {
-                    setError(t('loadError'));
+
+                if (profileResult.status === 'rejected') {
+                    if (profileResult.reason?.name !== 'AbortError') {
+                        setError(t('loadError'));
+                    }
+                    return;
                 }
+
+                setProfiles(profileResult.value);
+                setContacts(
+                    contactResult.status === 'fulfilled'
+                        ? contactResult.value
+                        : [],
+                );
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);
