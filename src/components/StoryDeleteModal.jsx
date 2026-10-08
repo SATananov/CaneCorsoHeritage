@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
+import { getStoryDeleteCleanupWarning } from '../i18n/storyDeleteUi';
 import { deleteStory } from '../services/storyService';
 import styles from './StoryDeleteModal.module.css';
 
@@ -14,11 +15,22 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
         try {
             setError('');
             setIsDeleting(true);
-
             await deleteStory(story._id);
-            await onDeleted();
+            await onDeleted({
+                storyId: story._id,
+                cleanupWarning: '',
+            });
             onClose();
-        } catch {
+        } catch (deleteError) {
+            if (deleteError?.storyDeleteCommitted) {
+                await onDeleted({
+                    storyId: story._id,
+                    cleanupWarning: getStoryDeleteCleanupWarning(language),
+                });
+                onClose();
+                return;
+            }
+
             setError(t('error'));
         } finally {
             setIsDeleting(false);
@@ -38,9 +50,7 @@ function StoryDeleteModal({ story, onClose, onDeleted }) {
                 <h2 id="delete-story-title">{t('title')}</h2>
                 <p className={styles.storyTitle}>{story.title}</p>
                 <p className={styles.message}>{t('copy')}</p>
-
                 {error && <p className={styles.error} role="alert">{error}</p>}
-
                 <div className={styles.actions}>
                     <button type="button" onClick={onClose} disabled={isDeleting}>
                         {t('cancel')}

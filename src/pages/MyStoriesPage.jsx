@@ -17,6 +17,8 @@ function MyStoriesPage() {
     const [stories, setStories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [refreshError, setRefreshError] = useState('');
+    const [deleteNotice, setDeleteNotice] = useState('');
     const [showCreate, setShowCreate] = useState(false);
     const [editingStory, setEditingStory] = useState(null);
     const [deletingStory, setDeletingStory] = useState(null);
@@ -51,16 +53,34 @@ function MyStoriesPage() {
 
         async function loadStories(errorKey) {
             if (controller.signal.aborted) return;
+
             const currentRequest = ++request;
             const isCurrent = () => !controller.signal.aborted && currentRequest === request;
+            const isRefresh = errorKey === 'refreshError';
+
             setIsLoading(true);
-            setError('');
+            if (isRefresh) {
+                setRefreshError('');
+            } else {
+                setError('');
+            }
+
             try {
                 const data = await fetchMyStories(user.id, { signal: controller.signal });
-                if (isCurrent()) setStories(data);
+
+                if (isCurrent()) {
+                    setStories(data);
+                    if (isRefresh) {
+                        setRefreshError('');
+                    }
+                }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && isCurrent()) {
-                    setError(t(errorKey));
+                    if (isRefresh) {
+                        setRefreshError(t(errorKey));
+                    } else {
+                        setError(t(errorKey));
+                    }
                 }
             } finally {
                 if (isCurrent()) setIsLoading(false);
@@ -72,6 +92,7 @@ function MyStoriesPage() {
             refresh: () => loadStories('refreshError'),
         };
         loadStories('loadError');
+
         return () => controller.abort();
     }, [t, user.id]);
 
@@ -80,6 +101,17 @@ function MyStoriesPage() {
         // Same-user saves refresh the current language; old-account callbacks stop here.
         if (scope?.userId !== user.id) return;
         await scope.refresh();
+    }
+
+    async function handleStoryDeleted({ storyId, cleanupWarning = '' }) {
+        setStories((currentStories) => currentStories.filter((story) => story._id !== storyId));
+        setDeleteNotice(cleanupWarning);
+        await refreshStories();
+    }
+
+    function beginDelete(story) {
+        setDeleteNotice('');
+        setDeletingStory(story);
     }
 
     return (
@@ -93,7 +125,6 @@ function MyStoriesPage() {
                             {t('signedInAs')} <strong>{displayName}</strong>. {t('introSuffix')}
                         </p>
                     </div>
-
                     <div className={styles.headingActions}>
                         <Link to="/my-files">{t('myFiles')}</Link>
                         <button type="button" onClick={() => setShowCreate(true)}>{t('addStory')}</button>
@@ -103,6 +134,8 @@ function MyStoriesPage() {
                 {isLoading && <LoadingSpinner label={t('loading')} />}
 
                 {error && <div className={styles.message} role="alert">{error}</div>}
+                {refreshError && <div className={styles.message} role="alert">{refreshError}</div>}
+                {deleteNotice && <div className={styles.message} role="status">{deleteNotice}</div>}
 
                 {!isLoading && !error && stories.length === 0 && (
                     <section className={styles.emptyState}>
@@ -121,11 +154,10 @@ function MyStoriesPage() {
                                 <h2>{story.title}</h2>
                                 <p className={styles.description}>{story.description}</p>
                                 <p className={styles.status}>{getStoryStatusLabel(story)}</p>
-
                                 <div className={styles.actions}>
                                     <Link to={`/stories/${story._id}`}>{t('view')}</Link>
                                     <button type="button" onClick={() => setEditingStory(story)}>{t('edit')}</button>
-                                    <button className={styles.deleteButton} type="button" onClick={() => setDeletingStory(story)}>{t('delete')}</button>
+                                    <button className={styles.deleteButton} type="button" onClick={() => beginDelete(story)}>{t('delete')}</button>
                                 </div>
                             </article>
                         ))}
@@ -135,7 +167,7 @@ function MyStoriesPage() {
 
             {showCreate && <AddStoryModal authorName={displayName} onClose={() => setShowCreate(false)} onSaved={refreshStories} />}
             {editingStory && <AddStoryModal story={editingStory} authorName={displayName} onClose={() => setEditingStory(null)} onSaved={refreshStories} />}
-            {deletingStory && <StoryDeleteModal story={deletingStory} onClose={() => setDeletingStory(null)} onDeleted={refreshStories} />}
+            {deletingStory && <StoryDeleteModal story={deletingStory} onClose={() => setDeletingStory(null)} onDeleted={handleStoryDeleted} />}
         </main>
     );
 }

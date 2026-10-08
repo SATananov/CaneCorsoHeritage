@@ -15,7 +15,6 @@ async function getSession() {
     if (error || !data.session) {
         throw new Error('You need to be signed in.');
     }
-
     return data.session;
 }
 
@@ -224,7 +223,12 @@ export async function deleteStory(storyId) {
             .remove(storagePaths);
 
         if (storageError) {
-            throw new Error(storageError.message || 'Story was deleted, but its stored files could not be cleaned up.');
+            const cleanupError = new Error(
+                storageError.message || 'Story was deleted, but its stored files could not be cleaned up.',
+            );
+            cleanupError.storyDeleteCommitted = true;
+            cleanupError.cleanupFailed = true;
+            throw cleanupError;
         }
     }
 }
