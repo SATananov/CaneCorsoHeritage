@@ -157,6 +157,7 @@ npm run dev
 Production and quality checks:
 
 ```bash
+npm run verify
 npm run lint
 npm run build
 ```

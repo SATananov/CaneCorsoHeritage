@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "verify": "node scripts/verify-all.mjs",
     "verify:languages": "node scripts/verify-language-coverage.mjs && node scripts/verify-language-global-ui.mjs && node scripts/verify-language-public-ui.mjs && node scripts/verify-language-ui-consistency.mjs && node scripts/verify-language-full-ui.mjs",
     "verify:story-translation": "node scripts/verify-story-translation.mjs",
     "verify:content-localization": "node scripts/verify-content-localization.mjs"
