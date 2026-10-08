@@ -39,33 +39,38 @@ function HeritageArticlePage() {
             setError('');
 
             try {
-                const [libraryArticle, preview] = await Promise.all([
-                    getHeritageArticleBySlug(slug, { signal: controller.signal }),
-                    getHeritagePreview({ signal: controller.signal }),
-                ]);
+                const libraryArticle = await getHeritageArticleBySlug(slug, { signal: controller.signal });
 
                 if (!active) {
                     return;
                 }
 
-                const localizedLibrary = libraryArticle
-                    ? (await localizeHeritageArticles([libraryArticle], language))[0]
-                    : null;
+                if (libraryArticle) {
+                    const localizedLibrary = (await localizeHeritageArticles([libraryArticle], language))[0];
 
-                // Localization cannot be aborted; ignore an obsolete load cycle.
+                    // Localization cannot be aborted; ignore an obsolete load cycle.
+                    if (!active) {
+                        return;
+                    }
+
+                    setArticle(localizedLibrary);
+                    return;
+                }
+
+                const preview = await getHeritagePreview({ signal: controller.signal });
+
                 if (!active) {
                     return;
                 }
 
                 const previewArticle = preview.sections?.find((item) => item.id === slug);
-                const match = localizedLibrary ?? previewArticle;
 
-                if (!match) {
+                if (!previewArticle) {
                     setError(t('notFound'));
                     return;
                 }
 
-                setArticle(match);
+                setArticle(previewArticle);
             } catch (loadError) {
                 if (active && loadError.name !== 'AbortError') {
                     setError(t('loadError'));

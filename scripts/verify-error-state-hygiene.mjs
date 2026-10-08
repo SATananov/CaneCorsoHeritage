@@ -4,7 +4,7 @@ import { setImmediate } from 'node:timers/promises';
 import { runInNewContext } from 'node:vm';
 
 const cases = [
-    { name: 'HeritagePreviewSection', path: 'src/components/HeritagePreviewSection.jsx', stop: '    let heritageIntro', expose: 'heritageData, heritageArticles, hasError', service: 'getHeritagePreview' },
+    { name: 'HeritagePreviewSection', path: 'src/components/HeritagePreviewSection.jsx', stop: '    let heritageIntro', expose: 'heritageData, heritageArticles, hasError', service: 'getHeritageArticles' },
     { name: 'UsersPage', path: 'src/pages/UsersPage.jsx', stop: '\n    return (', expose: 'profiles, contacts, loading, error', service: 'fetchProfiles' },
     { name: 'MyStoriesPage', path: 'src/pages/MyStoriesPage.jsx', stop: '\n    return (', expose: 'stories, isLoading, error, refreshStories, showCreate, setShowCreate, editingStory, setEditingStory', service: 'fetchMyStories' },
 ];
@@ -151,7 +151,7 @@ for (const spec of cases) {
         h.language('bg');
         assert.equal(h.error(), heritage ? false : '');
         if (!heritage) assert.equal(h.loading(), true);
-        pending.resolve(heritage ? { title: 'bg' } : stories ? [{ _id: 'A-bg' }] : [{ id: 'member', display_name: 'bg' }]);
+        pending.resolve(heritage ? [{ slug: 'article' }] : stories ? [{ _id: 'A-bg' }] : [{ id: 'member', display_name: 'bg' }]);
         await h.settle(); success(h, 'bg');
     });
 
@@ -161,7 +161,7 @@ for (const spec of cases) {
             h.render(); await h.settle();
             h.language('it'); await h.settle(); success(h, 'it');
             if (fails) old.reject(new Error('Obsolete failure'));
-            else old.resolve(heritage ? { title: 'obsolete' } : [{ id: 'obsolete', _id: 'obsolete' }]);
+            else old.resolve(heritage ? [{ slug: 'obsolete' }] : [{ id: 'obsolete', _id: 'obsolete' }]);
             await h.settle(); success(h, 'it');
         });
     }
@@ -189,7 +189,7 @@ for (const spec of cases) {
         assert.equal(heritage ? during.heritageArticles : stories ? during.stories : during.profiles,
             heritage ? before.heritageArticles : stories ? before.stories : before.profiles);
         assert.equal(h.calls[spec.service].length, 2);
-        pending.resolve(heritage ? { title: 'bg' } : stories ? [{ _id: 'A-bg' }] : [{ id: 'member', display_name: 'bg' }]);
+        pending.resolve(heritage ? [{ slug: 'article' }] : stories ? [{ _id: 'A-bg' }] : [{ id: 'member', display_name: 'bg' }]);
         await h.settle(); success(h, 'bg');
     });
 
@@ -198,7 +198,7 @@ for (const spec of cases) {
             const pending = deferred(); h.outcomes[spec.service].push(pending.promise);
             h.render(); h.dispose();
             if (fails) pending.reject(new Error('Late failure'));
-            else pending.resolve(heritage ? { title: 'late' } : []);
+            else pending.resolve(heritage ? [{ slug: 'late' }] : []);
             await setImmediate();
             assert.equal(h.lateUpdates(), 0);
         });

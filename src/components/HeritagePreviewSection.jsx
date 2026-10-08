@@ -58,9 +58,15 @@ function HeritagePreviewSection({ catalogMode = false }) {
         const loadHeritageData = async () => {
             setHasError(false);
             try {
-                const [previewData, articles] = await Promise.all([
-                    getHeritagePreview({ signal: controller.signal }),
+                const [articles, previewData] = await Promise.all([
                     getHeritageArticles({ signal: controller.signal }),
+                    getHeritagePreview({ signal: controller.signal }).catch((previewError) => {
+                        if (previewError.name === 'AbortError') {
+                            throw previewError;
+                        }
+
+                        return null;
+                    }),
                 ]);
                 if (controller.signal.aborted) return;
                 const localizedArticles = await localizeHeritageArticles(articles, language);
@@ -69,7 +75,7 @@ function HeritagePreviewSection({ catalogMode = false }) {
                     return;
                 }
 
-                setHeritageData(previewData);
+                setHeritageData(previewData ?? {});
                 setHeritageArticles(localizedArticles);
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && !controller.signal.aborted) {
