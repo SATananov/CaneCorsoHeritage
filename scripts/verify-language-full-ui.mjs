@@ -11,7 +11,6 @@ const localizedFiles = [
     'src/pages/AdminPage.jsx',
     'src/components/AddStoryModal.jsx',
     'src/components/StoryDeleteModal.jsx',
-    'src/components/GuestAccessPrompt.jsx',
     'src/components/ProfileEditor.jsx',
     'src/components/LanguageSwitcher.jsx',
     'src/components/Footer.jsx',
