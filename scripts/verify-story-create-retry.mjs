@@ -4,7 +4,7 @@ import { setImmediate } from 'node:timers/promises';
 import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(new URL('../src/components/AddStoryModal.jsx', import.meta.url), 'utf8');
-const start = source.indexOf('function getInitialForm(');
+const start = source.indexOf('const STORY_DATA_KEYS');
 const end = source.search(/    return \(\r?\n        <div/);
 assert.ok(start >= 0 && end > start, 'Locate modal logic before JSX');
 // Run the actual component handlers with persistent hooks and mocked services.
@@ -48,6 +48,8 @@ function harness({ editing = false } = {}) {
         document: { body: { style: { overflow: '' } } },
         useLanguage: () => ({ language: 'en' }),
         getTranslation: (_language, _section, key) => key,
+        getStoryPartialSaveError: () => 'partialSaveError',
+        getStoryCompletionRefreshError: () => 'completionRefreshError',
         useState(initial) {
             const index = cursor++;
             if (!slots[index]) {
@@ -92,8 +94,8 @@ function harness({ editing = false } = {}) {
         assert.equal(calls.saved.length, 1);
         assert.equal(calls.close.length, 1);
     }
-    function failed() {
-        assert.equal(render().error, 'saveError');
+    function failed(expectedError = 'saveError') {
+        assert.equal(render().error, expectedError);
         assert.equal(render().isSubmitting, false);
         assert.equal(calls.saved.length, 0);
         assert.equal(calls.close.length, 0);
@@ -134,7 +136,7 @@ await check('repeated attachment failures retain one story, then retry completes
     for (let attempt = 0; attempt < 3; attempt++) {
         h.outcomes.upload.push(new Error('Upload failed'));
         await h.submit();
-        h.failed();
+        h.failed('partialSaveError');
         assert.equal(h.calls.create.length, 1);
         assert.equal(h.calls.upload.length, attempt + 1);
         assert.equal(h.calls.upload[attempt][1].storyId, 'created');
@@ -184,9 +186,11 @@ for (const failingStage of ['update', 'sync']) {
         h.valid(); h.files();
         h.outcomes.upload.push(new Error('Upload failed'));
         await h.submit();
+        if (failingStage === 'update') h.change('title', 'Revised');
+        else h.change('visibility', 'private');
         h.outcomes[failingStage].push(new Error('Retry failed'));
         await h.submit();
-        h.failed();
+        h.failed(failingStage === 'sync' ? 'partialSaveError' : 'saveError');
         assert.equal(h.calls.upload.length, 1);
         await h.submit();
         assert.equal(h.calls.create.length, 1);
@@ -207,17 +211,16 @@ await check('attachments can be removed after failure without creating another s
     h.completed();
 });
 
-await check('edit flow and attachment retry only update the existing story', async () => {
+await check('edit flow retries attachments on the existing story without redundant story writes', async () => {
     const h = harness({ editing: true });
     h.files();
     h.outcomes.upload.push(new Error('Upload failed'));
     await h.submit();
-    h.failed();
+    h.failed('partialSaveError');
     await h.submit();
     assert.equal(h.calls.create.length, 0);
-    assert.equal(h.calls.update.length, 2);
-    assert.equal(h.calls.sync.length, 2);
-    assert.ok(h.calls.update.every(([id]) => id === 'existing'));
+    assert.equal(h.calls.update.length, 0);
+    assert.equal(h.calls.sync.length, 0);
     assert.ok(h.calls.upload.every(([, options]) => options.storyId === 'existing'));
     h.completed();
 });

@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm';
 const componentSource = readFileSync(
     new URL('../src/components/ProfileCompletionNotice.jsx', import.meta.url),
     'utf8',
-);
+).replace(/\r\n/g, '\n');
 
 assert.match(
     componentSource,

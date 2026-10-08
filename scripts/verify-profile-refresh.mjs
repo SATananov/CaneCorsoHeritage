@@ -22,7 +22,7 @@ const editorSource = logic('ProfileEditor', 'const USERNAME_PATTERN', '    if (!
 const noticeComponentSource = readFileSync(
     new URL('../src/components/ProfileCompletionNotice.jsx', import.meta.url),
     'utf8',
-);
+).replace(/\r\n/g, '\n');
 const noticeFieldsStart = noticeComponentSource.indexOf('const requiredFieldKeys');
 const noticeFieldsEnd = noticeComponentSource.indexOf('\n\nfunction ActiveProfileCompletionNotice', noticeFieldsStart);
 const noticeActiveStart = noticeComponentSource.indexOf('function ActiveProfileCompletionNotice');

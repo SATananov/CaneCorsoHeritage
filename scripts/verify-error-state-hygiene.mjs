@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm';
 const cases = [
     { name: 'HeritagePreviewSection', path: 'src/components/HeritagePreviewSection.jsx', stop: '    let heritageIntro', expose: 'heritageData, heritageArticles, hasError', service: 'getHeritageArticles' },
     { name: 'UsersPage', path: 'src/pages/UsersPage.jsx', stop: '\n    return (', expose: 'profiles, contacts, loading, error', service: 'fetchProfiles' },
-    { name: 'MyStoriesPage', path: 'src/pages/MyStoriesPage.jsx', stop: '\n    return (', expose: 'stories, isLoading, error, refreshStories, showCreate, setShowCreate, editingStory, setEditingStory', service: 'fetchMyStories' },
+    { name: 'MyStoriesPage', path: 'src/pages/MyStoriesPage.jsx', stop: '\n    return (', expose: 'stories, isLoading, error, refreshError, refreshStories, showCreate, setShowCreate, editingStory, setEditingStory', service: 'fetchMyStories' },
 ];
 
 function deferred() {
@@ -101,7 +101,11 @@ function harness(spec) {
         language: (next) => { language = next; render(); return render(); },
         user: (id) => { user = { id }; render(); return render(); },
         category: (next) => { category = next; return render(); },
-        error: () => spec.name === 'HeritagePreviewSection' ? render().hasError : render().error,
+        error: () => spec.name === 'HeritagePreviewSection'
+            ? render().hasError
+            : spec.name === 'MyStoriesPage'
+                ? render().error || render().refreshError
+                : render().error,
         loading: () => spec.name === 'UsersPage' ? render().loading : render().isLoading,
         lateUpdates: () => lateUpdates,
         replayEffects() {

@@ -4,7 +4,7 @@ import { setImmediate } from 'node:timers/promises';
 import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(new URL('../src/components/AddStoryModal.jsx', import.meta.url), 'utf8');
-const start = source.indexOf('function getInitialForm(');
+const start = source.indexOf('const STORY_DATA_KEYS');
 const end = source.search(/\n    return \(\r?\n        <div/);
 assert.ok(start >= 0 && end > start);
 const modalSource = `${source.slice(start, end)}
@@ -153,8 +153,8 @@ function harness({ editing = false } = {}) {
             assert.equal(calls.close.length, 1);
             assert.equal(calls.create.length, editing ? 0 : 1);
         },
-        failed() {
-            assert.equal(render().error, 'saveError');
+        failed(expectedError = 'partialSaveError') {
+            assert.equal(render().error, expectedError);
             assert.equal(render().isSubmitting, false);
             assert.equal(calls.close.length, 0);
         },
@@ -325,7 +325,7 @@ await test('visibility changes update successful attachments without reuploading
 await test('failed onSaved callback retries completion without reuploading successful files', async (h) => {
     const a = file('A.jpg');
     h.select([a]); h.outcomes.saved.push(new Error('Refresh failed'));
-    await h.submit(); h.failed();
+    await h.submit(); h.failed('completionRefreshError');
     await h.submit();
     assert.equal(h.count(a), 1);
     assert.equal(h.records.length, 1);

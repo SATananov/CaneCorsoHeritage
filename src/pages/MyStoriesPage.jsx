@@ -60,6 +60,7 @@ function MyStoriesPage() {
 
             setIsLoading(true);
             if (isRefresh) {
+                setError('');
                 setRefreshError('');
             } else {
                 setError('');
