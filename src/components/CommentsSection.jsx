@@ -26,6 +26,31 @@ const DATE_LOCALES = {
     it: 'it-IT',
 };
 
+
+async function fetchCommentSecondaryData(comments, options) {
+    const [profilesResult, reactionsResult] = await Promise.allSettled([
+        fetchCommentAuthorProfiles(
+            comments.map((comment) => comment.author_id),
+            options,
+        ),
+        fetchCommentReactions(
+            comments.map((comment) => comment.id),
+            options,
+        ),
+    ]);
+
+    for (const result of [profilesResult, reactionsResult]) {
+        if (result.status === 'rejected' && result.reason?.name === 'AbortError') {
+            throw result.reason;
+        }
+    }
+
+    return {
+        profiles: profilesResult.status === 'fulfilled' ? profilesResult.value : [],
+        reactions: reactionsResult.status === 'fulfilled' ? reactionsResult.value : [],
+    };
+}
+
 function CommentsSection({ targetType, targetId }) {
     const { user, isActive } = useAuth();
 
@@ -94,13 +119,8 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
                     { signal: controller.signal },
                 );
 
-                const profiles = await fetchCommentAuthorProfiles(
-                    nextComments.map((comment) => comment.author_id),
-                    { signal: controller.signal },
-                );
-
-                const nextReactions = await fetchCommentReactions(
-                    nextComments.map((comment) => comment.id),
+                const { profiles, reactions: nextReactions } = await fetchCommentSecondaryData(
+                    nextComments,
                     { signal: controller.signal },
                 );
 
@@ -143,11 +163,8 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
 
         try {
             const nextComments = await fetchComments(targetType, targetId);
-            const profiles = await fetchCommentAuthorProfiles(
-                nextComments.map((comment) => comment.author_id),
-            );
-            const nextReactions = await fetchCommentReactions(
-                nextComments.map((comment) => comment.id),
+            const { profiles, reactions: nextReactions } = await fetchCommentSecondaryData(
+                nextComments,
             );
 
             if (!isCurrent()) return false;

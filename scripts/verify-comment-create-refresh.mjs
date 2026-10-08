@@ -165,6 +165,51 @@ function expectSaved(h, count = 1) {
     assert.equal(view.comments.length, count);
 }
 
+for (const stage of ['profiles', 'reactions']) {
+    await check(`initial comments stay visible when optional ${stage} read fails`, async () => {
+        const h = harness();
+        h.database.push(h.row('existing', 'Existing comment'));
+        h.outcomes[stage].push(new Error('Optional read failed'));
+        h.render();
+        await h.settle();
+        assert.equal(h.render().loading, false);
+        assert.equal(h.render().error, '');
+        assert.equal(h.render().comments.length, 1);
+        assert.equal(h.render().comments[0].id, 'existing');
+        if (stage === 'profiles') {
+            assert.equal(Object.keys(h.render().profilesById).length, 0);
+        } else {
+            assert.equal(h.render().reactions.length, 0);
+        }
+    });
+}
+
+await check('initial comments stay visible when both optional reads fail', async () => {
+    const h = harness();
+    h.database.push(h.row('existing', 'Existing comment'));
+    h.outcomes.profiles.push(new Error('Profiles unavailable'));
+    h.outcomes.reactions.push(new Error('Reactions unavailable'));
+    h.render();
+    await h.settle();
+    assert.equal(h.render().loading, false);
+    assert.equal(h.render().error, '');
+    assert.equal(h.render().comments.length, 1);
+    assert.equal(Object.keys(h.render().profilesById).length, 0);
+    assert.equal(h.render().reactions.length, 0);
+});
+
+await check('primary comments read failure remains fatal', async () => {
+    const h = harness();
+    h.outcomes.fetch.push(new Error('Comments unavailable'));
+    h.render();
+    await h.settle();
+    assert.equal(h.render().loading, false);
+    assert.equal(h.render().error, 'loadError');
+    assert.equal(h.render().comments.length, 0);
+    assert.equal(h.calls.profiles.length, 0);
+    assert.equal(h.calls.reactions.length, 0);
+});
+
 await check('normal create clears draft and renders the saved comment', async () => {
     const h = await ready();
     h.draft('  First comment  ');
@@ -175,29 +220,44 @@ await check('normal create clears draft and renders the saved comment', async ()
     assert.equal(h.render().profilesById.author.display_name, 'author');
 });
 
-for (const stage of ['fetch', 'profiles', 'reactions']) {
-    await check(`successful create survives ${stage} refresh failure and repeated submit attempts`, async () => {
-        const h = await ready();
-        h.draft('Persisted');
-        h.outcomes[stage].push(new Error('Read failed'));
+await check('successful create survives primary refresh failure and repeated submit attempts', async () => {
+    const h = await ready();
+    h.draft('Persisted');
+    h.outcomes.fetch.push(new Error('Read failed'));
+    await h.submit();
+    expectSaved(h);
+    assert.equal(h.render().error, 'loadError');
+    assert.equal(h.render().comments[0].id, h.database[0].id);
+    // A submit retry cannot reuse the consumed draft. Repeated language
+    // reload failures exercise the existing UI's list reload path.
+    for (const language of ['bg', 'it']) {
         await h.submit();
-        expectSaved(h);
-        assert.equal(h.render().error, 'loadError');
-        assert.equal(h.render().comments[0].id, h.database[0].id);
-        // A submit retry cannot reuse the consumed draft. Repeated language
-        // reload failures exercise the existing UI's list reload path.
-        for (const language of ['bg', 'it']) {
-            await h.submit();
-            h.outcomes.fetch.push(new Error('Read still failed'));
-            h.language(language);
-            await h.settle();
-            expectSaved(h);
-            assert.equal(h.render().error, 'loadError');
-        }
-        h.language('en');
+        h.outcomes.fetch.push(new Error('Read still failed'));
+        h.language(language);
         await h.settle();
         expectSaved(h);
+        assert.equal(h.render().error, 'loadError');
+    }
+    h.language('en');
+    await h.settle();
+    expectSaved(h);
+    assert.equal(h.render().error, '');
+});
+
+for (const stage of ['profiles', 'reactions']) {
+    await check(`successful create survives optional ${stage} refresh failure without a load error`, async () => {
+        const h = await ready();
+        h.draft('Persisted');
+        h.outcomes[stage].push(new Error('Optional read failed'));
+        await h.submit();
+        expectSaved(h);
         assert.equal(h.render().error, '');
+        assert.equal(h.render().comments[0].id, h.database[0].id);
+        if (stage === 'profiles') {
+            assert.equal(Object.keys(h.render().profilesById).length, 0);
+        } else {
+            assert.equal(h.render().reactions.length, 0);
+        }
     });
 }
 
