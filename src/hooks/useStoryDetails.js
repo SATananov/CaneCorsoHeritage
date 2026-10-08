@@ -1,18 +1,10 @@
 import { useEffect, useState } from 'react';
 import { fetchStoryFiles } from '../services/fileService';
-import { fetchStoryRatings } from '../services/ratingService';
 import { fetchStoryById } from '../services/storyService';
-
-const EMPTY_RATING_INFO = {
-    average: 0,
-    count: 0,
-    userRating: 0,
-};
 
 export function useStoryDetails(storyId, userId, loadErrorMessage) {
     const [story, setStory] = useState(null);
     const [attachments, setAttachments] = useState([]);
-    const [ratingInfo, setRatingInfo] = useState(EMPTY_RATING_INFO);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -23,7 +15,6 @@ export function useStoryDetails(storyId, userId, loadErrorMessage) {
             setStory(null);
             setError('');
             setAttachments([]);
-            setRatingInfo(EMPTY_RATING_INFO);
 
             try {
                 const data = await fetchStoryById(storyId, {
@@ -36,13 +27,8 @@ export function useStoryDetails(storyId, userId, loadErrorMessage) {
 
                 setStory(data);
 
-                const [filesResult, ratingsResult] = await Promise.allSettled([
+                const [filesResult] = await Promise.allSettled([
                     fetchStoryFiles(storyId),
-                    fetchStoryRatings(
-                        storyId,
-                        userId,
-                        { signal: controller.signal },
-                    ),
                 ]);
 
                 if (!active) {
@@ -51,10 +37,6 @@ export function useStoryDetails(storyId, userId, loadErrorMessage) {
 
                 if (filesResult.status === 'fulfilled') {
                     setAttachments(filesResult.value);
-                }
-
-                if (ratingsResult.status === 'fulfilled') {
-                    setRatingInfo(ratingsResult.value);
                 }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && active) {
@@ -74,10 +56,6 @@ export function useStoryDetails(storyId, userId, loadErrorMessage) {
     return {
         story,
         attachments,
-        ratingInfo,
-        setRatingInfo,
         error,
     };
 }
-
-export { EMPTY_RATING_INFO };

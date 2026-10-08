@@ -6,6 +6,7 @@ import { runInNewContext } from 'node:vm';
 const variants = [
     { name: 'MediaRating', path: 'src/components/MediaRating.jsx', service: 'fileRatingService', fetch: 'fetchFileRatings', save: 'saveFileRating', target: 'fileId', column: 'file_id', loadError: 'loadError', saveError: 'saveError' },
     { name: 'HeritageRating', path: 'src/components/heritage/HeritageRating.jsx', service: 'heritageRatingService', fetch: 'fetchHeritageRatings', save: 'saveHeritageRating', target: 'articleSlug', column: 'article_slug', loadError: 'heritageRatingLoadError', saveError: 'heritageRatingSaveError' },
+    { name: 'StoryRating', path: 'src/components/story/StoryRating.jsx', service: 'ratingService', fetch: 'fetchStoryRatings', save: 'saveStoryRating', target: 'storyId', column: 'story_id', loadError: 'storyRatingLoadError', saveError: 'saveRatingError' },
 ];
 function deferred() {
     let resolve;
@@ -28,10 +29,10 @@ function harness(v) {
     ${v.name}ForTarget;`;
     const keyExpression = source.match(/key=\{(JSON\.stringify\([^\n]+)\}/)?.[1];
     assert.ok(keyExpression);
-    const getKey = runInNewContext(`({ fileId, articleSlug, user, ownerId, isActive }) => ${keyExpression}`);
+    const getKey = runInNewContext(`({ fileId, articleSlug, storyId, user, ownerId, isActive, isOwnStory }) => ${keyExpression}`);
     const serviceSource = readFileSync(new URL(`../src/services/${v.service}.js`, import.meta.url), 'utf8');
     const executableService = serviceSource.slice(serviceSource.indexOf('export async function')).replaceAll('export async function', 'async function');
-    let props = { fileId: 'A', articleSlug: 'A', user: { id: 'reader' }, ownerId: 'owner', isActive: true };
+    let props = { fileId: 'A', articleSlug: 'A', storyId: 'A', user: { id: 'reader' }, ownerId: 'owner', isActive: true, isOwnStory: false };
     let language = 'en';
     const records = [];
     const reads = [];
@@ -342,7 +343,12 @@ for (const v of variants) {
     await test('guest and existing owner/inactive eligibility restrictions remain enforced', async (h) => {
         await ready(h);
         h.change({ user: null }); await h.settle(); await h.rate(5);
-        h.change(v.name === 'MediaRating' ? { user: { id: 'owner' } } : { user: { id: 'reader' }, isActive: false });
+        const restrictedProps = v.name === 'MediaRating'
+            ? { user: { id: 'owner' } }
+            : v.name === 'HeritageRating'
+                ? { user: { id: 'reader' }, isActive: false }
+                : { user: { id: 'reader' }, isOwnStory: true };
+        h.change(restrictedProps);
         await h.settle(); await h.rate(5);
         assert.equal(h.writes.length, 0);
     });

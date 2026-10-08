@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CommentsSection from '../components/CommentsSection';
@@ -10,20 +9,12 @@ import { useStoryTranslation } from '../hooks/useStoryTranslation';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import useAuth from '../hooks/useAuth';
-import {
-    fetchStoryRatings,
-    saveStoryRating,
-} from '../services/ratingService';
 import styles from './DetailsPage.module.css';
 
 function StoryDetailsPage() {
     const { language } = useLanguage();
     const t = (key) => getTranslation(language, 'storyDetails', key);
     const tm = (key) => getTranslation(language, 'memberProfile', key);
-    const format = (key, values) => Object.entries(values).reduce(
-        (text, [name, value]) => text.replace(`{${name}}`, value),
-        t(key),
-    );
     const { storyId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -31,8 +22,6 @@ function StoryDetailsPage() {
     const {
         story,
         attachments,
-        ratingInfo,
-        setRatingInfo,
         error,
     } = useStoryDetails(storyId, user?.id, t('loadError'));
 
@@ -43,34 +32,6 @@ function StoryDetailsPage() {
         showOriginal,
         setShowOriginal,
     } = useStoryTranslation({ story, language, user });
-
-    const [ratingSaving, setRatingSaving] = useState(false);
-    const [ratingError, setRatingError] = useState('');
-
-    const ratingHandler = async (rating) => {
-        if (!user || story?.visibility !== 'community') {
-            return;
-        }
-
-        setRatingSaving(true);
-        setRatingError('');
-
-        try {
-            await saveStoryRating(
-                storyId,
-                user.id,
-                rating,
-                ratingInfo.userRating > 0,
-            );
-
-            const nextRatingInfo = await fetchStoryRatings(storyId, user.id);
-            setRatingInfo(nextRatingInfo);
-        } catch {
-            setRatingError(t('saveRatingError'));
-        } finally {
-            setRatingSaving(false);
-        }
-    };
 
     const isCommunityStory = story?.visibility === 'community';
     const isOwnStory = Boolean(
@@ -140,14 +101,9 @@ function StoryDetailsPage() {
 
                         {isCommunityStory && (
                             <StoryRating
-                                ratingInfo={ratingInfo}
-                                ratingSaving={ratingSaving}
-                                ratingError={ratingError}
+                                storyId={storyId}
                                 user={user}
                                 isOwnStory={isOwnStory}
-                                onRate={ratingHandler}
-                                t={t}
-                                format={format}
                             />
                         )}
 

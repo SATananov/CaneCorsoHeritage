@@ -293,6 +293,8 @@ export const translations = {
         storyDetails: {
             loadError: 'Unable to load this story right now.',
             saveRatingError: 'Unable to save your rating.',
+            storyRatingLoadError: 'Unable to reload Story ratings. Your last rating may already be saved.',
+            storyRatingRetry: 'Reload ratings',
             back: '← Back to Stories',
             loading: 'Loading story details...',
             readerRating: 'Reader rating',
@@ -727,6 +729,8 @@ export const translations = {
         storyDetails: {
             loadError: 'В момента тази история не може да бъде заредена.',
             saveRatingError: 'Оценката ви не може да бъде запазена.',
+            storyRatingLoadError: 'Оценките на историята не могат да бъдат презаредени. Последната ви оценка може вече да е запазена.',
+            storyRatingRetry: 'Зареди оценките отново',
             back: '← Назад към Истории',
             loading: 'Зареждане на историята...',
             readerRating: 'Оценка от читателите',
@@ -1161,6 +1165,8 @@ export const translations = {
         storyDetails: {
             loadError: 'Impossibile caricare questa storia in questo momento.',
             saveRatingError: 'Impossibile salvare la tua valutazione.',
+            storyRatingLoadError: 'Impossibile ricaricare le valutazioni della storia. La tua ultima valutazione potrebbe essere già stata salvata.',
+            storyRatingRetry: 'Ricarica le valutazioni',
             back: '← Torna alle Storie',
             loading: 'Caricamento della storia...',
             readerRating: 'Valutazione dei lettori',
