@@ -268,6 +268,13 @@ async function verifyAdminStoryDelete() {
     assert.deepEqual(cleanupEvents, ['paths-read', 'story-delete', 'storage-remove']);
 }
 
+const fileSource = read('src/services/fileService.js');
+assert.doesNotMatch(
+    fileSource,
+    /export async function deleteStoryFiles\(/,
+    'Obsolete pre-delete Story file cleanup helper must be removed',
+);
+
 const storySource = read('src/services/storyService.js');
 assert.doesNotMatch(
     storySource,

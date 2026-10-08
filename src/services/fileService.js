@@ -295,36 +295,3 @@ export async function deleteUserFile(file) {
         throw new Error(storageError.message || 'File record was deleted, but the stored file could not be cleaned up.');
     }
 }
-
-export async function deleteStoryFiles(storyId) {
-    const { data, error } = await supabase
-        .from('user_files')
-        .select('id, storage_path')
-        .eq('story_id', storyId);
-
-    if (error) {
-        throw new Error(error.message || 'Unable to prepare story files for deletion.');
-    }
-
-    if (!data?.length) {
-        return;
-    }
-
-    const paths = data.map((file) => file.storage_path);
-    const { error: storageError } = await supabase.storage
-        .from('user-files')
-        .remove(paths);
-
-    if (storageError) {
-        throw new Error(storageError.message || 'Unable to delete story files.');
-    }
-
-    const { error: metadataError } = await supabase
-        .from('user_files')
-        .delete()
-        .eq('story_id', storyId);
-
-    if (metadataError) {
-        throw new Error(metadataError.message || 'Unable to delete story file records.');
-    }
-}
