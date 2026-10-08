@@ -8,6 +8,7 @@ function AuthProvider({ children }) {
     const [role, setRole] = useState('user');
     const [accountStatus, setAccountStatus] = useState(null);
     const [roleLoading, setRoleLoading] = useState(true);
+    const [passwordRecovery, setPasswordRecovery] = useState(null);
 
     useEffect(() => {
         let active = true;
@@ -76,9 +77,17 @@ function AuthProvider({ children }) {
 
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        } = supabase.auth.onAuthStateChange((event, nextSession) => {
             if (!active) {
                 return;
+            }
+
+            if (event === 'PASSWORD_RECOVERY') {
+                setPasswordRecovery(true);
+            } else if (event === 'INITIAL_SESSION') {
+                setPasswordRecovery((current) => current === true);
+            } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                setPasswordRecovery(false);
             }
 
             setSession(nextSession);
@@ -179,6 +188,7 @@ function AuthProvider({ children }) {
         role,
         accountStatus,
         roleLoading,
+        passwordRecovery,
         isAdmin: role === 'admin',
         isActive: accountStatus === 'active',
         login,

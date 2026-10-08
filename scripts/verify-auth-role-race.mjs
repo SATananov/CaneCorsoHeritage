@@ -172,7 +172,7 @@ async function test(label, check) {
 await test('normal A load and unchanged AuthContext API', async (h) => {
     assert.deepEqual(Object.keys(h.render()).sort(), [
         'session', 'user', 'loading', 'role', 'accountStatus', 'roleLoading',
-        'isAdmin', 'isActive', 'login', 'register', 'requestPasswordReset',
+        'passwordRecovery', 'isAdmin', 'isActive', 'login', 'register', 'requestPasswordReset',
         'updatePassword', 'logout',
     ].sort());
     await h.restore('A');

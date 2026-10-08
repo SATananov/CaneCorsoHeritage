@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { supabase } from '../lib/supabaseClient';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
@@ -10,40 +9,14 @@ function UpdatePasswordPage() {
     const { language } = useLanguage();
     const t = useCallback((key) => getTranslation(language, 'recovery', key), [language]);
     const navigate = useNavigate();
-    const { updatePassword, logout } = useAuth();
-    const [recoveryReady, setRecoveryReady] = useState(false);
-    const [checkingSession, setCheckingSession] = useState(true);
+    const { passwordRecovery, updatePassword, logout } = useAuth();
+    const recoveryReady = passwordRecovery === true;
+    const checkingSession = passwordRecovery === null;
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-
-    useEffect(() => {
-        let active = true;
-
-        async function checkRecoverySession() {
-            const { data, error } = await supabase.auth.getSession();
-
-            if (!active) {
-                return;
-            }
-
-            if (error) {
-                setErrorMessage(t('verifyError'));
-                setRecoveryReady(false);
-            } else {
-                setRecoveryReady(Boolean(data?.session));
-            }
-
-            setCheckingSession(false);
-        }
-
-        checkRecoverySession();
-
-        return () => {
-            active = false;
-        };
-    }, [t]);
+    const [passwordUpdated, setPasswordUpdated] = useState(false);
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -63,11 +36,7 @@ function UpdatePasswordPage() {
 
         try {
             await updatePassword(password);
-            await logout();
-            navigate('/login', {
-                replace: true,
-                state: { passwordUpdated: true },
-            });
+            setPasswordUpdated(true);
         } catch (error) {
             const message = error?.message || '';
             setErrorMessage(
@@ -75,7 +44,20 @@ function UpdatePasswordPage() {
                     ? t('connectionProblem')
                     : t('updateError'),
             );
-        } finally {
+            setSubmitting(false);
+            return;
+        }
+
+        try {
+            await logout();
+            setSubmitting(false);
+            navigate('/login', {
+                replace: true,
+                state: { passwordUpdated: true },
+            });
+        } catch {
+            // The password update already succeeded. Keep that success visible
+            // instead of misreporting a sign-out failure as an update failure.
             setSubmitting(false);
         }
     }
@@ -104,6 +86,10 @@ function UpdatePasswordPage() {
                                 {checkingSession ? (
                                     <p className={styles.statusNote} aria-live="polite">
                                         {t('verifying')}
+                                    </p>
+                                ) : passwordUpdated ? (
+                                    <p className={`${styles.formMessage} ${styles.formSuccess}`} aria-live="polite">
+                                        {t('updated')}
                                     </p>
                                 ) : recoveryReady ? (
                                     <form className={styles.authForm} onSubmit={handleSubmit}>
