@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 
 function read(path) {
     return fs.readFileSync(path, 'utf8');
@@ -13,6 +13,8 @@ function expect(condition, label) {
 }
 
 const migration = read('supabase/migrations/20261006173000_comments_01a.sql');
+const fileVisibilityMigration = read('supabase/migrations/20261006190000_comments_01b_file_visibility.sql');
+const rlsConsistencyMigration = read('supabase/migrations/20261008104500_rls_policy_consistency_01.sql');
 const comments = read('src/components/CommentsSection.jsx');
 const service = read('src/services/commentService.js');
 const heritage = read('src/pages/HeritageArticlePage.jsx');
@@ -44,13 +46,32 @@ expect(
     migration.includes('for update') &&
     migration.includes('using (author_id = auth.uid())') &&
     migration.includes('with check (author_id = auth.uid())'),
-    'authors can update only their own comments',
+    'COMMENTS 01A initially restricts comment updates to the author',
 );
 
 expect(
     migration.includes('for delete') &&
     migration.includes('using (author_id = auth.uid())'),
-    'authors can delete only their own comments',
+    'COMMENTS 01A initially restricts comment deletes to the author',
+);
+
+expect(
+    fileVisibilityMigration.includes("target_type in ('story', 'heritage', 'file')"),
+    'COMMENTS 01B extends comment targets to files',
+);
+
+expect(
+    rlsConsistencyMigration.includes('create policy "Authors or admins can update comments"') &&
+    rlsConsistencyMigration.includes('author_id = auth.uid()') &&
+    rlsConsistencyMigration.includes('or public.is_admin()'),
+    'final RLS allows comment update by the author or an admin',
+);
+
+expect(
+    rlsConsistencyMigration.includes('create policy "Authors or admins can delete comments"') &&
+    rlsConsistencyMigration.includes('author_id = auth.uid()') &&
+    rlsConsistencyMigration.includes('or public.is_admin()'),
+    'final RLS allows comment delete by the author or an admin',
 );
 
 expect(
@@ -65,7 +86,7 @@ expect(
 
 expect(
     service.includes("new Set(['story', 'heritage', 'file'])"),
-    'comment service keeps future file target support prepared',
+    'comment service supports Story, Heritage and file targets',
 );
 
 expect(
@@ -78,5 +99,5 @@ expect(
     'Story details page renders comments',
 );
 
-console.log('COMMENTS 01A: PASS');
-console.log('Public read + authenticated create + author-only edit/delete are verified for Story and Heritage.');
+console.log('COMMENTS 01A/01B + RLS CONSISTENCY: PASS');
+console.log('Public read, authenticated own-create, file targets, author UI controls and final author-or-admin RLS mutations are verified.');

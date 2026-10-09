@@ -33,7 +33,7 @@ Optional:
 
 ## Runtime behavior
 ### Stories
-Public Story cards and Story details resolve the selected language. Existing Stories without `original_language` are allowed to use provider language detection. New Stories keep the explicit original language selected by the author.
+Public Story cards and Story details resolve the selected language. New Stories keep the explicit original language selected by the author. For older Stories without `original_language`, the translation flow currently falls back to `en` as the source language rather than relying on provider language detection.
 
 ### Heritage
 Heritage catalog cards and article bodies resolve EN/BG/IT through the server-side cache. If canonical Heritage content changes, a SHA-256 source fingerprint causes regeneration instead of serving stale content.

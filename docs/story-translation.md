@@ -8,11 +8,12 @@ This feature keeps the author's original Story unchanged and stores machine tran
 2. The Story is stored normally in `stories`; only `original_language` metadata is added.
 3. A reader opens the Story in another UI language.
 4. React first checks `story_translations` for a fresh cached translation.
-5. If no fresh translation exists and the reader is signed in, React calls the `translate-story` Supabase Edge Function.
-6. The Edge Function translates server-side and caches the result in `story_translations`.
-7. The reader can switch between the machine translation and the author's original.
+5. If no fresh translation exists, React can call the `translate-story` Supabase Edge Function.
+6. For an approved public Story, the function may generate a translation for a guest or a signed-in reader. Private or non-public Stories require the authenticated Story owner.
+7. The Edge Function translates server-side and caches the result in `story_translations`.
+8. The reader can switch between the machine translation and the author's original.
 
-Public visitors can read already-cached translations. Only signed-in users can trigger a new translation, which protects translation quota from anonymous abuse.
+Translation access follows the Story visibility rules: approved public Stories may be translated for guests, while private or non-public Stories remain owner-restricted.
 
 ## 1. Apply the database migration
 

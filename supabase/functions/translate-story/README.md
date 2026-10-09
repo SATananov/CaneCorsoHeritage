@@ -10,4 +10,4 @@ Optional secret:
 
 Supabase provides `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` to deployed Edge Functions.
 
-The function requires a signed-in user to create or refresh a machine translation. Public visitors can read already-cached translations through RLS but cannot spend translation quota.
+Approved public Stories can be translated for guests as well as signed-in readers. Private or non-public Stories still require the Story owner to be authenticated. Cached translations remain readable according to the parent Story visibility rules.
