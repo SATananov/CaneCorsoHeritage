@@ -5,7 +5,10 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
-import { fetchCommunityMediaFiles } from '../services/fileService';
+import {
+    enrichCommunityMediaWithMetrics,
+    fetchCommunityMediaFiles,
+} from '../services/fileService';
 import styles from './GalleryPage.module.css';
 
 const MEDIA_FILTERS = {
@@ -14,6 +17,16 @@ const MEDIA_FILTERS = {
     AUDIO: 'audio',
     VIDEO: 'video',
     DOCUMENTS: 'documents',
+};
+
+const PAGE_SIZE = 9;
+
+const SORT_OPTIONS = {
+    NEWEST: 'newest',
+    OLDEST: 'oldest',
+    NAME: 'name',
+    TOP_RATED: 'top-rated',
+    MOST_COMMENTED: 'most-commented',
 };
 
 function getMediaType(file) {
@@ -48,6 +61,18 @@ function getDocumentLabel(file) {
     return 'FILE';
 }
 
+function formatFileSize(size) {
+    const bytes = Number(size ?? 0);
+
+    if (!Number.isFinite(bytes) || bytes <= 0) return null;
+    if (bytes < 1024) return `${bytes} B`;
+
+    const kilobytes = bytes / 1024;
+    if (kilobytes < 1024) return `${kilobytes.toFixed(kilobytes >= 100 ? 0 : 1)} KB`;
+
+    const megabytes = kilobytes / 1024;
+    return `${megabytes.toFixed(megabytes >= 100 ? 0 : 1)} MB`;
+}
 function GalleryPage() {
     const { language } = useLanguage();
     const t = useCallback(
@@ -57,6 +82,9 @@ function GalleryPage() {
 
     const [files, setFiles] = useState([]);
     const [activeFilter, setActiveFilter] = useState(MEDIA_FILTERS.ALL);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortMode, setSortMode] = useState(SORT_OPTIONS.NEWEST);
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [preview, setPreview] = useState(null);
@@ -74,8 +102,13 @@ function GalleryPage() {
                     signal: controller.signal,
                 });
 
+                const enriched = await enrichCommunityMediaWithMetrics(
+                    data,
+                    { signal: controller.signal },
+                );
+
                 if (active && !controller.signal.aborted) {
-                    setFiles(data);
+                    setFiles(enriched);
                 }
             } catch (loadError) {
                 if (
@@ -100,7 +133,7 @@ function GalleryPage() {
         };
     }, [t]);
 
-    useEffect(() => {
+useEffect(() => {
         if (!preview) return undefined;
 
         const previousOverflow = document.body.style.overflow;
@@ -120,13 +153,68 @@ function GalleryPage() {
         };
     }, [preview]);
 
-    const visibleFiles = useMemo(
-        () => activeFilter === MEDIA_FILTERS.ALL
-            ? files
-            : files.filter((file) => getMediaType(file) === activeFilter),
-        [activeFilter, files],
-    );
+    const categoryCounts = useMemo(() => {
+        const counts = {
+            [MEDIA_FILTERS.ALL]: files.length,
+            [MEDIA_FILTERS.IMAGES]: 0,
+            [MEDIA_FILTERS.AUDIO]: 0,
+            [MEDIA_FILTERS.VIDEO]: 0,
+            [MEDIA_FILTERS.DOCUMENTS]: 0,
+        };
 
+        files.forEach((file) => {
+            counts[getMediaType(file)] += 1;
+        });
+
+        return counts;
+    }, [files]);
+
+    const visibleFiles = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLocaleLowerCase(language);
+
+        const filtered = files.filter((file) => {
+            const matchesCategory = activeFilter === MEDIA_FILTERS.ALL
+                || getMediaType(file) === activeFilter;
+
+            if (!matchesCategory) return false;
+            if (!normalizedSearch) return true;
+
+            return (file.file_name ?? '')
+                .toLocaleLowerCase(language)
+                .includes(normalizedSearch);
+        });
+
+        return [...filtered].sort((a, b) => {
+            if (sortMode === SORT_OPTIONS.NAME) {
+                return (a.file_name ?? '').localeCompare(
+                    b.file_name ?? '',
+                    language,
+                    { sensitivity: 'base' },
+                );
+            }
+
+            if (sortMode === SORT_OPTIONS.TOP_RATED) {
+                const ratingDiff = Number(b.averageRating ?? 0) - Number(a.averageRating ?? 0);
+                if (ratingDiff !== 0) return ratingDiff;
+
+                const countDiff = Number(b.ratingCount ?? 0) - Number(a.ratingCount ?? 0);
+                if (countDiff !== 0) return countDiff;
+            }
+
+            if (sortMode === SORT_OPTIONS.MOST_COMMENTED) {
+                const commentDiff = Number(b.commentCount ?? 0) - Number(a.commentCount ?? 0);
+                if (commentDiff !== 0) return commentDiff;
+            }
+
+            const aTime = new Date(a.created_at ?? 0).getTime();
+            const bTime = new Date(b.created_at ?? 0).getTime();
+
+            return sortMode === SORT_OPTIONS.OLDEST ? aTime - bTime : bTime - aTime;
+        });
+    }, [activeFilter, files, language, searchTerm, sortMode]);
+
+    const pagedFiles = visibleFiles.slice(0, visibleCount);
+    const hasMore = visibleCount < visibleFiles.length;
     const filters = [
         [MEDIA_FILTERS.ALL, t('filterAll')],
         [MEDIA_FILTERS.IMAGES, t('filterImages')],
@@ -155,12 +243,56 @@ function GalleryPage() {
                                     : styles.filterButton
                             }
                             aria-pressed={activeFilter === value}
-                            onClick={() => setActiveFilter(value)}
+                            onClick={() => {
+                                setActiveFilter(value);
+                                setVisibleCount(PAGE_SIZE);
+                            }}
                         >
-                            {label}
+                            <span>{label}</span>
+                            <span className={styles.filterCount}>{categoryCounts[value]}</span>
                         </button>
                     ))}
                 </div>
+
+                <div className={styles.catalogControls}>
+                    <label className={styles.searchField}>
+                        <span>{t('searchLabel')}</span>
+                        <input
+                            type="search"
+                            value={searchTerm}
+                            onChange={(event) => {
+                                setSearchTerm(event.target.value);
+                                setVisibleCount(PAGE_SIZE);
+                            }}
+                            placeholder={t('searchPlaceholder')}
+                        />
+                    </label>
+
+                    <label className={styles.sortField}>
+                        <span>{t('sortLabel')}</span>
+                        <select
+                            value={sortMode}
+                            onChange={(event) => {
+                                setSortMode(event.target.value);
+                                setVisibleCount(PAGE_SIZE);
+                            }}
+                        >
+                            <option value={SORT_OPTIONS.NEWEST}>{t('sortNewest')}</option>
+                            <option value={SORT_OPTIONS.OLDEST}>{t('sortOldest')}</option>
+                            <option value={SORT_OPTIONS.NAME}>{t('sortName')}</option>
+                            <option value={SORT_OPTIONS.TOP_RATED}>{t('sortTopRated')}</option>
+                            <option value={SORT_OPTIONS.MOST_COMMENTED}>{t('sortMostCommented')}</option>
+                            <option value={SORT_OPTIONS.TOP_RATED}>{t('sortTopRated')}</option>
+                            <option value={SORT_OPTIONS.MOST_COMMENTED}>{t('sortMostCommented')}</option>
+                        </select>
+                    </label>
+                </div>
+
+                {!loading && !error && (
+                    <p className={styles.resultSummary} aria-live="polite">
+                        {t('results')}: {visibleFiles.length}
+                    </p>
+                )}
 
                 {loading && <LoadingSpinner label={t('loading')} />}
 
@@ -172,15 +304,17 @@ function GalleryPage() {
 
                 {!loading && !error && visibleFiles.length === 0 && (
                     <div className={styles.message}>
-                        {activeFilter === MEDIA_FILTERS.ALL
-                            ? t('empty')
-                            : t('emptyCategory')}
+                        {searchTerm.trim()
+                            ? t('noSearchResults')
+                            : activeFilter === MEDIA_FILTERS.ALL
+                                ? t('empty')
+                                : t('emptyCategory')}
                     </div>
                 )}
 
                 {!loading && !error && visibleFiles.length > 0 && (
                     <section className={styles.grid} aria-label={t('title')}>
-                        {visibleFiles.map((file) => {
+                        {pagedFiles.map((file) => {
                             const mediaType = getMediaType(file);
 
                             return (
@@ -227,6 +361,18 @@ function GalleryPage() {
                                             {file.file_name}
                                         </strong>
 
+                                        <div className={styles.fileMeta}>
+                                            <span>{file.mime_type || t('unknownType')}</span>
+                                            {formatFileSize(file.file_size) && (
+                                                <span>{formatFileSize(file.file_size)}</span>
+                                            )}
+                                        </div>
+
+                                        <div className={styles.catalogMetrics} aria-label={t('metricsLabel')}>
+                                            <span>{'★'} {Number(file.averageRating ?? 0).toFixed(1)} {' '}({file.ratingCount ?? 0})</span>
+                                            <span>{t('commentsMetric')}: {file.commentCount ?? 0}</span>
+                                        </div>
+
                                         <div className={styles.actionSlot}>
                                             {file.story_id && (
                                                 <Link
@@ -263,6 +409,21 @@ function GalleryPage() {
                             );
                         })}
                     </section>
+                )}
+
+                {!loading && !error && hasMore && (
+                    <div className={styles.loadMoreWrap}>
+                        <button
+                            type="button"
+                            className={styles.loadMoreButton}
+                            onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                        >
+                            {t('loadMore')}
+                        </button>
+                        <span className={styles.loadMoreStatus}>
+                            {t('showing')} {Math.min(visibleCount, visibleFiles.length)} / {visibleFiles.length}
+                        </span>
+                    </div>
                 )}
             </div>
 

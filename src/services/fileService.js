@@ -220,6 +220,68 @@ export async function fetchStoryFiles(storyId) {
     return addSignedUrls(data ?? []);
 }
 
+export async function enrichCommunityMediaWithMetrics(files, options = {}) {
+    const safeFiles = Array.isArray(files) ? files : [];
+    const ids = safeFiles.map((file) => file?.id).filter(Boolean);
+
+    if (ids.length === 0) {
+        return safeFiles.map((file) => ({
+            ...file,
+            averageRating: 0,
+            ratingCount: 0,
+            commentCount: 0,
+        }));
+    }
+
+    let ratingsQuery = supabase
+        .from('file_ratings')
+        .select('file_id,rating')
+        .in('file_id', ids);
+
+    let commentsQuery = supabase
+        .from('comments')
+        .select('target_id')
+        .eq('target_type', 'file')
+        .in('target_id', ids);
+
+    if (options.signal) {
+        ratingsQuery = ratingsQuery.abortSignal(options.signal);
+        commentsQuery = commentsQuery.abortSignal(options.signal);
+    }
+
+    const [ratingsResult, commentsResult] = await Promise.all([
+        ratingsQuery,
+        commentsQuery,
+    ]);
+
+    const ratingStats = new Map();
+    const commentCounts = new Map();
+
+    if (!ratingsResult.error) {
+        for (const row of ratingsResult.data ?? []) {
+            const current = ratingStats.get(row.file_id) ?? { total: 0, count: 0 };
+            current.total += Number(row.rating ?? 0);
+            current.count += 1;
+            ratingStats.set(row.file_id, current);
+        }
+    }
+
+    if (!commentsResult.error) {
+        for (const row of commentsResult.data ?? []) {
+            commentCounts.set(row.target_id, (commentCounts.get(row.target_id) ?? 0) + 1);
+        }
+    }
+
+    return safeFiles.map((file) => {
+        const rating = ratingStats.get(file.id) ?? { total: 0, count: 0 };
+        return {
+            ...file,
+            averageRating: rating.count > 0 ? rating.total / rating.count : 0,
+            ratingCount: rating.count,
+            commentCount: commentCounts.get(file.id) ?? 0,
+        };
+    });
+}
 export async function fetchCommunityMediaFiles(options = {}) {
     let query = supabase
         .from('user_files')

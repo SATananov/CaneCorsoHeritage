@@ -293,3 +293,136 @@
         border-radius: 14px;
     }
 }
+.catalogControls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+    gap: 14px;
+    margin-top: 22px;
+}
+
+.searchField,
+.sortField {
+    display: grid;
+    gap: 8px;
+}
+
+.searchField > span,
+.sortField > span {
+    color: rgba(248, 245, 239, 0.62);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.searchField input,
+.sortField select {
+    min-height: 46px;
+    width: 100%;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 13px;
+    background: rgba(248, 245, 239, 0.035);
+    color: #f8f5ef;
+    font: inherit;
+    outline: none;
+}
+
+.searchField input { padding: 0 14px; }
+.sortField select { padding: 0 38px 0 14px; }
+.sortField option { color: #111; }
+
+.searchField input:focus,
+.sortField select:focus {
+    border-color: rgba(212, 175, 55, 0.72);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
+}
+
+.filterButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.filterCount {
+    display: inline-grid;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(248, 245, 239, 0.08);
+    font-size: 0.68rem;
+}
+
+.resultSummary {
+    margin: 14px 0 0;
+    color: rgba(248, 245, 239, 0.52);
+    font-size: 0.78rem;
+    text-align: right;
+}
+
+.fileMeta {
+    display: flex;
+    min-height: 1.2rem;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    color: rgba(248, 245, 239, 0.46);
+    font-size: 0.72rem;
+}
+
+@media (max-width: 640px) {
+    .catalogControls { grid-template-columns: 1fr; }
+    .resultSummary { text-align: left; }
+}
+.catalogMetrics {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 16px;
+    min-height: 1.2rem;
+    color: rgba(248, 245, 239, 0.6);
+    font-size: 0.76rem;
+}
+
+.catalogMetrics span:first-child {
+    color: #d4af37;
+}
+.loadMoreWrap {
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    margin-top: 34px;
+}
+
+.loadMoreButton {
+    min-width: 170px;
+    min-height: 44px;
+    padding: 10px 22px;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #f1d36b;
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        transform 160ms ease;
+}
+
+.loadMoreButton:hover,
+.loadMoreButton:focus-visible {
+    border-color: rgba(212, 175, 55, 0.85);
+    background: rgba(212, 175, 55, 0.16);
+    transform: translateY(-1px);
+}
+
+.loadMoreStatus {
+    color: rgba(248, 245, 239, 0.48);
+    font-size: 0.74rem;
+}
