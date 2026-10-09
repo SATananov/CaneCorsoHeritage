@@ -4,6 +4,7 @@ import LoadingSpinner from './LoadingSpinner';
 import PreviewCard from './PreviewCard';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
+import { enrichStoriesWithCatalogMetrics } from '../services/storyCatalogService';
 import { fetchStories } from '../services/storyService';
 import { localizeStoryCollection } from '../services/storyTranslationService';
 
@@ -13,65 +14,65 @@ const LEGACY_EDITORIAL_STORY_TITLES = new Set([
     'Stories carried forward',
 ]);
 
+const SORT_OPTIONS = {
+    NEWEST: 'newest',
+    TOP_RATED: 'topRated',
+    MOST_COMMENTED: 'mostCommented',
+};
+
 function StoriesPreviewSection() {
     const navigate = useNavigate();
     const { language } = useLanguage();
     const t = useCallback((key) => getTranslation(language, 'publicStories', key), [language]);
     const tm = (key) => getTranslation(language, 'memberProfile', key);
+
+    const [stories, setStories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortMode, setSortMode] = useState(SORT_OPTIONS.NEWEST);
+
     const displayEyebrow = (story) => story.eyebrow === 'Community'
         ? tm('communityEyebrow')
         : story.eyebrow === 'My Own'
             ? tm('privateEyebrow')
             : story.eyebrow;
-    const [stories, setStories] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isUsingFallback, setIsUsingFallback] = useState(false);
-
-    const fallbackStories = useMemo(() => [
-        {
-            _id: 'origins-story',
-            eyebrow: t('fallbackOrigins'),
-            title: t('fallbackOriginsTitle'),
-            description: t('fallbackOriginsDescription'),
-            details: t('fallbackOriginsDetails'),
-        },
-        {
-            _id: 'loyalty-story',
-            eyebrow: t('fallbackLoyalty'),
-            title: t('fallbackLoyaltyTitle'),
-            description: t('fallbackLoyaltyDescription'),
-            details: t('fallbackLoyaltyDetails'),
-        },
-        {
-            _id: 'legacy-story',
-            eyebrow: t('fallbackLegacy'),
-            title: t('fallbackLegacyTitle'),
-            description: t('fallbackLegacyDescription'),
-            details: t('fallbackLegacyDetails'),
-        },
-    ], [t]);
 
     useEffect(() => {
         const controller = new AbortController();
 
         const loadStories = async () => {
+            setIsLoading(true);
+            setLoadError('');
+
             try {
                 const data = await fetchStories({ signal: controller.signal });
+
                 const communityStories = data.filter(
                     (story) => !LEGACY_EDITORIAL_STORY_TITLES.has(story.title),
                 );
-                const localizedCommunityStories = await localizeStoryCollection(communityStories, language);
+
+                const localizedStories = await localizeStoryCollection(
+                    communityStories,
+                    language,
+                );
 
                 if (controller.signal.aborted) {
                     return;
                 }
 
-                setStories([...fallbackStories, ...localizedCommunityStories]);
-                setIsUsingFallback(false);
-            } catch (loadError) {
-                if (loadError.name !== 'AbortError') {
-                    setStories(fallbackStories);
-                    setIsUsingFallback(true);
+                const enrichedStories = await enrichStoriesWithCatalogMetrics(
+                    localizedStories,
+                    { signal: controller.signal },
+                );
+
+                if (!controller.signal.aborted) {
+                    setStories(enrichedStories);
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError' && !controller.signal.aborted) {
+                    setStories([]);
+                    setLoadError(t('catalogError'));
                 }
             } finally {
                 if (!controller.signal.aborted) {
@@ -85,7 +86,45 @@ function StoriesPreviewSection() {
         return () => {
             controller.abort();
         };
-    }, [fallbackStories, language]);
+    }, [language, t]);
+
+    const visibleStories = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase();
+
+        const filteredStories = normalizedSearch
+            ? stories.filter((story) => {
+                const searchableText = [
+                    story.title,
+                    story.description,
+                    story.eyebrow,
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase();
+
+                return searchableText.includes(normalizedSearch);
+            })
+            : [...stories];
+
+        return filteredStories.sort((firstStory, secondStory) => {
+            if (sortMode === SORT_OPTIONS.TOP_RATED) {
+                const ratingDifference = (secondStory.averageRating ?? 0) - (firstStory.averageRating ?? 0);
+
+                if (ratingDifference !== 0) {
+                    return ratingDifference;
+                }
+
+                return (secondStory.ratingCount ?? 0) - (firstStory.ratingCount ?? 0);
+            }
+
+            if (sortMode === SORT_OPTIONS.MOST_COMMENTED) {
+                return (secondStory.commentCount ?? 0) - (firstStory.commentCount ?? 0);
+            }
+
+            return new Date(secondStory.created_at ?? 0).getTime()
+                - new Date(firstStory.created_at ?? 0).getTime();
+        });
+    }, [searchTerm, sortMode, stories]);
 
     return (
         <section className="visitor-section" aria-labelledby="stories-feature-title">
@@ -102,30 +141,78 @@ function StoriesPreviewSection() {
                     </div>
                 </div>
 
-                <div className="visitor-section-heading visitor-section-heading-compact">
-                    <h2>{t('discover')}</h2>
+                <div className="visitor-section-heading visitor-section-heading-compact story-catalog-heading">
+                    <h2>{t('communityTitle')}</h2>
+                    <p>{t('communityIntro')}</p>
                 </div>
 
-                <div className="story-preview-grid">
-                    {isLoading ? (
-                        <LoadingSpinner label={t('loading')} />
-                    ) : (
-                        stories.map((story) => (
-                            <PreviewCard
-                                key={story._id}
-                                eyebrow={displayEyebrow(story)}
-                                title={story.title}
-                                description={story.description}
-                                details={story.details}
-                                onDetails={
-                                    isUsingFallback || LEGACY_EDITORIAL_STORY_TITLES.has(story.title) || story._id?.endsWith('-story')
-                                        ? undefined
-                                        : () => navigate(`/stories/${story._id}`)
-                                }
-                            />
-                        ))
-                    )}
+                <div className="story-catalog-controls" aria-label={t('catalogControlsLabel')}>
+                    <label className="story-catalog-search">
+                        <span>{t('searchLabel')}</span>
+                        <input
+                            type="search"
+                            value={searchTerm}
+                            placeholder={t('searchPlaceholder')}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                        />
+                    </label>
+
+                    <div className="story-catalog-sort" aria-label={t('sortLabel')}>
+                        <button
+                            type="button"
+                            className={sortMode === SORT_OPTIONS.NEWEST ? 'is-active' : ''}
+                            onClick={() => setSortMode(SORT_OPTIONS.NEWEST)}
+                        >
+                            {t('sortNewest')}
+                        </button>
+                        <button
+                            type="button"
+                            className={sortMode === SORT_OPTIONS.TOP_RATED ? 'is-active' : ''}
+                            onClick={() => setSortMode(SORT_OPTIONS.TOP_RATED)}
+                        >
+                            {t('sortTopRated')}
+                        </button>
+                        <button
+                            type="button"
+                            className={sortMode === SORT_OPTIONS.MOST_COMMENTED ? 'is-active' : ''}
+                            onClick={() => setSortMode(SORT_OPTIONS.MOST_COMMENTED)}
+                        >
+                            {t('sortMostCommented')}
+                        </button>
+                    </div>
                 </div>
+
+                {isLoading ? (
+                    <LoadingSpinner label={t('loading')} />
+                ) : loadError ? (
+                    <p className="story-catalog-state">{loadError}</p>
+                ) : visibleStories.length === 0 ? (
+                    <p className="story-catalog-state">{searchTerm.trim() ? t('catalogNoResults') : t('catalogEmpty')}</p>
+                ) : (
+                    <div className="story-preview-grid">
+                        {visibleStories.map((story) => (
+                            <div className="story-catalog-card" key={story.id ?? story._id}>
+                                <PreviewCard
+                                    eyebrow={displayEyebrow(story)}
+                                    title={story.title}
+                                    description={story.description}
+                                    details={story.details}
+                                    onDetails={() => navigate(`/stories/${story.id ?? story._id}`)}
+                                />
+
+                                <div className="story-catalog-metrics" aria-label={t('metricsLabel')}>
+                                    <span>
+                                        ★ {Number(story.averageRating ?? 0).toFixed(1)}
+                                        {' '}({story.ratingCount ?? 0})
+                                    </span>
+                                    <span>
+                                        {t('commentsMetric')}: {story.commentCount ?? 0}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );

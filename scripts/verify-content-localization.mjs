@@ -26,8 +26,8 @@ const migration = read('supabase/migrations/20261006160000_content_localization_
 const translations = read('src/i18n/translations.js');
 
 expect(storiesPreview, /LEGACY_EDITORIAL_STORY_TITLES/, 'legacy editorial Story cards are separated from community content');
-expect(storiesPreview, /localizeStoryCollection\(communityStories, language\)/, 'real community Story cards follow selected language');
-expect(storiesPreview, /setStories\(\[\.\.\.fallbackStories, \.\.\.localizedCommunityStories\]\)/, 'localized static Story cards are composed with translated community Stories');
+expect(storiesPreview, /localizeStoryCollection\(\s*communityStories,\s*language,\s*\)/, 'real community Story cards follow selected language');
+expect(storiesPreview, /setStories\(enrichedStories\)/, 'localized community Story catalog is committed after catalog enrichment');
 expect(storyService, /fetchStoryTranslations/, 'Story list reuses cached translations');
 expect(storyService, /requestStoryTranslation/, 'missing community Story translations are generated server-side');
 expect(storyEdge, /isPublic[\s\S]*isOwner/, 'public Stories can be translated while private Stories remain owner-protected');

@@ -29,6 +29,34 @@ async function fetchExactCount(table, options) {
     return count ?? 0;
 }
 
+async function fetchPendingCount(table, options = {}) {
+    let query = supabase
+        .from(table)
+        .select('*', { count: 'exact', head: true })
+        .eq('visibility', 'community')
+        .eq('moderation_status', 'pending');
+
+    if (options.signal) {
+        query = query.abortSignal(options.signal);
+    }
+
+    const { count, error } = await query;
+
+    if (error) {
+        throw new Error(error.message || `Unable to count pending ${table}.`);
+    }
+
+    return count ?? 0;
+}
+
+export async function fetchPendingModerationCount(options = {}) {
+    const [pendingStories, pendingFiles] = await Promise.all([
+        fetchPendingCount('stories', options),
+        fetchPendingCount('user_files', options),
+    ]);
+
+    return pendingStories + pendingFiles;
+}
 async function fetchPendingRows(table, columns, options) {
     const rows = [];
     // The moderation queue must not inherit the recent-items limit or API row cap.

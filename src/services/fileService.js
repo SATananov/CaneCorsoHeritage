@@ -202,6 +202,7 @@ export async function fetchMyFiles(userId) {
         throw new Error(error.message || 'Unable to load your files.');
     }
 
+    console.log('fetchMyFiles rows:', data);
     return addSignedUrls(data ?? []);
 }
 
@@ -219,6 +220,27 @@ export async function fetchStoryFiles(storyId) {
     return addSignedUrls(data ?? []);
 }
 
+export async function fetchCommunityGalleryImages(options = {}) {
+    let query = supabase
+        .from('user_files')
+        .select('*')
+        .eq('visibility', 'community')
+        .eq('moderation_status', 'approved')
+        .like('mime_type', 'image/%')
+        .order('created_at', { ascending: false });
+
+    if (options.signal) {
+        query = query.abortSignal(options.signal);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        throw new Error(error.message || 'Unable to load gallery images.');
+    }
+
+    return addSignedUrls(data ?? []);
+}
 export async function fetchCommunityFilesByUser(userId) {
     const { data, error } = await supabase
         .from('user_files')

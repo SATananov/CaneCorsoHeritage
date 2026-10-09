@@ -5,6 +5,7 @@ import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import { fetchProfileById, getProfileAvatarUrl } from '../services/profileService';
 import { subscribeProfileRefresh } from '../services/profileRefresh';
+import { fetchPendingModerationCount } from '../services/adminService';
 
 function AuthActions(props) {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ function AuthActions(props) {
         userId: null,
         profile: null,
     });
+    const [pendingModerationCount, setPendingModerationCount] = useState(0);
 
     useEffect(() => {
         if (!user?.id) {
@@ -56,6 +58,48 @@ function AuthActions(props) {
         };
     }, [user?.id]);
 
+    useEffect(() => {
+        if (!user?.id || !isAdmin || !isActive) {
+            return undefined;
+        }
+
+        let activeController;
+
+        async function loadPendingModerationCount() {
+            activeController?.abort();
+            const controller = new AbortController();
+            activeController = controller;
+
+            try {
+                const count = await fetchPendingModerationCount({
+                    signal: controller.signal,
+                });
+
+                if (!controller.signal.aborted) {
+                    setPendingModerationCount(count);
+                }
+            } catch (error) {
+                if (!controller.signal.aborted && error?.name !== 'AbortError') {
+                    setPendingModerationCount(0);
+                }
+            }
+        }
+
+        loadPendingModerationCount();
+
+        const handleWindowFocus = () => {
+            loadPendingModerationCount();
+        };
+
+        window.addEventListener('focus', handleWindowFocus);
+        const intervalId = window.setInterval(loadPendingModerationCount, 30000);
+
+        return () => {
+            activeController?.abort();
+            window.removeEventListener('focus', handleWindowFocus);
+            window.clearInterval(intervalId);
+        };
+    }, [user?.id, isAdmin, isActive]);
     const profile = profileState.userId === user?.id
         ? profileState.profile
         : null;
@@ -119,10 +163,18 @@ function AuthActions(props) {
                 </NavLink>
                 {isAdmin && (
                     <NavLink
-                        className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
+                        className={({ isActive }) => `login-button admin-nav-link${isActive ? ' auth-route-active' : ''}`}
                         to="/admin"
+                        aria-label={pendingModerationCount > 0
+                            ? `${t('admin')} (${pendingModerationCount})`
+                            : t('admin')}
                     >
-                        {t('admin')}
+                        <span>{t('admin')}</span>
+                        {pendingModerationCount > 0 && (
+                            <span className="admin-pending-badge" aria-hidden="true">
+                                {pendingModerationCount > 99 ? '99+' : pendingModerationCount}
+                            </span>
+                        )}
                     </NavLink>
                 )}
                 {identity && (

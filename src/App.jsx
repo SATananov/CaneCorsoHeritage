@@ -11,6 +11,7 @@ import RequireCompleteProfile from './routing/RequireCompleteProfile';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const StoriesPage = lazy(() => import('./pages/StoriesPage'));
+const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 const StoryDetailsPage = lazy(() => import('./pages/StoryDetailsPage'));
 const HeritagePage = lazy(() => import('./pages/HeritagePage'));
 const HeritageArticlePage = lazy(() => import('./pages/HeritageArticlePage'));
@@ -47,6 +48,8 @@ function App() {
                         <Route index element={<StoriesPage />} />
                         <Route path=":storyId" element={<StoryDetailsPage />} />
                     </Route>
+                    <Route path="gallery" element={<GalleryPage />} />
+
 
                     <Route path="heritage">
                         <Route index element={<HeritagePage />} />

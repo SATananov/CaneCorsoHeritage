@@ -31,6 +31,7 @@ function Header() {
                 <nav className="main-nav" aria-label={tg('mainNavigation')}>
                     <NavLink className={getNavClassName} to="/" end>{t('home')}</NavLink>
                     <NavLink className={getNavClassName} to="/stories">{t('stories')}</NavLink>
+                    <NavLink className={getNavClassName} to="/gallery">{t('gallery')}</NavLink>
                     <NavLink className={getNavClassName} to="/heritage">{t('heritage')}</NavLink>
                     <NavLink className={getNavClassName} to="/users">{t('members')}</NavLink>
                     <NavLink className={getNavClassName} to="/about">{t('about')}</NavLink>

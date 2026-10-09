@@ -6,8 +6,8 @@ const translations = fs.readFileSync('src/i18n/translations.js', 'utf8');
 const checks = [
   ['legacy editorial titles are explicitly identified', section.includes('LEGACY_EDITORIAL_STORY_TITLES')],
   ['legacy editorial rows are filtered before machine translation', section.includes('const communityStories = data.filter(') && section.includes('!LEGACY_EDITORIAL_STORY_TITLES.has(story.title)')],
-  ['only real community stories enter machine translation', section.includes('localizeStoryCollection(communityStories, language)')],
-  ['localized static cards are always composed with community stories', section.includes('setStories([...fallbackStories, ...localizedCommunityStories])')],
+  ['only real community stories enter machine translation', /localizeStoryCollection\(\s*communityStories,\s*language,\s*\)/.test(section)],
+  ['localized community Story catalog is committed after catalog enrichment', section.includes('setStories(enrichedStories)')],
   ['EN static story keys exist',
     translations.includes("fallbackOriginsTitle: 'Where every story begins'") &&
     translations.includes("fallbackLoyaltyTitle: 'The bond that stays'") &&
@@ -28,4 +28,4 @@ if (failed) {
 }
 
 console.log('STATIC STORY CARDS LOCALIZATION FIX 01: PASS');
-console.log('Editorial fallback cards use EN/BG/IT UI translations; only real community Stories use machine translation.');
+console.log('Legacy editorial Story titles remain identified for exclusion; only real community Stories use machine translation and the enriched community catalog is rendered.');
