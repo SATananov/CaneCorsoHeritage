@@ -6,6 +6,7 @@ export function useStoryDetails(storyId, userId, loadErrorMessage) {
     const [story, setStory] = useState(null);
     const [attachments, setAttachments] = useState([]);
     const [error, setError] = useState('');
+    const [attachmentsError, setAttachmentsError] = useState(false);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -15,6 +16,7 @@ export function useStoryDetails(storyId, userId, loadErrorMessage) {
             setStory(null);
             setError('');
             setAttachments([]);
+            setAttachmentsError(false);
 
             try {
                 const data = await fetchStoryById(storyId, {
@@ -37,6 +39,9 @@ export function useStoryDetails(storyId, userId, loadErrorMessage) {
 
                 if (filesResult.status === 'fulfilled') {
                     setAttachments(filesResult.value);
+                } else {
+                    setAttachments([]);
+                    setAttachmentsError(true);
                 }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && active) {
@@ -57,5 +62,6 @@ export function useStoryDetails(storyId, userId, loadErrorMessage) {
         story,
         attachments,
         error,
+        attachmentsError,
     };
 }

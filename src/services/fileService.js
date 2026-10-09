@@ -110,10 +110,10 @@ async function addSignedUrls(files) {
                 .createSignedUrl(file.storage_path, 3600);
 
             if (error) {
-                return {
-                    ...file,
-                    url: '',
-                };
+                throw new Error(
+                    error.message
+                    || `Unable to create a secure link for ${file.file_name || 'file'}.`,
+                );
             }
 
             return {

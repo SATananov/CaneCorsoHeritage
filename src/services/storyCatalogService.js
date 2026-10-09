@@ -20,6 +20,7 @@ export async function enrichStoriesWithCatalogMetrics(stories, options = {}) {
         return sourceStories.map((story) => ({
             ...story,
             ...createEmptyMetrics(),
+            metricsWarning: false,
         }));
     }
 
@@ -44,16 +45,27 @@ export async function enrichStoriesWithCatalogMetrics(stories, options = {}) {
         commentsQuery,
     ]);
 
-    const ratingRows = ratingsResult.error
-        ? []
-        : (ratingsResult.data ?? []);
+    const ratingsAvailable = !ratingsResult.error;
+    const commentsAvailable = !commentsResult.error;
 
-    const commentRows = commentsResult.error
-        ? []
-        : (commentsResult.data ?? []);
+    const ratingRows = ratingsAvailable
+        ? (ratingsResult.data ?? [])
+        : [];
+
+    const commentRows = commentsAvailable
+        ? (commentsResult.data ?? [])
+        : [];
 
     const metricsByStoryId = new Map(
-        storyIds.map((storyId) => [storyId, createEmptyMetrics()]),
+        storyIds.map((storyId) => [
+            storyId,
+            {
+                averageRating: ratingsAvailable ? 0 : null,
+                ratingCount: ratingsAvailable ? 0 : null,
+                commentCount: commentsAvailable ? 0 : null,
+                metricsWarning: !ratingsAvailable || !commentsAvailable,
+            },
+        ]),
     );
 
     for (const ratingRow of ratingRows) {
@@ -88,7 +100,10 @@ export async function enrichStoriesWithCatalogMetrics(stories, options = {}) {
 
         return {
             ...story,
-            ...(metricsByStoryId.get(storyId) ?? createEmptyMetrics()),
+            ...(metricsByStoryId.get(storyId) ?? {
+                ...createEmptyMetrics(),
+                metricsWarning: false,
+            }),
         };
     });
 }

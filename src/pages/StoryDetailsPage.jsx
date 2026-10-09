@@ -23,6 +23,7 @@ function StoryDetailsPage() {
         story,
         attachments,
         error,
+        attachmentsError,
     } = useStoryDetails(storyId, user?.id, t('loadError'));
 
     const {
@@ -105,6 +106,12 @@ function StoryDetailsPage() {
                                 user={user}
                                 isOwnStory={isOwnStory}
                             />
+                        )}
+
+                        {attachmentsError && (
+                            <div className={styles.message} role="alert">
+                                <p>{t('attachmentsLoadError')}</p>
+                            </div>
                         )}
 
                         <StoryAttachments

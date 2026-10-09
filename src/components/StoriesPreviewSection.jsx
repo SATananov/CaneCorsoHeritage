@@ -29,6 +29,7 @@ function StoriesPreviewSection() {
     const [stories, setStories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
+    const [metricsWarning, setMetricsWarning] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortMode, setSortMode] = useState(SORT_OPTIONS.NEWEST);
 
@@ -44,6 +45,7 @@ function StoriesPreviewSection() {
         const loadStories = async () => {
             setIsLoading(true);
             setLoadError('');
+            setMetricsWarning(false);
 
             try {
                 const data = await fetchStories({ signal: controller.signal });
@@ -68,10 +70,14 @@ function StoriesPreviewSection() {
 
                 if (!controller.signal.aborted) {
                     setStories(enrichedStories);
+                    setMetricsWarning(
+                        enrichedStories.some((story) => story.metricsWarning),
+                    );
                 }
             } catch (error) {
                 if (error.name !== 'AbortError' && !controller.signal.aborted) {
                     setStories([]);
+                    setMetricsWarning(false);
                     setLoadError(t('catalogError'));
                 }
             } finally {
@@ -182,6 +188,12 @@ function StoriesPreviewSection() {
                     </div>
                 </div>
 
+                {!isLoading && !loadError && metricsWarning && (
+                    <p className="story-catalog-state" role="status">
+                        {t('catalogMetricsError')}
+                    </p>
+                )}
+
                 {isLoading ? (
                     <LoadingSpinner label={t('loading')} />
                 ) : loadError ? (
@@ -202,11 +214,11 @@ function StoriesPreviewSection() {
 
                                 <div className="story-catalog-metrics" aria-label={t('metricsLabel')}>
                                     <span>
-                                        ★ {Number(story.averageRating ?? 0).toFixed(1)}
-                                        {' '}({story.ratingCount ?? 0})
+                                        ★ {story.averageRating == null ? '—' : Number(story.averageRating).toFixed(1)}
+                                        {' '}({story.ratingCount == null ? '—' : story.ratingCount})
                                     </span>
                                     <span>
-                                        {t('commentsMetric')}: {story.commentCount ?? 0}
+                                        {t('commentsMetric')}: {story.commentCount == null ? '—' : story.commentCount}
                                     </span>
                                 </div>
                             </div>

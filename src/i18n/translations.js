@@ -295,6 +295,7 @@ export const translations = {
             catalogEmpty: 'There are no published community stories yet.',
             catalogNoResults: 'No stories match your search.',
             catalogError: 'Community stories are temporarily unavailable.',
+            catalogMetricsError: 'Some Story ratings or comment counts could not be loaded. Stories remain available.',
             metricsLabel: 'Story activity',
             commentsMetric: 'Comments',
             loading: 'Loading stories...',
@@ -367,6 +368,7 @@ export const translations = {
         },
         storyDetails: {
             loadError: 'Unable to load this story right now.',
+            attachmentsLoadError: 'The Story loaded, but its attachments could not be loaded.',
             saveRatingError: 'Unable to save your rating.',
             storyRatingLoadError: 'Unable to reload Story ratings. Your last rating may already be saved.',
             storyRatingRetry: 'Reload ratings',
@@ -806,6 +808,7 @@ export const translations = {
             catalogEmpty: 'Все още няма публикувани истории от общността.',
             catalogNoResults: 'Няма истории, които отговарят на търсенето.',
             catalogError: 'Историите от общността временно не са достъпни.',
+            catalogMetricsError: 'Някои оценки или броят на коментарите не могат да бъдат заредени. Историите остават достъпни.',
             metricsLabel: 'Активност на историята',
             commentsMetric: 'Коментари',
             loading: 'Зареждане на историите...',
@@ -878,6 +881,7 @@ export const translations = {
         },
         storyDetails: {
             loadError: 'В момента тази история не може да бъде заредена.',
+            attachmentsLoadError: 'Историята е заредена, но прикачените файлове не могат да бъдат заредени.',
             saveRatingError: 'Оценката ви не може да бъде запазена.',
             storyRatingLoadError: 'Оценките на историята не могат да бъдат презаредени. Последната ви оценка може вече да е запазена.',
             storyRatingRetry: 'Зареди оценките отново',
@@ -1317,6 +1321,7 @@ export const translations = {
             catalogEmpty: 'Non ci sono ancora storie della comunità pubblicate.',
             catalogNoResults: 'Nessuna storia corrisponde alla ricerca.',
             catalogError: 'Le storie della comunità sono temporaneamente non disponibili.',
+            catalogMetricsError: 'Alcune valutazioni o conteggi dei commenti non possono essere caricati. Le Storie restano disponibili.',
             metricsLabel: 'Attività della storia',
             commentsMetric: 'Commenti',
             loading: 'Caricamento delle storie...',
@@ -1389,6 +1394,7 @@ export const translations = {
         },
         storyDetails: {
             loadError: 'Impossibile caricare questa storia in questo momento.',
+            attachmentsLoadError: 'La Storia è stata caricata, ma non è stato possibile caricare gli allegati.',
             saveRatingError: 'Impossibile salvare la tua valutazione.',
             storyRatingLoadError: 'Impossibile ricaricare le valutazioni della storia. La tua ultima valutazione potrebbe essere già stata salvata.',
             storyRatingRetry: 'Ricarica le valutazioni',
