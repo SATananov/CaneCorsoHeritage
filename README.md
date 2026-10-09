@@ -110,6 +110,8 @@ flowchart TD
 | `/my-stories` | Authenticated + complete profile | Personal Story workspace |
 | `/my-files` | Authenticated + complete profile | Personal file workspace |
 | `/admin` | Admin | Moderation and administration |
+| `/gallery` | Public | Community media gallery |
+| `/documents` | Public | Community documents catalog |
 
 ## Live deployment
 
@@ -376,7 +378,7 @@ Authentication is provided by Supabase Auth. The application restores the curren
 
 React route guards control navigation and user experience, but backend authorization is enforced by Supabase Row Level Security (RLS).
 
-RLS was verified directly against the connected Supabase database on **2026-10-07**. All 15 application tables in the `public` schema reported `rowsecurity = true`, and the active policies were inspected through `pg_policies`.
+RLS was verified directly against the connected Supabase database on **2026-10-08**. All 15 application tables in the `public` schema reported `rowsecurity = true`, and the active policies were inspected through `pg_policies`.
 
 Detailed evidence and the read-only verification SQL are documented in [`docs/security-rls.md`](docs/security-rls.md).
 
