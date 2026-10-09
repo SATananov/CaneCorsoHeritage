@@ -202,7 +202,6 @@ export async function fetchMyFiles(userId) {
         throw new Error(error.message || 'Unable to load your files.');
     }
 
-    console.log('fetchMyFiles rows:', data);
     return addSignedUrls(data ?? []);
 }
 
@@ -395,7 +394,9 @@ export async function deleteUserFile(file) {
         .from('user-files')
         .remove([file.storage_path]);
 
-    if (storageError) {
-        throw new Error(storageError.message || 'File record was deleted, but the stored file could not be cleaned up.');
-    }
+    return {
+        deleted: true,
+        cleanupPending: Boolean(storageError),
+        cleanupError: storageError?.message || null,
+    };
 }

@@ -315,9 +315,11 @@ export async function adminDeleteFile(file) {
         .from('user-files')
         .remove([file.storage_path]);
 
-    if (storageError) {
-        throw new Error(storageError.message || 'File record was deleted, but the stored file could not be cleaned up.');
-    }
+    return {
+        deleted: true,
+        cleanupPending: Boolean(storageError),
+        cleanupError: storageError?.message || null,
+    };
 }
 
 export async function adminDeleteStory(storyId) {

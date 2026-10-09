@@ -118,8 +118,13 @@ async function verifyUserFileDelete() {
     const success = loadService('src/services/fileService.js', ['deleteUserFile'], {
         supabase: successSupabase,
     });
-    await success.deleteUserFile({ id: 'file-1', storage_path: 'path/file.webp' });
+    const successResult = await success.deleteUserFile({ id: 'file-1', storage_path: 'path/file.webp' });
     assert.ok(successSupabase.calls.indexOf('db:eq') < successSupabase.calls.indexOf('storage:remove'));
+    assert.deepEqual(successResult, {
+        deleted: true,
+        cleanupPending: false,
+        cleanupError: null,
+    });
 
     const cleanupFailureSupabase = createDeleteSupabase({
         metadataResult: { count: 1, error: null },
@@ -128,10 +133,12 @@ async function verifyUserFileDelete() {
     const cleanupFailure = loadService('src/services/fileService.js', ['deleteUserFile'], {
         supabase: cleanupFailureSupabase,
     });
-    await assert.rejects(
-        () => cleanupFailure.deleteUserFile({ id: 'file-1', storage_path: 'path/file.webp' }),
-        /storage cleanup failed/,
-    );
+    const cleanupResult = await cleanupFailure.deleteUserFile({ id: 'file-1', storage_path: 'path/file.webp' });
+    assert.deepEqual(cleanupResult, {
+        deleted: true,
+        cleanupPending: true,
+        cleanupError: 'storage cleanup failed',
+    });
 }
 
 async function verifyAdminFileDelete() {
@@ -153,8 +160,27 @@ async function verifyAdminFileDelete() {
     const success = loadService('src/services/adminService.js', ['adminDeleteFile'], {
         supabase: successSupabase,
     });
-    await success.adminDeleteFile({ id: 'file-1', storage_path: 'path/file.webp' });
+    const successResult = await success.adminDeleteFile({ id: 'file-1', storage_path: 'path/file.webp' });
     assert.ok(successSupabase.calls.indexOf('db:eq') < successSupabase.calls.indexOf('storage:remove'));
+    assert.deepEqual(successResult, {
+        deleted: true,
+        cleanupPending: false,
+        cleanupError: null,
+    });
+
+    const cleanupFailureSupabase = createDeleteSupabase({
+        metadataResult: { count: 1, error: null },
+        storageResult: { error: { message: 'admin storage cleanup failed' } },
+    });
+    const cleanupFailure = loadService('src/services/adminService.js', ['adminDeleteFile'], {
+        supabase: cleanupFailureSupabase,
+    });
+    const cleanupResult = await cleanupFailure.adminDeleteFile({ id: 'file-1', storage_path: 'path/file.webp' });
+    assert.deepEqual(cleanupResult, {
+        deleted: true,
+        cleanupPending: true,
+        cleanupError: 'admin storage cleanup failed',
+    });
 }
 
 async function verifyAvatarRemoval() {
