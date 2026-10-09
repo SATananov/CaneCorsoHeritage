@@ -4,6 +4,8 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import AdminOverviewSection from '../components/admin/AdminOverviewSection';
 import AdminRatingsSection from '../components/admin/AdminRatingsSection';
 import AdminPendingSection from '../components/admin/AdminPendingSection';
+import AdminStoriesSection from '../components/admin/AdminStoriesSection';
+import AdminFilesSection from '../components/admin/AdminFilesSection';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
@@ -553,72 +555,25 @@ function AdminDashboard({ user }) {
                     )}
 
                     {data && activeSection === 'stories' && (
-                        <section aria-labelledby="admin-stories-title">
-                            <h2 id="admin-stories-title" className={styles.sectionTitle}>{t('stories')}</h2>
-                            <div className={styles.tableWrap}>
-                                <table className={styles.table}>
-                                    <thead><tr><th>{t('title')}</th><th>{t('author')}</th><th>{t('visibility')}</th><th>{t('moderation')}</th><th>{t('created')}</th><th>{t('actions')}</th></tr></thead>
-                                    <tbody>
-                                        {data.stories.map((story) => (
-                                            <tr key={story.id}>
-                                                <td>
-                                                    <a
-                                                        className={styles.storyOpenLink}
-                                                        href={`/stories/${story.id}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        {story.title || t('untitled')}
-                                                    </a>
-                                                </td>
-                                                <td>{memberNameById.get(story.author_id) ?? <span className={styles.unlinkedMember}>{t('noLinkedProfile')}</span>}</td>
-                                                <td>{statusLabel(story.visibility)}</td>
-                                                <td><span className={`${styles.moderationStatus} ${styles[`status_${story.moderation_status || 'approved'}`]}`}>{statusLabel(story.moderation_status || 'approved')}</span></td>
-                                                <td>{dateLabel(story.created_at)}</td>
-                                                <td>{storyActions(story)}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
+                        <AdminStoriesSection
+                            stories={data.stories}
+                            memberNameById={memberNameById}
+                            statusLabel={statusLabel}
+                            dateLabel={dateLabel}
+                            renderStoryActions={storyActions}
+                            t={t}
+                        />
                     )}
 
                     {data && activeSection === 'files' && (
-                        <section aria-labelledby="admin-files-title">
-                            <h2 id="admin-files-title" className={styles.sectionTitle}>{t('files')}</h2>
-                            <div className={styles.tableWrap}>
-                                <table className={styles.table}>
-                                    <thead><tr><th>{t('file')}</th><th>{t('owner')}</th><th>{t('type')}</th><th>{t('size')}</th><th>{t('visibility')}</th><th>{t('moderation')}</th><th>{t('actions')}</th></tr></thead>
-                                    <tbody>
-                                        {data.files.map((file) => (
-                                            <tr key={file.id}>
-                                                <td>
-                                                    {file.url ? (
-                                                        <a
-                                                            className={styles.fileOpenLink}
-                                                            href={file.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            {file.file_name}
-                                                        </a>
-                                                    ) : (
-                                                        file.file_name
-                                                    )}
-                                                </td>
-                                                <td>{memberNameById.get(file.user_id) ?? <span className={styles.unlinkedMember}>{t('noLinkedProfile')}</span>}</td>
-                                                <td>{file.mime_type || '—'}</td>
-                                                <td>{formatBytes(file.file_size)}</td>
-                                                <td>{statusLabel(file.visibility)}</td>
-                                                <td><span className={`${styles.moderationStatus} ${styles[`status_${file.moderation_status || 'approved'}`]}`}>{statusLabel(file.moderation_status || 'approved')}</span></td>
-                                                <td>{fileActions(file)}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
+                        <AdminFilesSection
+                            files={data.files}
+                            memberNameById={memberNameById}
+                            statusLabel={statusLabel}
+                            formatBytes={formatBytes}
+                            renderFileActions={fileActions}
+                            t={t}
+                        />
                     )}
 
                     {data && activeSection === 'ratings' && (
