@@ -220,6 +220,26 @@ export async function fetchStoryFiles(storyId) {
     return addSignedUrls(data ?? []);
 }
 
+export async function fetchCommunityMediaFiles(options = {}) {
+    let query = supabase
+        .from('user_files')
+        .select('*')
+        .eq('visibility', 'community')
+        .eq('moderation_status', 'approved')
+        .order('created_at', { ascending: false });
+
+    if (options.signal) {
+        query = query.abortSignal(options.signal);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        throw new Error(error.message || 'Unable to load community media.');
+    }
+
+    return addSignedUrls(data ?? []);
+}
 export async function fetchCommunityGalleryImages(options = {}) {
     let query = supabase
         .from('user_files')
