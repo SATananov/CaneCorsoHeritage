@@ -173,35 +173,6 @@
 .openFileLink:hover {
     text-decoration: underline;
 }
-
-.loadMoreWrap {
-    display: grid;
-    place-items: center;
-    gap: 10px;
-    margin-top: 34px;
-}
-
-.loadMoreButton {
-    min-width: 170px;
-    min-height: 44px;
-    padding: 10px 22px;
-    border: 1px solid rgba(212, 175, 55, 0.5);
-    border-radius: 999px;
-    background: rgba(212, 175, 55, 0.08);
-    color: #f1d36b;
-    font: inherit;
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    cursor: pointer;
-}
-
-.loadMoreStatus {
-    color: rgba(248, 245, 239, 0.48);
-    font-size: 0.74rem;
-}
-
 @media (max-width: 900px) {
     .grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));

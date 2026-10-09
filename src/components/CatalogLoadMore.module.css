@@ -1,0 +1,36 @@
+.wrap {
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    margin-top: 34px;
+}
+
+.button {
+    min-width: 170px;
+    min-height: 44px;
+    padding: 10px 22px;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #f8f5ef;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        transform 160ms ease;
+}
+
+.button:hover,
+.button:focus-visible {
+    border-color: rgba(212, 175, 55, 0.85);
+    background: rgba(212, 175, 55, 0.16);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.status {
+    color: rgba(248, 245, 239, 0.48);
+    font-size: 0.74rem;
+}

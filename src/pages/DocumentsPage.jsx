@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import CatalogToolbar from '../components/CatalogToolbar';
 import CatalogEmptyState from '../components/CatalogEmptyState';
+import CatalogLoadMore from '../components/CatalogLoadMore';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useLanguage } from '../context/languageContext';
@@ -276,19 +277,13 @@ function DocumentsPage() {
                 )}
 
                 {!loading && !error && hasMore && (
-                    <div className={styles.loadMoreWrap}>
-                        <button
-                            type="button"
-                            className={styles.loadMoreButton}
-                            onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-                        >
-                            {t('loadMore')}
-                        </button>
-
-                        <span className={styles.loadMoreStatus}>
-                            {t('showing')} {Math.min(visibleCount, visibleFiles.length)} / {visibleFiles.length}
-                        </span>
-                    </div>
+                    <CatalogLoadMore
+                        label={t('loadMore')}
+                        statusLabel={t('showing')}
+                        visibleCount={visibleCount}
+                        totalCount={visibleFiles.length}
+                        onLoadMore={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                    />
                 )}
             </div>
         </main>
