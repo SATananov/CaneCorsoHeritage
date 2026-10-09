@@ -282,8 +282,6 @@ useEffect(() => {
                             <option value={SORT_OPTIONS.NAME}>{t('sortName')}</option>
                             <option value={SORT_OPTIONS.TOP_RATED}>{t('sortTopRated')}</option>
                             <option value={SORT_OPTIONS.MOST_COMMENTED}>{t('sortMostCommented')}</option>
-                            <option value={SORT_OPTIONS.TOP_RATED}>{t('sortTopRated')}</option>
-                            <option value={SORT_OPTIONS.MOST_COMMENTED}>{t('sortMostCommented')}</option>
                         </select>
                     </label>
                 </div>
@@ -395,10 +393,12 @@ useEffect(() => {
                                             )}
                                         </div>
 
-                                        <MediaRating
-                                            fileId={file.id}
-                                            ownerId={file.user_id}
-                                        />
+                                        {mediaType !== MEDIA_FILTERS.DOCUMENTS && (
+                                            <MediaRating
+                                                fileId={file.id}
+                                                ownerId={file.user_id}
+                                            />
+                                        )}
 
                                         <CommentsSection
                                             targetType="file"
