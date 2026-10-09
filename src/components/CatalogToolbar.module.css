@@ -1,0 +1,55 @@
+.controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.field {
+    display: grid;
+    gap: 8px;
+}
+
+.field > span {
+    color: rgba(248, 245, 239, 0.62);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.field input,
+.field select {
+    min-height: 46px;
+    width: 100%;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 13px;
+    background: rgba(248, 245, 239, 0.035);
+    color: #f8f5ef;
+    font: inherit;
+    outline: none;
+}
+
+.field input {
+    padding: 0 14px;
+}
+
+.field select {
+    padding: 0 38px 0 14px;
+}
+
+.field option {
+    color: #111;
+}
+
+.field input:focus,
+.field select:focus {
+    border-color: rgba(212, 175, 55, 0.72);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
+}
+
+@media (max-width: 640px) {
+    .controls {
+        grid-template-columns: 1fr;
+    }
+}

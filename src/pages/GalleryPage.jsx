@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
+import CatalogToolbar from '../components/CatalogToolbar';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
@@ -283,44 +284,34 @@ useEffect(() => {
                     ))}
                 </div>
 
-                <div className={styles.catalogControls}>
-                    <label className={styles.searchField}>
-                        <span>{t('searchLabel')}</span>
-                        <input
-                            type="search"
-                            value={searchTerm}
-                            onChange={(event) => {
-                                updateSearchParams({
-                                    search: event.target.value || null,
-                                });
-                                setVisibleCount(PAGE_SIZE);
-                            }}
-                            placeholder={t('searchPlaceholder')}
-                        />
-                    </label>
-
-                    <label className={styles.sortField}>
-                        <span>{t('sortLabel')}</span>
-                        <select
-                            value={sortMode}
-                            onChange={(event) => {
-                                updateSearchParams({
-                                    sort: event.target.value === SORT_OPTIONS.NEWEST
-                                        ? null
-                                        : event.target.value,
-                                });
-                                setVisibleCount(PAGE_SIZE);
-                            }}
-                        >
-                            <option value={SORT_OPTIONS.NEWEST}>{t('sortNewest')}</option>
-                            <option value={SORT_OPTIONS.OLDEST}>{t('sortOldest')}</option>
-                            <option value={SORT_OPTIONS.NAME}>{t('sortName')}</option>
-                            <option value={SORT_OPTIONS.TOP_RATED}>{t('sortTopRated')}</option>
-                            <option value={SORT_OPTIONS.MOST_COMMENTED}>{t('sortMostCommented')}</option>
-                        </select>
-                    </label>
-                </div>
-
+                <CatalogToolbar
+                    searchLabel={t('searchLabel')}
+                    searchPlaceholder={t('searchPlaceholder')}
+                    searchValue={searchTerm}
+                    onSearchChange={(value) => {
+                        updateSearchParams({
+                            search: value || null,
+                        });
+                        setVisibleCount(PAGE_SIZE);
+                    }}
+                    sortLabel={t('sortLabel')}
+                    sortValue={sortMode}
+                    onSortChange={(value) => {
+                        updateSearchParams({
+                            sort: value === SORT_OPTIONS.NEWEST
+                                ? null
+                                : value,
+                        });
+                        setVisibleCount(PAGE_SIZE);
+                    }}
+                    sortOptions={[
+                        { value: SORT_OPTIONS.NEWEST, label: t('sortNewest') },
+                        { value: SORT_OPTIONS.OLDEST, label: t('sortOldest') },
+                        { value: SORT_OPTIONS.NAME, label: t('sortName') },
+                        { value: SORT_OPTIONS.TOP_RATED, label: t('sortTopRated') },
+                        { value: SORT_OPTIONS.MOST_COMMENTED, label: t('sortMostCommented') },
+                    ]}
+                />
                 {!loading && !error && (
                     <p className={styles.resultSummary} aria-live="polite">
                         {t('results')}: {visibleFiles.length}
