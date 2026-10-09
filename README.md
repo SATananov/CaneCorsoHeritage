@@ -121,16 +121,214 @@ The deployed frontend is built from the `master` branch using `npm run build` an
 
 Supabase provides authentication, database, storage, RLS-protected data access and server-side project services.
 
-## Functional guide
+## Functional Guide
 
-1. A guest can browse Heritage, Stories, Members and other public pages.
-2. A visitor can register or log in through Supabase Auth.
-3. An authenticated member completes the required profile before entering private workspaces.
-4. In **My Stories**, the member can create, edit and delete owned Stories and manage Story visibility/attachments.
-5. In **My Files**, the member can upload files, keep them private or share supported content with the Community.
-6. Logged-in members can interact with eligible public content through ratings, comments and comment reactions.
-7. Public community content is shown according to visibility and moderation state.
-8. Admin users can access the protected moderation dashboard and manage moderation/account actions.
+### 1. Project Overview
+
+**Application name:** Cane Corso Heritage  
+**Author:** Stefan Tananov  
+**Category / topic:** Heritage and community content platform  
+
+Cane Corso Heritage is a React single-page application for preserving and sharing Cane Corso history, working tradition, heritage articles and community stories. Guests can explore public educational and community content, while authenticated members can create and manage their own Stories and files and interact with public content. Supabase provides the hosted backend, authentication, PostgreSQL database, Storage and Row Level Security.
+
+### 2. User Access & Permissions
+
+#### Guest (not authenticated)
+
+Guests can access the public parts of the application, including:
+
+- Home (`/`)
+- Stories catalog (`/stories`)
+- Story details (`/stories/:storyId`)
+- Heritage catalog (`/heritage`)
+- Heritage article details (`/heritage/:slug`)
+- Gallery (`/gallery`)
+- Documents (`/documents`)
+- Members catalog (`/users`)
+- Public member profiles (`/users/:userId`)
+- About USG (`/about`)
+- Help (`/help/:topic?`)
+- Login, registration and password-recovery pages
+
+Guests can read public approved content, but authenticated actions and private workspaces are protected.
+
+#### Authenticated user
+
+A signed-in user can access all public pages and, after completing the required profile, can also use:
+
+- **My Stories** (`/my-stories`) — create, read, edit and delete owned Stories
+- **My Files** (`/my-files`) — upload and manage personal/community files
+- Profile editing and account-related functionality
+- Ratings on supported public content
+- Comments and comment reactions
+
+Ownership is enforced for author-only operations. A regular authenticated user cannot access the admin route.
+
+#### Administrator
+
+An administrator can access the protected `/admin` route and use the moderation and account-management tools, including Story/file moderation queues and member account-status actions.
+
+### 3. Authentication & Session Handling
+
+#### Authentication flow
+
+1. When the application loads, `AuthProvider` asks Supabase Auth for the current session with `getSession()`.
+2. The current session, user, role and account status are shared through React Context.
+3. `onAuthStateChange()` listens for sign-in, sign-out, initial-session and password-recovery events.
+4. Registration uses Supabase Auth `signUp()` after client-side validation and a username availability check.
+5. Login uses `signInWithPassword()`.
+6. Logout uses `signOut()`.
+7. Password recovery uses `resetPasswordForEmail()`, and the new password is saved with `updateUser()`.
+
+#### Session persistence
+
+Supabase persists the authentication session. After a page refresh, the application restores it through `getSession()`. Authentication state is exposed to the application through `AuthContext`, so protected UI and routes respond consistently to the current user.
+
+### 4. Routing Structure
+
+Routing is implemented with React Router and a shared `AppLayout`.
+
+#### Route guard logic
+
+- `RequireGuest` protects guest-only pages such as Login and Register from authenticated users.
+- `RequireAuth` prevents unauthenticated users from entering private member pages.
+- `RequireCompleteProfile` requires the signed-in member to complete the mandatory profile data before using private workspaces.
+- `RequireAdmin` protects the administration area.
+
+#### Main routes
+
+The application contains more than five client-side routes and several dynamic routes. Parameterized routes include:
+
+- `/stories/:storyId`
+- `/heritage/:slug`
+- `/users/:userId`
+- `/help/:topic?`
+
+Nested routing is used for Stories, Heritage and Users under the common application layout.
+
+### 5. List → Details Flow
+
+#### Catalog / list pages
+
+The application contains multiple list-to-details flows:
+
+- **Stories**: `/stories` → `/stories/:storyId`
+- **Heritage**: `/heritage` → `/heritage/:slug`
+- **Members**: `/users` → `/users/:userId`
+
+Catalog pages load remote records from Supabase-backed services and render lists/cards. Navigation to a specific record is handled by React Router links/navigation and the record identifier becomes part of the URL.
+
+#### Details pages
+
+The Details page reads the route parameter and loads the corresponding remote record. Story and Heritage details also support eligible interactions such as ratings and comments. Missing or unavailable records are handled with UI states instead of crashing the application.
+
+### 6. Data Source & Backend
+
+The project uses **Supabase** as a hosted Backend-as-a-Service.
+
+Supabase provides:
+
+- PostgreSQL database
+- Authentication and persistent sessions
+- Row Level Security (RLS)
+- Storage for Story attachments and user files
+- Edge Functions used by translation-related features
+- Remote API/SDK communication for application data
+
+Application data is not implemented as a local hardcoded replacement for the backend. The service layer in `src/services` isolates remote data access from the UI components.
+
+### 7. Data Operations (CRUD)
+
+The main evaluated CRUD collection is **Stories**.
+
+#### Create
+
+An authenticated member opens the Story form from **My Stories**, enters the Story data and submits the controlled React form. The service layer creates the new Story in Supabase and can also upload selected attachments.
+
+#### Read
+
+Stories are fetched remotely for the public catalog, Story Details and the current user's **My Stories** workspace.
+
+#### Update
+
+The owner can open an existing Story in edit mode. The same controlled Story form is populated with the existing values and sends the updated data to Supabase. The UI refreshes after a successful save.
+
+#### Delete
+
+The Story owner can delete an owned Story. The application updates the UI after the backend confirms the deletion. Ownership is enforced in the application and by the Supabase security model.
+
+### 8. Forms & Validation
+
+#### Forms used
+
+The application includes controlled React forms for:
+
+- Login
+- Registration
+- Forgot password
+- Update password
+- Profile editing/completion
+- Story create/edit
+- File upload
+- Comments
+
+The forms use React state, `onChange`, `onSubmit`, `onClick` and `event.preventDefault()` synthetic-event handling.
+
+#### Example validation rules
+
+- **Email** — required; the field uses an email input and the value is normalized before authentication requests.
+- **Password** — required and must contain at least 6 characters in the Login/Register flow.
+- **Display name** — registration requires at least 2 characters.
+- **Username** — must match the application's allowed username pattern and must not already be in use.
+- **Story title, description and content** — required before a Story can be saved.
+
+Validation, submitting states and backend/network errors are surfaced in the UI instead of allowing invalid input to crash the application.
+
+### 9. React-Specific Techniques
+
+#### Hooks & component lifecycle
+
+The project uses React Hooks throughout the application, including:
+
+- `useState` for local UI/form/data state
+- `useEffect` for lifecycle and asynchronous state synchronization
+- `useMemo` where shared/context values benefit from memoization
+- `useRef` for request/submission coordination and stable mutable references
+- custom Hooks such as `useAuth`, `useStoryDetails` and `useStoryTranslation`
+
+A lifecycle example is `AuthProvider`: on mount it restores the Supabase session and subscribes to authentication changes; while mounted it updates shared authentication state; on unmount its cleanup unsubscribes from the Supabase authentication listener.
+
+#### Context API
+
+Two important shared state areas use Context:
+
+- **Auth Context** — session, current user, role, account status and authentication actions
+- **Language Context** — selected interface language and language switching
+
+These values are consumed by route guards, pages and reusable components.
+
+#### Component styling
+
+The UI uses external CSS and CSS Modules. Styling is separated from React logic and organized next to application/component concerns.
+
+### 10. Typical User Flow
+
+1. A visitor opens the deployed application and browses Stories, Heritage, Members or other public content.
+2. The visitor registers or logs in through Supabase Auth.
+3. After completing the required profile, the member opens **My Stories** and creates a new Story.
+4. The Story can later be viewed, edited or deleted by its owner, while eligible public content can receive ratings, comments and reactions from authenticated members.
+
+An administrator can instead enter the protected administration area to review moderation queues and member/account actions.
+
+### 11. Error & Edge Case Handling
+
+The application handles common failure states explicitly:
+
+- **Authentication errors** — invalid credentials, unconfirmed email, duplicate username, connection problems and unresolved account state are shown to the user.
+- **Network/data errors** — asynchronous operations use error states and guarded service calls; loading/submitting states prevent confusing duplicate actions.
+- **Empty or missing data** — catalogs/details render dedicated empty, unavailable or not-found states where appropriate.
+- **Authorization edge cases** — route guards prevent access to private/admin pages, while Supabase RLS independently protects backend data.
+- **Async lifecycle/race cases** — relevant flows use cleanup, request coordination or abort/stale-request protection so obsolete responses do not overwrite newer UI state.
 
 ## Demo accounts for evaluation
 
