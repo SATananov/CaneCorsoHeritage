@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AdminOverviewSection from '../components/admin/AdminOverviewSection';
+import AdminRatingsSection from '../components/admin/AdminRatingsSection';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
@@ -614,23 +615,12 @@ function AdminDashboard({ user }) {
                     )}
 
                     {data && activeSection === 'ratings' && (
-                        <section aria-labelledby="admin-ratings-title">
-                            <h2 id="admin-ratings-title" className={styles.sectionTitle}>{t('ratings')}</h2>
-                            <div className={styles.ratingColumns}>
-                                <article className={styles.panel}>
-                                    <h3>{t('storyRatings')}</h3>
-                                    {data.storyRatings.length === 0 ? <p>{t('noStoryRatings')}</p> : data.storyRatings.map((rating) => (
-                                        <p key={`${rating.story_id}-${rating.user_id}`}>{memberNameById.get(rating.user_id) ?? t('member')} · {rating.rating}/5</p>
-                                    ))}
-                                </article>
-                                <article className={styles.panel}>
-                                    <h3>{t('fileRatings')}</h3>
-                                    {data.fileRatings.length === 0 ? <p>{t('noFileRatings')}</p> : data.fileRatings.map((rating) => (
-                                        <p key={`${rating.file_id}-${rating.user_id}`}>{memberNameById.get(rating.user_id) ?? t('member')} · {rating.rating}/5</p>
-                                    ))}
-                                </article>
-                            </div>
-                        </section>
+                        <AdminRatingsSection
+                            storyRatings={data.storyRatings}
+                            fileRatings={data.fileRatings}
+                            memberNameById={memberNameById}
+                            t={t}
+                        />
                     )}
                 </section>
             </div>
