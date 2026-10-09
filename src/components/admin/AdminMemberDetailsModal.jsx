@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import styles from '../../pages/AdminPage.module.css';
 
 function AdminMemberDetailsModal({
@@ -7,6 +8,63 @@ function AdminMemberDetailsModal({
     onClose,
     t,
 }) {
+    const dialogRef = useRef(null);
+    const closeButtonRef = useRef(null);
+    const previouslyFocusedRef = useRef(null);
+
+    useEffect(() => {
+        previouslyFocusedRef.current = document.activeElement;
+
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onClose();
+                return;
+            }
+
+            if (event.key !== 'Tab') {
+                return;
+            }
+
+            const focusable = Array.from(
+                dialogRef.current?.querySelectorAll(
+                    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+                ) ?? [],
+            );
+
+            if (focusable.length === 0) {
+                event.preventDefault();
+                dialogRef.current?.focus();
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
+        closeButtonRef.current?.focus();
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+
+            if (
+                previouslyFocusedRef.current
+                && typeof previouslyFocusedRef.current.focus === 'function'
+            ) {
+                previouslyFocusedRef.current.focus();
+            }
+        };
+    }, [onClose]);
+
     return (
         <div
             className={styles.modalBackdrop}
@@ -18,10 +76,12 @@ function AdminMemberDetailsModal({
             }}
         >
             <section
+                ref={dialogRef}
                 className={styles.memberModal}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="admin-member-details-title"
+                tabIndex={-1}
             >
                 <header className={styles.memberModalHeader}>
                     <div>
@@ -32,6 +92,7 @@ function AdminMemberDetailsModal({
                     </div>
 
                     <button
+                        ref={closeButtonRef}
                         className={styles.closeButton}
                         type="button"
                         aria-label={t('closeMemberDetails')}
