@@ -14,6 +14,27 @@ const ACCOUNT_STATUSES = new Set([
 
 const STORY_COLUMNS = 'id,title,author_id,status,visibility,moderation_status,moderated_at,moderated_by,created_at';
 const FILE_COLUMNS = 'id,user_id,story_id,file_name,storage_path,mime_type,file_size,visibility,moderation_status,moderated_at,moderated_by,created_at';
+export async function addFileSignedUrls(files) {
+    return Promise.all(
+        files.map(async (file) => {
+            const { data, error } = await supabase.storage
+                .from('user-files')
+                .createSignedUrl(file.storage_path, 3600);
+
+            if (error) {
+                return {
+                    ...file,
+                    url: '',
+                };
+            }
+
+            return {
+                ...file,
+                url: data.signedUrl,
+            };
+        }),
+    );
+}
 
 async function fetchExactCount(table, options) {
     let query = supabase

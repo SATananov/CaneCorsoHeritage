@@ -15,6 +15,7 @@ import {
     moderateFile,
     moderateStory,
     setMemberAccountStatus,
+    addFileSignedUrls,
 } from '../services/adminService';
 import styles from './AdminPage.module.css';
 
@@ -101,8 +102,29 @@ function AdminDashboard({ user }) {
             try {
                 const nextData = await fetchAdminDashboard({ signal: controller.signal });
                 if (!isCurrent()) return false;
-                // Publish queues and counts together, only from the latest full cycle.
+
+                // Preserve the dashboard publication contract: queues and counts
+                // become available atomically as soon as the admin fetch completes.
                 setData(nextData);
+
+                // File preview URLs are secondary UI enrichment and must not delay
+                // or invalidate the dashboard's moderation/queue state.
+                try {
+                    const filesWithUrls = await addFileSignedUrls(nextData.files ?? []);
+                    if (!isCurrent()) return true;
+
+                    setData((currentData) => (
+                        currentData
+                            ? {
+                                ...currentData,
+                                files: filesWithUrls,
+                            }
+                            : currentData
+                    ));
+                } catch {
+                    // Keep the dashboard usable even if signed URL creation fails.
+                }
+
                 return true;
             } catch (loadError) {
                 if (isCurrent() && loadError.name !== 'AbortError') setError('loadError');
@@ -539,7 +561,16 @@ function AdminDashboard({ user }) {
                                     <tbody>
                                         {data.stories.map((story) => (
                                             <tr key={story.id}>
-                                                <td>{story.title || t('untitled')}</td>
+                                                <td>
+                                                    <a
+                                                        className={styles.storyOpenLink}
+                                                        href={`/stories/${story.id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        {story.title || t('untitled')}
+                                                    </a>
+                                                </td>
                                                 <td>{memberNameById.get(story.author_id) ?? <span className={styles.unlinkedMember}>{t('noLinkedProfile')}</span>}</td>
                                                 <td>{statusLabel(story.visibility)}</td>
                                                 <td><span className={`${styles.moderationStatus} ${styles[`status_${story.moderation_status || 'approved'}`]}`}>{statusLabel(story.moderation_status || 'approved')}</span></td>
@@ -562,7 +593,20 @@ function AdminDashboard({ user }) {
                                     <tbody>
                                         {data.files.map((file) => (
                                             <tr key={file.id}>
-                                                <td>{file.file_name}</td>
+                                                <td>
+                                                    {file.url ? (
+                                                        <a
+                                                            className={styles.fileOpenLink}
+                                                            href={file.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                        >
+                                                            {file.file_name}
+                                                        </a>
+                                                    ) : (
+                                                        file.file_name
+                                                    )}
+                                                </td>
                                                 <td>{memberNameById.get(file.user_id) ?? <span className={styles.unlinkedMember}>{t('noLinkedProfile')}</span>}</td>
                                                 <td>{file.mime_type || '—'}</td>
                                                 <td>{formatBytes(file.file_size)}</td>
