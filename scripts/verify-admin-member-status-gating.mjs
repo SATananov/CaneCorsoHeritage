@@ -9,7 +9,28 @@ const ui = read('src/i18n/applicationUi.js');
 const membersStart = admin.indexOf("activeSection === 'members'");
 const membersEnd = admin.indexOf("activeSection === 'stories'", membersStart);
 assert.ok(membersStart >= 0 && membersEnd > membersStart, 'Admin members section must exist');
-const members = admin.slice(membersStart, membersEnd);
+
+const membersSection = admin.slice(membersStart, membersEnd);
+assert.ok(
+    membersSection.includes('<AdminMembersSection'),
+    'Admin members section must render AdminMembersSection',
+);
+
+const memberComponent = read('src/components/admin/AdminMembersSection.jsx');
+
+const memberActionsStart = admin.indexOf('function memberActions(profile, roleInfo)');
+const memberActionsEnd = admin.indexOf('function storyActions(story)', memberActionsStart);
+assert.ok(
+    memberActionsStart >= 0 && memberActionsEnd > memberActionsStart,
+    'Admin member action helper must exist',
+);
+const memberActions = admin.slice(memberActionsStart, memberActionsEnd);
+
+// FIX 26 semantics now span the extracted presentation component and the
+// parent-owned action helper. Verify both together without forcing the
+// componentized code back into AdminPage.
+const members = `${memberComponent}
+${memberActions}`;
 
 assert.doesNotMatch(
     members,

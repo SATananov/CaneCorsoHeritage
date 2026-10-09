@@ -7,7 +7,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 const page = read('src/pages/AdminPage.jsx');
 const service = read('src/services/adminService.js');
 const start = page.indexOf('function AdminDashboard(');
-const end = page.indexOf('    function storyActions(', start);
+const end = page.indexOf('    function memberActions(', start);
 assert.ok(start >= 0 && end > start);
 const componentSource = `${page.slice(start, end)}
     return { data, loading, error, message, busyKey, actionsDisabled, pendingStories, pendingFiles,
