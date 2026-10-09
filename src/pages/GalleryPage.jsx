@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import CatalogToolbar from '../components/CatalogToolbar';
+import CatalogEmptyState from '../components/CatalogEmptyState';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
@@ -327,13 +328,16 @@ useEffect(() => {
                 )}
 
                 {!loading && !error && visibleFiles.length === 0 && (
-                    <div className={styles.message}>
-                        {searchTerm.trim()
-                            ? t('noSearchResults')
-                            : activeFilter === MEDIA_FILTERS.ALL
-                                ? t('empty')
-                                : t('emptyCategory')}
-                    </div>
+                    <CatalogEmptyState
+                        className={styles.message}
+                        message={
+                            searchTerm.trim()
+                                ? t('noSearchResults')
+                                : activeFilter === MEDIA_FILTERS.ALL
+                                    ? t('empty')
+                                    : t('emptyCategory')
+                        }
+                    />
                 )}
 
                 {!loading && !error && visibleFiles.length > 0 && (

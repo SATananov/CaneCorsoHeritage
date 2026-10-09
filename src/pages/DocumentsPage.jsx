@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import CatalogToolbar from '../components/CatalogToolbar';
+import CatalogEmptyState from '../components/CatalogEmptyState';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useLanguage } from '../context/languageContext';
@@ -210,9 +211,10 @@ function DocumentsPage() {
                 )}
 
                 {!loading && !error && visibleFiles.length === 0 && (
-                    <div className={styles.message}>
-                        {searchTerm.trim() ? t('noSearchResults') : t('empty')}
-                    </div>
+                    <CatalogEmptyState
+                        className={styles.message}
+                        message={searchTerm.trim() ? t('noSearchResults') : t('empty')}
+                    />
                 )}
 
                 {!loading && !error && pagedFiles.length > 0 && (
