@@ -3,6 +3,7 @@ import { NavLink } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AdminOverviewSection from '../components/admin/AdminOverviewSection';
 import AdminRatingsSection from '../components/admin/AdminRatingsSection';
+import AdminPendingSection from '../components/admin/AdminPendingSection';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
@@ -450,55 +451,17 @@ function AdminDashboard({ user }) {
                     )}
 
                     {data && activeSection === 'pending' && (
-                        <section aria-labelledby="admin-pending-title">
-                            <h2 id="admin-pending-title" className={styles.sectionTitle}>{t('pendingApprovals')}</h2>
-                            <p className={styles.sectionIntro}>
-                                {t('pendingIntro')}
-                            </p>
-
-                            <h3 className={styles.subsectionTitle}>{t('stories')} · {data.counts.pendingStories}</h3>
-                            {pendingStories.length === 0 ? (
-                                <p className={styles.emptyQueue}>{t('noPendingStories')}</p>
-                            ) : (
-                                <div className={styles.tableWrap}>
-                                    <table className={styles.table}>
-                                        <thead><tr><th>{t('title')}</th><th>{t('author')}</th><th>{t('created')}</th><th>{t('actions')}</th></tr></thead>
-                                        <tbody>
-                                            {pendingStories.map((story) => (
-                                                <tr key={story.id}>
-                                                    <td>{story.title || t('untitled')}</td>
-                                                    <td>{memberNameById.get(story.author_id) ?? <span className={styles.unlinkedMember}>{t('noLinkedProfile')}</span>}</td>
-                                                    <td>{dateLabel(story.created_at)}</td>
-                                                    <td>{storyActions(story)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            <h3 className={styles.subsectionTitle}>{t('files')} · {data.counts.pendingFiles}</h3>
-                            {pendingFiles.length === 0 ? (
-                                <p className={styles.emptyQueue}>{t('noPendingFiles')}</p>
-                            ) : (
-                                <div className={styles.tableWrap}>
-                                    <table className={styles.table}>
-                                        <thead><tr><th>{t('file')}</th><th>{t('owner')}</th><th>{t('type')}</th><th>{t('created')}</th><th>{t('actions')}</th></tr></thead>
-                                        <tbody>
-                                            {pendingFiles.map((file) => (
-                                                <tr key={file.id}>
-                                                    <td>{file.file_name}</td>
-                                                    <td>{memberNameById.get(file.user_id) ?? <span className={styles.unlinkedMember}>{t('noLinkedProfile')}</span>}</td>
-                                                    <td>{file.mime_type || '—'}</td>
-                                                    <td>{dateLabel(file.created_at)}</td>
-                                                    <td>{fileActions(file)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </section>
+                        <AdminPendingSection
+                            pendingStories={pendingStories}
+                            pendingFiles={pendingFiles}
+                            pendingStoriesCount={data.counts.pendingStories}
+                            pendingFilesCount={data.counts.pendingFiles}
+                            memberNameById={memberNameById}
+                            dateLabel={dateLabel}
+                            renderStoryActions={storyActions}
+                            renderFileActions={fileActions}
+                            t={t}
+                        />
                     )}
 
                     {data && activeSection === 'members' && (
