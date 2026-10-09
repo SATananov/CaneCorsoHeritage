@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
@@ -81,10 +81,37 @@ function GalleryPage() {
     );
 
     const [files, setFiles] = useState([]);
-    const [activeFilter, setActiveFilter] = useState(MEDIA_FILTERS.ALL);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortMode, setSortMode] = useState(SORT_OPTIONS.NEWEST);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const requestedFilter = searchParams.get('type');
+    const activeFilter = Object.values(MEDIA_FILTERS).includes(requestedFilter)
+        ? requestedFilter
+        : MEDIA_FILTERS.ALL;
+
+    const searchTerm = searchParams.get('search') ?? '';
+
+    const requestedSort = searchParams.get('sort');
+    const sortMode = Object.values(SORT_OPTIONS).includes(requestedSort)
+        ? requestedSort
+        : SORT_OPTIONS.NEWEST;
+
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+    const updateSearchParams = useCallback((changes) => {
+        setSearchParams((currentParams) => {
+            const nextParams = new URLSearchParams(currentParams);
+
+            for (const [key, value] of Object.entries(changes)) {
+                if (value === null || value === undefined || value === '') {
+                    nextParams.delete(key);
+                } else {
+                    nextParams.set(key, value);
+                }
+            }
+
+            return nextParams;
+        }, { replace: true });
+    }, [setSearchParams]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [preview, setPreview] = useState(null);
@@ -244,7 +271,9 @@ useEffect(() => {
                             }
                             aria-pressed={activeFilter === value}
                             onClick={() => {
-                                setActiveFilter(value);
+                                updateSearchParams({
+                                    type: value === MEDIA_FILTERS.ALL ? null : value,
+                                });
                                 setVisibleCount(PAGE_SIZE);
                             }}
                         >
@@ -261,7 +290,9 @@ useEffect(() => {
                             type="search"
                             value={searchTerm}
                             onChange={(event) => {
-                                setSearchTerm(event.target.value);
+                                updateSearchParams({
+                                    search: event.target.value || null,
+                                });
                                 setVisibleCount(PAGE_SIZE);
                             }}
                             placeholder={t('searchPlaceholder')}
@@ -273,7 +304,11 @@ useEffect(() => {
                         <select
                             value={sortMode}
                             onChange={(event) => {
-                                setSortMode(event.target.value);
+                                updateSearchParams({
+                                    sort: event.target.value === SORT_OPTIONS.NEWEST
+                                        ? null
+                                        : event.target.value,
+                                });
                                 setVisibleCount(PAGE_SIZE);
                             }}
                         >
