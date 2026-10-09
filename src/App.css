@@ -3412,6 +3412,154 @@ body {
 }
 /* End Header Responsive Balance 01 */
 
+/* HEADER NARROW LAPTOP FIX 01
+   Keep the brand readable on narrowed laptop windows while preserving
+   the existing <=1060px mobile navigation contract.
+*/
+@media (min-width: 1061px) and (max-width: 1680px) {
+    .header-inner {
+        align-items: center;
+        gap: clamp(14px, 1.4vw, 22px);
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .brand {
+        flex: 0 0 auto;
+        min-width: 250px;
+        align-self: flex-start;
+    }
+
+    .main-nav {
+        min-width: 0;
+        flex: 1 1 0;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        column-gap: 4px;
+        row-gap: 8px;
+    }
+
+    .language-switcher {
+        flex: 0 0 auto;
+    }
+
+    .visitor-auth {
+        width: 100%;
+        flex: 0 0 100%;
+        margin-left: 0;
+        padding-top: 2px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+    .signed-in-user {
+        flex: 0 1 auto;
+    }
+}
+
+@media (min-width: 1061px) and (max-width: 1360px) {
+    .header-inner {
+        gap: 12px;
+    }
+
+    .main-nav a {
+        padding-inline: 6px;
+    }
+
+    .language-switcher {
+        margin-inline: 3px;
+    }
+
+    .visitor-auth {
+        gap: 5px;
+    }
+}
+/* End HEADER NARROW LAPTOP FIX 01 */
+/* HEADER NARROW LAPTOP FIX 02
+   Wider laptop/zoomed-window safety band.
+   Keep the brand readable and move account actions to their own row
+   before the mobile navigation breakpoint is reached.
+*/
+@media (min-width: 1061px) and (max-width: 1900px) {
+    .header-inner {
+        align-items: flex-start;
+    }
+
+    .brand {
+        flex: 0 0 270px;
+        min-width: 270px;
+    }
+
+    .brand > span {
+        min-width: 0;
+    }
+
+    .main-nav {
+        min-width: 0;
+        flex: 1 1 0;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        row-gap: 8px;
+    }
+
+    .visitor-auth {
+        width: 100%;
+        flex: 0 0 100%;
+        margin-left: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+}
+/* End HEADER NARROW LAPTOP FIX 02 */
+/* HEADER BRAND ACCOUNT SHRINK FIX 01
+   Protect brand/account controls from excessive flex shrinking.
+   This is intentionally independent of browser zoom percentage.
+*/
+.brand-logo {
+    flex: 0 0 auto;
+}
+
+.brand-kicker {
+    white-space: nowrap;
+}
+
+.brand-title {
+    white-space: normal;
+    text-wrap: balance;
+    min-width: 0;
+}
+
+.main-nav > a,
+.main-nav .language-switcher,
+.visitor-auth > *,
+.signed-in-user,
+.auth-button,
+.auth-link {
+    flex-shrink: 0;
+}
+
+.visitor-auth {
+    min-width: max-content;
+}
+/* End HEADER BRAND ACCOUNT SHRINK FIX 01 */
+/* HEADER ACCOUNT OVERFLOW FIX 01
+   Allow account actions to wrap inside the header instead of forcing
+   a max-content row beyond the right edge.
+*/
+.visitor-auth {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+}
+
+.visitor-auth > * {
+    max-width: 100%;
+}
+/* End HEADER ACCOUNT OVERFLOW FIX 01 */
 /* Story community catalog */
 .story-catalog-heading > p {
     max-width: 720px;

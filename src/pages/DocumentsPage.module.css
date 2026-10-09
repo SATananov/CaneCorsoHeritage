@@ -70,14 +70,6 @@
     border-color: rgba(212, 175, 55, 0.72);
     box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
 }
-
-.resultSummary {
-    margin: 14px 0 0;
-    color: rgba(248, 245, 239, 0.52);
-    font-size: 0.78rem;
-    text-align: right;
-}
-
 .message {
     margin-top: 28px;
     padding: 24px;
@@ -189,7 +181,4 @@
         grid-template-columns: 1fr;
     }
 
-    .resultSummary {
-        text-align: left;
-    }
 }

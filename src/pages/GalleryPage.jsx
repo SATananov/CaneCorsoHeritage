@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import CatalogToolbar from '../components/CatalogToolbar';
 import CatalogEmptyState from '../components/CatalogEmptyState';
 import CatalogLoadMore from '../components/CatalogLoadMore';
+import CatalogResultSummary from '../components/CatalogResultSummary';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
@@ -315,9 +316,10 @@ useEffect(() => {
                     ]}
                 />
                 {!loading && !error && (
-                    <p className={styles.resultSummary} aria-live="polite">
-                        {t('results')}: {visibleFiles.length}
-                    </p>
+                    <CatalogResultSummary
+                        label={t('results')}
+                        count={visibleFiles.length}
+                    />
                 )}
 
                 {loading && <LoadingSpinner label={t('loading')} />}

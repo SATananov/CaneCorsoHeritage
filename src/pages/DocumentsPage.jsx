@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import CatalogToolbar from '../components/CatalogToolbar';
 import CatalogEmptyState from '../components/CatalogEmptyState';
 import CatalogLoadMore from '../components/CatalogLoadMore';
+import CatalogResultSummary from '../components/CatalogResultSummary';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useLanguage } from '../context/languageContext';
@@ -198,9 +199,10 @@ function DocumentsPage() {
                     ]}
                 />
                 {!loading && !error && (
-                    <p className={styles.resultSummary} aria-live="polite">
-                        {t('results')}: {visibleFiles.length}
-                    </p>
+                    <CatalogResultSummary
+                        label={t('results')}
+                        count={visibleFiles.length}
+                    />
                 )}
 
                 {loading && <LoadingSpinner label={t('loading')} />}

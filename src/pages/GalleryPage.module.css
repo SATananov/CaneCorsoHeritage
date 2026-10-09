@@ -354,14 +354,6 @@
     background: rgba(248, 245, 239, 0.08);
     font-size: 0.68rem;
 }
-
-.resultSummary {
-    margin: 14px 0 0;
-    color: rgba(248, 245, 239, 0.52);
-    font-size: 0.78rem;
-    text-align: right;
-}
-
 .fileMeta {
     display: flex;
     min-height: 1.2rem;
@@ -373,7 +365,7 @@
 
 @media (max-width: 640px) {
     .catalogControls { grid-template-columns: 1fr; }
-    .resultSummary { text-align: left; }
+
 }
 .catalogMetrics {
     display: flex;

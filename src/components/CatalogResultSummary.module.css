@@ -1,0 +1,12 @@
+.summary {
+    margin: 14px 0 0;
+    color: rgba(248, 245, 239, 0.52);
+    font-size: 0.78rem;
+    text-align: right;
+}
+
+@media (max-width: 640px) {
+    .summary {
+        text-align: left;
+    }
+}
