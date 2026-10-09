@@ -6,6 +6,7 @@ import AdminRatingsSection from '../components/admin/AdminRatingsSection';
 import AdminPendingSection from '../components/admin/AdminPendingSection';
 import AdminStoriesSection from '../components/admin/AdminStoriesSection';
 import AdminFilesSection from '../components/admin/AdminFilesSection';
+import AdminMembersSection from '../components/admin/AdminMembersSection';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
@@ -238,6 +239,50 @@ function AdminDashboard({ user }) {
         setMemberDetails(null);
     }
 
+
+    function memberActions(profile, roleInfo) {
+        const accountStatus = roleInfo?.account_status ?? 'unknown';
+        const canChangeAccountStatus = Boolean(roleInfo)
+            && ['active', 'inactive'].includes(accountStatus);
+        const isCurrentAdmin = profile.id === user?.id;
+
+        return (
+            <div className={styles.rowActions}>
+                <button
+                    className={styles.secondaryButton}
+                    type="button"
+                    disabled={memberDetailsLoading}
+                    onClick={() => openMemberDetails(profile)}
+                >
+                    {t('details')}
+                </button>
+
+                {isCurrentAdmin ? (
+                    <span className={styles.currentAdmin}>{t('currentAdmin')}</span>
+                ) : canChangeAccountStatus ? (
+                    <button
+                        className={accountStatus === 'active' ? styles.rejectButton : styles.approveButton}
+                        type="button"
+                        disabled={actionsDisabled}
+                        onClick={() => confirmAndRun(
+                            format('deactivateConfirm', {
+                                action: accountStatus === 'active' ? t('deactivate') : t('reactivate'),
+                                name: profile.display_name || profile.username || t('memberFallback'),
+                            }),
+                            `member-${profile.id}-${accountStatus}`,
+                            accountStatus === 'active' ? t('deactivated') : t('reactivated'),
+                            () => setMemberAccountStatus(
+                                profile.id,
+                                accountStatus === 'active' ? 'inactive' : 'active',
+                            ),
+                        )}
+                    >
+                        {accountStatus === 'active' ? t('deactivate') : t('reactivate')}
+                    </button>
+                ) : null}
+            </div>
+        );
+    }
     function storyActions(story) {
         const keyPrefix = `story-${story.id}`;
 
@@ -489,69 +534,14 @@ function AdminDashboard({ user }) {
                     )}
 
                     {data && activeSection === 'members' && (
-                        <section aria-labelledby="admin-members-title">
-                            <h2 id="admin-members-title" className={styles.sectionTitle}>{t('members')}</h2>
-                            <div className={styles.tableWrap}>
-                                <table className={styles.table}>
-                                    <thead><tr><th>{t('member')}</th><th>{t('username')}</th><th>{t('role')}</th><th>{t('account')}</th><th>{t('joined')}</th><th>{t('actions')}</th></tr></thead>
-                                    <tbody>
-                                        {data.profiles.map((profile) => {
-                                            const roleInfo = roleByUser.get(profile.id);
-                                            const role = roleInfo?.role ?? 'unknown';
-                                            const accountStatus = roleInfo?.account_status ?? 'unknown';
-                                            const canChangeAccountStatus = Boolean(roleInfo)
-                                                && ['active', 'inactive'].includes(accountStatus);
-                                            const isCurrentAdmin = profile.id === user?.id;
-
-                                            return (
-                                                <tr key={profile.id}>
-                                                    <td>{profile.display_name || '—'}</td>
-                                                    <td>{profile.username || '—'}</td>
-                                                    <td><span className={role === 'admin' ? styles.adminRole : styles.userRole}>{statusLabel(role)}</span></td>
-                                                    <td><span className={accountStatus === 'active' ? styles.activeStatus : accountStatus === 'inactive' ? styles.inactiveStatus : styles.userRole}>{statusLabel(accountStatus)}</span></td>
-                                                    <td>{dateLabel(profile.created_at)}</td>
-                                                    <td>
-                                                        <div className={styles.rowActions}>
-                                                            <button
-                                                                className={styles.secondaryButton}
-                                                                type="button"
-                                                                disabled={memberDetailsLoading}
-                                                                onClick={() => openMemberDetails(profile)}
-                                                            >
-                                                                {t('details')}
-                                                            </button>
-                                                            {isCurrentAdmin ? (
-                                                                <span className={styles.currentAdmin}>{t('currentAdmin')}</span>
-                                                            ) : canChangeAccountStatus ? (
-                                                                <button
-                                                                    className={accountStatus === 'active' ? styles.rejectButton : styles.approveButton}
-                                                                    type="button"
-                                                                    disabled={actionsDisabled}
-                                                                    onClick={() => confirmAndRun(
-                                                                        format('deactivateConfirm', { action: accountStatus === 'active' ? t('deactivate') : t('reactivate'), name: profile.display_name || profile.username || t('memberFallback') }),
-                                                                        `member-${profile.id}-${accountStatus}`,
-                                                                        accountStatus === 'active' ? t('deactivated') : t('reactivated'),
-                                                                        () => setMemberAccountStatus(
-                                                                            profile.id,
-                                                                            accountStatus === 'active' ? 'inactive' : 'active',
-                                                                        ),
-                                                                    )}
-                                                                >
-                                                                    {accountStatus === 'active' ? t('deactivate') : t('reactivate')}
-                                                                </button>
-                                                            ) : null}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <p className={styles.note}>
-                                {t('deactivationNote')}
-                            </p>
-                        </section>
+                        <AdminMembersSection
+                            profiles={data.profiles}
+                            roleByUser={roleByUser}
+                            statusLabel={statusLabel}
+                            dateLabel={dateLabel}
+                            renderMemberActions={memberActions}
+                            t={t}
+                        />
                     )}
 
                     {data && activeSection === 'stories' && (
