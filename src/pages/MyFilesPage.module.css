@@ -516,3 +516,44 @@
         white-space: normal;
     }
 }
+
+/* My Files visual polish */
+.heading {
+    padding-top: 34px;
+    padding-bottom: 34px;
+}
+
+.heading h1 {
+    margin-bottom: 14px;
+}
+
+.heading p {
+    max-width: 760px;
+    line-height: 1.55;
+}
+
+.fileHint {
+    margin-top: 10px;
+    padding-left: 2px;
+    color: rgba(248, 245, 239, 0.52);
+    line-height: 1.45;
+}
+
+.message {
+    display: flex;
+    min-height: 74px;
+    align-items: center;
+    margin-top: 22px;
+    padding: 18px 22px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 18px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(248, 245, 239, 0.026),
+            rgba(248, 245, 239, 0.016)
+        );
+    color: rgba(248, 245, 239, 0.76);
+    font-size: 0.94rem;
+    line-height: 1.45;
+}

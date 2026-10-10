@@ -193,3 +193,73 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* My Stories visual polish */
+.hero {
+    padding-top: 34px;
+    padding-bottom: 34px;
+}
+
+.hero h1 {
+    margin-bottom: 14px;
+}
+
+.hero p {
+    max-width: 760px;
+    line-height: 1.55;
+}
+
+.heroActions {
+    align-self: end;
+    gap: 12px;
+}
+
+.heroActions a,
+.heroActions button {
+    min-height: 42px;
+    padding: 0 20px;
+}
+
+.collection {
+    margin-top: 22px;
+}
+
+.emptyState {
+    min-height: 110px;
+    padding: 22px 24px;
+}
+
+.emptyState h2 {
+    margin: 0;
+    font-size: clamp(1.55rem, 2.4vw, 2.2rem);
+    line-height: 1.08;
+}
+
+.emptyState p {
+    margin-top: 10px;
+    color: rgba(248, 245, 239, 0.58);
+    line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+    .hero {
+        padding-top: 26px;
+        padding-bottom: 26px;
+    }
+
+    .heroActions {
+        width: 100%;
+        align-self: stretch;
+    }
+
+    .heroActions a,
+    .heroActions button {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .emptyState {
+        min-height: 92px;
+        padding: 18px 20px;
+    }
+}
