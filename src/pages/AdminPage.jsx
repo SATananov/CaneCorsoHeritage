@@ -179,7 +179,6 @@ function AdminDashboard({ user }) {
     async function runAction(key, successMessage, action) {
         const scope = scopeRef.current;
         if (!scope?.active || scope.action) return;
-        // Lock before React renders disabled controls; invalidate pre-mutation reads.
         scope.action = true;
         scope.request += 1;
         scope.controller?.abort();
@@ -188,9 +187,9 @@ function AdminDashboard({ user }) {
             setBusyKey(key);
             setError('');
             setMessage('');
-            await action();
+            const result = await action();
             if (!scope.active) return;
-            setMessage(successMessage);
+            setMessage(result?.cleanupPending ? t('cleanupPending') : successMessage);
             await refreshDashboard(true);
         } catch {
             if (scope.active) setError('actionError');

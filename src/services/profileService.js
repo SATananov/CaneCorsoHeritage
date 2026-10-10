@@ -300,15 +300,23 @@ export async function removeProfileAvatar(userId, avatarPath) {
         throw new Error('Avatar removal did not update the profile row.');
     }
 
-    if (avatarPath) {
-        const { error: storageError } = await supabase.storage
-            .from('avatars')
-            .remove([avatarPath]);
-
-        if (storageError) {
-            throw new Error(storageError.message || 'Avatar was removed from the profile, but the stored file could not be cleaned up.');
-        }
+    if (!avatarPath) {
+        return {
+            removed: true,
+            cleanupPending: false,
+            cleanupError: null,
+        };
     }
+
+    const { error: storageError } = await supabase.storage
+        .from('avatars')
+        .remove([avatarPath]);
+
+    return {
+        removed: true,
+        cleanupPending: Boolean(storageError),
+        cleanupError: storageError?.message || null,
+    };
 }
 
 export function getProfileAvatarUrl(profile) {

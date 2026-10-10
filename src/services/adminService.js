@@ -349,15 +349,23 @@ export async function adminDeleteStory(storyId) {
         throw new Error('Story deletion did not affect exactly one row.');
     }
 
-    if (storagePaths.length > 0) {
-        const { error: storageError } = await supabase.storage
-            .from('user-files')
-            .remove(storagePaths);
-
-        if (storageError) {
-            throw new Error(storageError.message || 'Story was deleted, but its stored files could not be cleaned up.');
-        }
+    if (storagePaths.length === 0) {
+        return {
+            deleted: true,
+            cleanupPending: false,
+            cleanupError: null,
+        };
     }
+
+    const { error: storageError } = await supabase.storage
+        .from('user-files')
+        .remove(storagePaths);
+
+    return {
+        deleted: true,
+        cleanupPending: Boolean(storageError),
+        cleanupError: storageError?.message || null,
+    };
 }
 
 export async function fetchAdminMemberDetails(userId) {

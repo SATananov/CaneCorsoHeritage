@@ -250,7 +250,12 @@ async function verifyAdminStoryDelete() {
             deleteResult: { count: 1, error: null },
         }),
     });
-    await success.adminDeleteStory('story-1');
+    const successResult = await success.adminDeleteStory('story-1');
+    assert.deepEqual(successResult, {
+        deleted: true,
+        cleanupPending: false,
+        cleanupError: null,
+    });
     assert.deepEqual(successEvents, ['paths-read', 'story-delete', 'storage-remove']);
 
     const cleanupEvents = [];
@@ -261,10 +266,13 @@ async function verifyAdminStoryDelete() {
             storageResult: { error: { message: 'admin storage cleanup failed' } },
         }),
     });
-    await assert.rejects(
-        () => cleanupFailure.adminDeleteStory('story-1'),
-        /admin storage cleanup failed/,
-    );
+
+    const cleanupResult = await cleanupFailure.adminDeleteStory('story-1');
+    assert.deepEqual(cleanupResult, {
+        deleted: true,
+        cleanupPending: true,
+        cleanupError: 'admin storage cleanup failed',
+    });
     assert.deepEqual(cleanupEvents, ['paths-read', 'story-delete', 'storage-remove']);
 }
 

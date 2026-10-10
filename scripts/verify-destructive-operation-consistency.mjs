@@ -59,6 +59,68 @@ function createDeleteSupabase({ metadataResult, storageResult = { error: null },
     };
 }
 
+function createAdminStorySupabase({
+    storyResult,
+    filesResult = { data: [{ storage_path: 'path/file.webp' }], error: null },
+    storageResult = { error: null },
+}) {
+    const calls = [];
+
+    return {
+        calls,
+        from(table) {
+            calls.push(`db:${table}`);
+
+            if (table === 'user_files') {
+                return {
+                    select(column) {
+                        assert.equal(column, 'storage_path');
+                        calls.push('files:select');
+                        return {
+                            eq(actualColumn, value) {
+                                assert.equal(actualColumn, 'story_id');
+                                assert.equal(value, 'story-1');
+                                calls.push('files:eq');
+                                return Promise.resolve(filesResult);
+                            },
+                        };
+                    },
+                };
+            }
+
+            assert.equal(table, 'stories');
+
+            return {
+                delete(options) {
+                    assert.deepEqual(options, { count: 'exact' });
+                    calls.push('story:delete');
+                    return {
+                        eq(column, value) {
+                            assert.equal(column, 'id');
+                            assert.equal(value, 'story-1');
+                            calls.push('story:eq');
+                            return Promise.resolve(storyResult);
+                        },
+                    };
+                },
+            };
+        },
+        storage: {
+            from(bucket) {
+                assert.equal(bucket, 'user-files');
+                calls.push(`storage:${bucket}`);
+                return {
+                    async remove(paths) {
+                        assert.deepEqual(paths, ['path/file.webp']);
+                        calls.push('storage:remove');
+                        return storageResult;
+                    },
+                };
+            },
+        },
+    };
+}
+
 function createProfileSupabase({ metadataResult, storageResult = { error: null } }) {
     const calls = [];
     return {
@@ -183,43 +245,151 @@ async function verifyAdminFileDelete() {
     });
 }
 
+async function verifyAdminStoryDelete() {
+    const dbFailureSupabase = createAdminStorySupabase({
+        storyResult: { count: 0, error: null },
+    });
+
+    const dbFailure = loadService('src/services/adminService.js', ['adminDeleteStory'], {
+        supabase: dbFailureSupabase,
+    });
+
+    await assert.rejects(
+        () => dbFailure.adminDeleteStory('story-1'),
+        /Story deletion did not affect exactly one row\./,
+    );
+
+    assert.doesNotMatch(
+        dbFailureSupabase.calls.join('|'),
+        /storage:/,
+        'Admin Story storage cleanup must not run when Story deletion fails',
+    );
+
+    const successSupabase = createAdminStorySupabase({
+        storyResult: { count: 1, error: null },
+    });
+
+    const success = loadService('src/services/adminService.js', ['adminDeleteStory'], {
+        supabase: successSupabase,
+    });
+
+    const successResult = await success.adminDeleteStory('story-1');
+
+    assert.deepEqual(successResult, {
+        deleted: true,
+        cleanupPending: false,
+        cleanupError: null,
+    });
+
+    assert.ok(
+        successSupabase.calls.indexOf('story:eq')
+        < successSupabase.calls.indexOf('storage:remove'),
+    );
+
+    const cleanupFailureSupabase = createAdminStorySupabase({
+        storyResult: { count: 1, error: null },
+        storageResult: { error: { message: 'story cleanup failed' } },
+    });
+
+    const cleanupFailure = loadService('src/services/adminService.js', ['adminDeleteStory'], {
+        supabase: cleanupFailureSupabase,
+    });
+
+    const cleanupResult = await cleanupFailure.adminDeleteStory('story-1');
+
+    assert.deepEqual(cleanupResult, {
+        deleted: true,
+        cleanupPending: true,
+        cleanupError: 'story cleanup failed',
+    });
+}
+
 async function verifyAvatarRemoval() {
     const dbFailureSupabase = createProfileSupabase({
         metadataResult: { count: 0, error: null },
     });
+
     const dbFailure = loadService('src/services/profileService.js', ['removeProfileAvatar'], {
         supabase: dbFailureSupabase,
     });
+
     await assert.rejects(
         () => dbFailure.removeProfileAvatar('user-1', 'path/file.webp'),
         /Avatar removal did not update the profile row\./,
     );
-    assert.doesNotMatch(dbFailureSupabase.calls.join('|'), /storage:/, 'Avatar storage cleanup must not run when profile update fails');
+
+    assert.doesNotMatch(
+        dbFailureSupabase.calls.join('|'),
+        /storage:/,
+        'Avatar storage cleanup must not run when profile update fails',
+    );
 
     const successSupabase = createProfileSupabase({
         metadataResult: { count: 1, error: null },
     });
+
     const success = loadService('src/services/profileService.js', ['removeProfileAvatar'], {
         supabase: successSupabase,
     });
-    await success.removeProfileAvatar('user-1', 'path/file.webp');
-    assert.ok(successSupabase.calls.indexOf('db:eq') < successSupabase.calls.indexOf('storage:remove'));
+
+    const successResult = await success.removeProfileAvatar(
+        'user-1',
+        'path/file.webp',
+    );
+
+    assert.ok(
+        successSupabase.calls.indexOf('db:eq')
+        < successSupabase.calls.indexOf('storage:remove'),
+    );
+
+    assert.deepEqual(successResult, {
+        removed: true,
+        cleanupPending: false,
+        cleanupError: null,
+    });
 
     const cleanupFailureSupabase = createProfileSupabase({
         metadataResult: { count: 1, error: null },
         storageResult: { error: { message: 'avatar cleanup failed' } },
     });
+
     const cleanupFailure = loadService('src/services/profileService.js', ['removeProfileAvatar'], {
         supabase: cleanupFailureSupabase,
     });
-    await assert.rejects(
-        () => cleanupFailure.removeProfileAvatar('user-1', 'path/file.webp'),
-        /avatar cleanup failed/,
+
+    const cleanupResult = await cleanupFailure.removeProfileAvatar(
+        'user-1',
+        'path/file.webp',
     );
+
+    assert.deepEqual(cleanupResult, {
+        removed: true,
+        cleanupPending: true,
+        cleanupError: 'avatar cleanup failed',
+    });
 }
+
+const adminPage = read('src/pages/AdminPage.jsx');
+const profileEditor = read('src/components/ProfileEditor.jsx');
+
+assert.ok(
+    adminPage.includes('const result = await action();')
+    && adminPage.includes("result?.cleanupPending ? t('cleanupPending') : successMessage"),
+    'Admin UI distinguishes committed cleanup warnings from failed actions',
+);
+
+assert.ok(
+    profileEditor.includes(
+        'const result = await removeProfileAvatar(profile.id, profile.avatar_path);',
+    )
+    && profileEditor.includes("t('avatarRemovedCleanupPending')")
+    && profileEditor.includes('notifyProfileRefresh(profile.id);'),
+    'Profile UI refreshes committed avatar removal and surfaces cleanup warning',
+);
 
 await verifyUserFileDelete();
 await verifyAdminFileDelete();
+await verifyAdminStoryDelete();
 await verifyAvatarRemoval();
 
 console.log('PASS: FIX 17 destructive operation consistency');

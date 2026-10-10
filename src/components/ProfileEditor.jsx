@@ -197,10 +197,14 @@ function ProfileEditor({
         setError('');
 
         try {
-            await removeProfileAvatar(profile.id, profile.avatar_path);
+            const result = await removeProfileAvatar(profile.id, profile.avatar_path);
             notifyProfileRefresh(profile.id);
             setAvatarFile(null);
-            setMessage(t('avatarRemoved'));
+            setMessage(
+                result?.cleanupPending
+                    ? t('avatarRemovedCleanupPending')
+                    : t('avatarRemoved'),
+            );
             onSaved();
         } catch {
             setError(t('removeError'));
