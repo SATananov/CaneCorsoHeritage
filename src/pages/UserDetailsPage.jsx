@@ -76,13 +76,15 @@ function UserDetailsPage() {
     const [publicContact, setPublicContact] = useState(null);
     const [privateDetails, setPrivateDetails] = useState(null);
     const [privateDetailsLoaded, setPrivateDetailsLoaded] = useState(false);
+    const [privateDetailsError, setPrivateDetailsError] = useState(false);
+    const [storiesError, setStoriesError] = useState(false);
+    const [filesError, setFilesError] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [profileSaveNotice, setProfileSaveNotice] = useState({ userId: null, key: '' });
     const [loadIdentity, setLoadIdentity] = useState({ userId, viewerId: user?.id, refreshKey });
 
-    // Reset before children commit when the requested member or viewer changes.
     if (
         loadIdentity.userId !== userId
         || loadIdentity.viewerId !== user?.id
@@ -97,6 +99,9 @@ function UserDetailsPage() {
         setPublicContact(null);
         setPrivateDetails(null);
         setPrivateDetailsLoaded(false);
+        setPrivateDetailsError(false);
+        setStoriesError(false);
+        setFilesError(false);
     }
 
     useEffect(() => {
@@ -131,6 +136,7 @@ function UserDetailsPage() {
                         if (!controller.signal.aborted && active) {
                             setPrivateDetails(details);
                             setPrivateDetailsLoaded(true);
+                            setPrivateDetailsError(false);
                         }
                     } catch (privateError) {
                         if (
@@ -143,7 +149,8 @@ function UserDetailsPage() {
                                 privateError,
                             );
                             setPrivateDetails(null);
-                            setPrivateDetailsLoaded(true);
+                            setPrivateDetailsLoaded(false);
+                            setPrivateDetailsError(true);
                         }
                     }
                 }
@@ -168,17 +175,21 @@ function UserDetailsPage() {
                     return;
                 }
 
-                setStories(
-                    storiesResult.status === 'fulfilled'
-                        ? storiesResult.value
-                        : [],
-                );
+                if (storiesResult.status === 'fulfilled') {
+                    setStories(storiesResult.value);
+                    setStoriesError(false);
+                } else {
+                    setStories([]);
+                    setStoriesError(true);
+                }
 
-                setSharedFiles(
-                    filesResult.status === 'fulfilled'
-                        ? filesResult.value
-                        : [],
-                );
+                if (filesResult.status === 'fulfilled') {
+                    setSharedFiles(filesResult.value);
+                    setFilesError(false);
+                } else {
+                    setSharedFiles([]);
+                    setFilesError(true);
+                }
 
                 setPublicContact(
                     contactResult.status === 'fulfilled'
@@ -217,7 +228,6 @@ function UserDetailsPage() {
         };
     }, [isActive, refreshKey, roleLoading, user?.id, userId]);
 
-    // Hide the previous route's state even before the new effect runs.
     const isCurrentMember = loadIdentity.userId === userId;
 
     const displayName = profile?.display_name || t('defaultMember');
@@ -239,6 +249,7 @@ function UserDetailsPage() {
         && !roleLoading
         && isActive
         && privateDetailsLoaded
+        && !privateDetailsError
         && missingRequiredFields.length > 0
     );
 
@@ -259,6 +270,12 @@ function UserDetailsPage() {
 
                 {isCurrentMember && profile && (
                     <>
+                        {privateDetailsError && isOwnProfile && (
+                            <div className={styles.message} role="alert">
+                                {t('privateDetailsLoadError')}
+                            </div>
+                        )}
+
                         {profileSetupRequired && (
                             <section
                                 className={styles.profileSetupRequired}
@@ -344,7 +361,11 @@ function UserDetailsPage() {
                                 <h2 id="member-stories-title">{format('storiesBy', { name: displayName })}</h2>
                             </div>
 
-                            {stories.length === 0 ? (
+                            {storiesError ? (
+                                <div className={styles.message} role="alert">
+                                    {t('storiesLoadError')}
+                                </div>
+                            ) : stories.length === 0 ? (
                                 <div className={styles.message}>{t('noStories')}</div>
                             ) : (
                                 <div className={styles.storyGrid}>
@@ -366,7 +387,11 @@ function UserDetailsPage() {
                                 <h2 id="member-files-title">{format('filesBy', { name: displayName })}</h2>
                             </div>
 
-                            {sharedFiles.length === 0 ? (
+                            {filesError ? (
+                                <div className={styles.message} role="alert">
+                                    {t('filesLoadError')}
+                                </div>
+                            ) : sharedFiles.length === 0 ? (
                                 <div className={styles.message}>{t('noFiles')}</div>
                             ) : (
                                 <div className={styles.fileGrid}>

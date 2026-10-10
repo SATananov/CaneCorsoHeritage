@@ -14,7 +14,8 @@ assert.match(source, /\{t\(error\)\}/);
 assert.match(source, /\{\(loading \|\| !isCurrentMember\) && <LoadingSpinner/);
 const pageSource = `${source.slice(start, end)}
     return { profile, stories, sharedFiles, publicContact, privateDetails,
-        privateDetailsLoaded, loading, error, isCurrentMember, profileSetupRequired,
+        privateDetailsLoaded, privateDetailsError, storiesError, filesError,
+        loading, error, isCurrentMember, profileSetupRequired,
         errorText: error ? t(error) : '', refresh: () => setRefreshKey((key) => key + 1) };
 }
 UserDetailsPage;`;
@@ -147,6 +148,9 @@ function assertReset(view) {
     assert.equal(view.publicContact, null);
     assert.equal(view.privateDetails, null);
     assert.equal(view.privateDetailsLoaded, false);
+    assert.equal(view.privateDetailsError, false);
+    assert.equal(view.storiesError, false);
+    assert.equal(view.filesError, false);
     assert.equal(view.loading, true);
     assert.equal(view.error, '');
 }
@@ -276,7 +280,7 @@ for (const outcome of ['success', 'error']) {
     });
 }
 
-await test('current private and secondary failures preserve existing fallback behavior', async (h) => {
+await test('current private and secondary failures remain distinct from missing data', async (h) => {
     await h.resolve('profile', 0, { id: 'A' });
     await h.reject('private', 0);
     await h.reject('stories', 0);
@@ -284,10 +288,13 @@ await test('current private and secondary failures preserve existing fallback be
     await h.reject('contact', 0);
     const view = h.render();
     assert.equal(view.profile.id, 'A');
-    assert.equal(view.privateDetailsLoaded, true);
-    assert.equal(view.profileSetupRequired, true);
+    assert.equal(view.privateDetailsLoaded, false);
+    assert.equal(view.privateDetailsError, true);
+    assert.equal(view.profileSetupRequired, false);
     assert.equal(view.stories.length, 0);
+    assert.equal(view.storiesError, true);
     assert.equal(view.sharedFiles[0].user_id, 'A');
+    assert.equal(view.filesError, false);
     assert.equal(view.publicContact, null);
     assert.equal(view.loading, false);
     assert.equal(view.error, '');
