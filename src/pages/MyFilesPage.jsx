@@ -195,16 +195,34 @@ function MyFilesPage() {
                 </section>
 
                 <form className={styles.uploadPanel} onSubmit={uploadHandler}>
-                    <label>
-                        {t('chooseFiles')}
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*,audio/*,video/mp4,text/*,.txt,.md,.csv,.tsv,.json,.xml,.rtf,.pdf,.doc,.docx,.odt"
-                            onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []))}
-                            disabled={uploading}
-                        />
-                    </label>
+                    <div className={styles.fileUploadField}>
+                        <span className={styles.fileUploadLabel}>
+                            {t('chooseFiles')}
+                        </span>
+
+                        <div className={styles.filePickerRow}>
+                            <label
+                                className={`${styles.filePickerTrigger}${uploading ? ` ${styles.filePickerDisabled}` : ''}`}
+                            >
+                                <input
+                                    className={styles.fileInput}
+                                    type="file"
+                                    multiple
+                                    accept="image/*,audio/*,video/mp4,text/*,.txt,.md,.csv,.tsv,.json,.xml,.rtf,.pdf,.doc,.docx,.odt"
+                                    onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []))}
+                                    disabled={uploading}
+                                />
+
+                                <span>{t('chooseFiles')}</span>
+                            </label>
+
+                            <div className={styles.filePickerDisplay}>
+                                {selectedFiles.length > 0
+                                    ? selectedFiles.map((file) => file.name).join(', ')
+                                    : ''}
+                            </div>
+                        </div>
+                    </div>
 
                     <label>
                         {t('visibility')}

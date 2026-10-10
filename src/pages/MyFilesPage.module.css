@@ -386,3 +386,133 @@
         border-radius: 14px;
     }
 }
+
+/* Custom file upload control */
+.fileUploadField {
+    display: grid;
+    gap: 8px;
+}
+
+.fileUploadLabel {
+    color: rgba(248, 245, 239, 0.78);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.filePickerRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+.fileInput {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.uploadPanel .filePickerTrigger {
+    display: inline-flex;
+    min-height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    align-self: end;
+    gap: 0;
+    padding: 0 20px;
+    border: 1px solid rgba(212, 175, 55, 0.44);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #d4af37;
+    font: inherit;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    line-height: normal;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transform: none;
+}
+
+.filePickerTrigger:hover {
+    border-color: rgba(212, 175, 55, 0.75);
+    background: rgba(212, 175, 55, 0.14);
+}
+
+.filePickerTrigger:active {
+    transform: translateY(1px);
+}
+
+.filePickerDisplay {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: 48px;
+    flex: 1;
+    min-width: 0;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(5, 5, 7, 0.86);
+    color: rgba(248, 245, 239, 0.72);
+    font-size: 0.76rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.filePickerDisabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+@media (max-width: 640px) {
+    .filePickerRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filePickerTrigger {
+    display: inline-flex;
+    min-width: 220px;
+    height: 48px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 0 30px;
+    border: 1px solid rgba(212, 175, 55, 0.55);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.10);
+    color: #d4af37;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        transform 160ms ease;
+}
+
+    .filePickerDisplay {
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+    }
+}
