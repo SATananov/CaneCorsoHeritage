@@ -107,6 +107,7 @@ function createHarness() {
             role: value.role,
             accountStatus: value.accountStatus,
             roleLoading: value.roleLoading,
+            roleError: value.roleError,
             isAdmin: value.isAdmin,
             isActive: value.isActive,
         };
@@ -147,13 +148,20 @@ function createHarness() {
     };
 }
 
-function expected(userId, role = 'user', accountStatus = null, roleLoading = false) {
+function expected(
+    userId,
+    role = 'user',
+    accountStatus = null,
+    roleLoading = false,
+    roleError = false,
+) {
     return {
         userId,
         loading: false,
         role,
         accountStatus,
         roleLoading,
+        roleError,
         isAdmin: role === 'admin',
         isActive: accountStatus === 'active',
     };
@@ -169,9 +177,9 @@ async function test(label, check) {
     }
 }
 
-await test('normal A load and unchanged AuthContext API', async (h) => {
+await test('normal A load and AuthContext role-error API', async (h) => {
     assert.deepEqual(Object.keys(h.render()).sort(), [
-        'session', 'user', 'loading', 'role', 'accountStatus', 'roleLoading',
+        'session', 'user', 'loading', 'role', 'accountStatus', 'roleLoading', 'roleError',
         'passwordRecovery', 'isAdmin', 'isActive', 'login', 'register', 'requestPasswordReset',
         'updatePassword', 'logout',
     ].sort());
@@ -240,7 +248,7 @@ await test('stale error cannot finish loading for a newer request for the same u
 await test('current request error fails closed and finishes loading', async (h) => {
     await h.restore('A');
     await h.settle(0, null, null, { message: 'Current request failed' });
-    assert.deepEqual(h.snapshot(), expected('A'));
+    assert.deepEqual(h.snapshot(), expected('A', 'user', null, false, true));
     assert.equal(h.errors.length, 1);
 });
 
@@ -320,7 +328,10 @@ for (const [role, status, error] of [
         await h.settle(0, 'admin', 'active');
         h.emit('A', 'TOKEN_REFRESHED');
         await h.settle(1, role, status, error);
-        assert.deepEqual(h.snapshot(), expected('A', role ?? 'user', status));
+        assert.deepEqual(
+            h.snapshot(),
+            expected('A', role ?? 'user', status, false, Boolean(error)),
+        );
     });
 }
 

@@ -115,7 +115,7 @@ function harness({ from = target, mode = 'login', authenticated = false } = {}) 
         AbortController, URL,
         console: { warn: (...args) => warnings.push(args) },
         useAuth: () => ({
-            user, loading, roleLoading: false, isActive: true,
+            user, loading, roleLoading: false, roleError: false, isActive: true,
             login: authCall('login'), register: authCall('register'),
         }),
         useLanguage: () => ({ language }),
@@ -214,10 +214,11 @@ for (const details of [null, {}, { ...complete, city: '   ' }]) {
     });
 }
 
-await test('profile-check failure preserves completion-first fallback', async (h) => {
+await test('profile-check failure does not masquerade as an incomplete profile', async (h) => {
     h.setUser('A');
     await h.profileError(0);
-    assert.equal(h.commitRedirect(), '/users/A');
+    assert.equal(h.guest.render().kind, 'loading');
+    assert.equal(h.navigation.length, 0);
 });
 
 await test('direct login without destination falls back to home', async (h) => {

@@ -26,6 +26,7 @@ function RequireCompleteProfile() {
         userId: null,
         checked: false,
         complete: false,
+        error: false,
     });
 
     useEffect(() => {
@@ -51,6 +52,7 @@ function RequireCompleteProfile() {
                     userId,
                     checked: true,
                     complete: isComplete(details),
+                    error: false,
                 });
             } catch (error) {
                 if (controller.signal.aborted || error?.name === 'AbortError') {
@@ -63,6 +65,7 @@ function RequireCompleteProfile() {
                     userId,
                     checked: true,
                     complete: false,
+                    error: true,
                 });
             }
         }
@@ -79,14 +82,19 @@ function RequireCompleteProfile() {
                 userId: user?.id ?? null,
                 checked: false,
                 complete: false,
+                error: false,
             }
     ), [checkState, user?.id]);
 
-    if (!currentState.checked) {
+    if (!currentState.checked || currentState.error) {
+        const messageKey = currentState.error
+            ? 'profileCheckError'
+            : 'checkingProfile';
+
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">
-                    {getTranslation(language, 'systemUi', 'checkingProfile')}
+                    {getTranslation(language, 'systemUi', messageKey)}
                 </div>
             </main>
         );

@@ -371,7 +371,7 @@ await test('failed constituent query rejects the whole dashboard; permissions an
     await assert.rejects(h.services.setMemberAccountStatus('admin', 'inactive'), /cannot be deactivated/);
     assert.equal(h.calls.writes.length, 0);
     const guard = read('src/routing/RequireAdmin.jsx');
-    assert.match(guard, /if \(loading \|\| roleLoading\)/);
+    assert.match(guard, /if \(loading \|\| roleLoading \|\| \(user && roleError\)\)/);
     assert.match(guard, /if \(!user \|\| !isAdmin \|\| !isActive\)/);
     assert.match(guard, /<Navigate to="\/" replace \/>/);
 });

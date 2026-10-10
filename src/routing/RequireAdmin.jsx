@@ -4,14 +4,18 @@ import { getTranslation } from '../i18n/translations';
 import useAuth from '../hooks/useAuth';
 
 function RequireAdmin() {
-    const { user, loading, roleLoading, isAdmin, isActive } = useAuth();
+    const { user, loading, roleLoading, roleError, isAdmin, isActive } = useAuth();
     const { language } = useLanguage();
 
-    if (loading || roleLoading) {
+    if (loading || roleLoading || (user && roleError)) {
+        const messageKey = user && roleError
+            ? 'accountCheckError'
+            : 'checkingAdmin';
+
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">
-                    {getTranslation(language, 'systemUi', 'checkingAdmin')}
+                    {getTranslation(language, 'systemUi', messageKey)}
                 </div>
             </main>
         );

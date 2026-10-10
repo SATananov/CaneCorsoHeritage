@@ -8,6 +8,7 @@ function AuthProvider({ children }) {
     const [role, setRole] = useState('user');
     const [accountStatus, setAccountStatus] = useState(null);
     const [roleLoading, setRoleLoading] = useState(true);
+    const [roleError, setRoleError] = useState(false);
     const [passwordRecovery, setPasswordRecovery] = useState(null);
 
     useEffect(() => {
@@ -20,7 +21,6 @@ function AuthProvider({ children }) {
                 return;
             }
 
-            // Every auth update, including logout, invalidates earlier role reads.
             const requestId = ++roleRequestId;
 
             if (!userId) {
@@ -28,17 +28,17 @@ function AuthProvider({ children }) {
                 if (active) {
                     setRole('user');
                     setAccountStatus(null);
+                    setRoleError(false);
                     setRoleLoading(false);
                 }
                 return;
             }
 
-            // Keep a verified same-user workspace mounted during background checks.
-            // Account changes still clear authorization until their own read finishes.
             if (resolvedRoleUserId !== userId) {
                 resolvedRoleUserId = null;
                 setRole('user');
                 setAccountStatus(null);
+                setRoleError(false);
                 setRoleLoading(true);
             }
 
@@ -57,10 +57,12 @@ function AuthProvider({ children }) {
                 console.error('Unable to load account role.', error);
                 setRole('user');
                 setAccountStatus(null);
+                setRoleError(true);
             } else {
                 resolvedRoleUserId = data ? userId : null;
                 setRole(data?.role ?? 'user');
                 setAccountStatus(data?.account_status ?? null);
+                setRoleError(false);
             }
 
             setRoleLoading(false);
@@ -199,6 +201,7 @@ function AuthProvider({ children }) {
         role,
         accountStatus,
         roleLoading,
+        roleError,
         passwordRecovery,
         isAdmin: role === 'admin',
         isActive: accountStatus === 'active',

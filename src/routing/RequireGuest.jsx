@@ -34,7 +34,6 @@ function getReturnDestination(from) {
         const url = new URL(destination, 'https://app.invalid');
         if (url.origin !== 'https://app.invalid' || !/^\/(?!\/)/.test(url.pathname)) return '/';
         const pathname = decodeURIComponent(url.pathname).replace(/\/+$/, '').toLowerCase();
-        // Returning to a guest-only page would start another redirect decision.
         if (pathname === '/login' || pathname === '/register') return '/';
         return `${url.pathname}${url.search}${url.hash}`;
     } catch {
@@ -43,43 +42,71 @@ function getReturnDestination(from) {
 }
 
 function RequireGuest() {
-    const { user, loading, roleLoading, isActive } = useAuth();
+    const { user, loading, roleLoading, roleError, isActive } = useAuth();
     const { language } = useLanguage();
     const location = useLocation();
     const [profileCheck, setProfileCheck] = useState(null);
 
     useEffect(() => {
-        if (loading || roleLoading || !user?.id || !isActive) return undefined;
+        if (loading || roleLoading || roleError || !user?.id || !isActive) return undefined;
         const authUser = user;
         const userId = authUser.id;
         const controller = new AbortController();
 
         async function checkProfile() {
-            let complete = false;
             try {
                 const details = await fetchOwnPrivateProfileDetails(userId, { signal: controller.signal });
-                complete = requiredProfileFields.every((field) => details?.[field]?.trim());
+                const complete = requiredProfileFields.every((field) => details?.[field]?.trim());
+
+                if (!controller.signal.aborted) {
+                    setProfileCheck({
+                        authUser,
+                        userId,
+                        complete,
+                        error: false,
+                    });
+                }
             } catch (error) {
                 if (!controller.signal.aborted) {
                     console.warn('Unable to verify profile completion after login.', error);
+                    setProfileCheck({
+                        authUser,
+                        userId,
+                        complete: false,
+                        error: true,
+                    });
                 }
             }
-            if (!controller.signal.aborted) setProfileCheck({ authUser, userId, complete });
         }
 
         checkProfile();
         return () => controller.abort();
-    }, [isActive, loading, roleLoading, user]);
+    }, [isActive, loading, roleError, roleLoading, user]);
 
     if (
         loading
         || (user && roleLoading)
-        || (user && isActive && (profileCheck?.userId !== user.id || profileCheck?.authUser !== user))
+        || (user && roleError)
+        || (
+            user
+            && isActive
+            && (
+                profileCheck?.userId !== user.id
+                || profileCheck?.authUser !== user
+                || profileCheck?.error
+            )
+        )
     ) {
+        const messageKey = user && roleError
+            ? 'accountCheckError'
+            : profileCheck?.error
+                ? 'profileCheckError'
+                : 'checkingAccount';
+
         return (
             <main className="route-loading" aria-live="polite">
                 <div className="site-container">
-                    {getTranslation(language, 'systemUi', 'checkingAccount')}
+                    {getTranslation(language, 'systemUi', messageKey)}
                 </div>
             </main>
         );

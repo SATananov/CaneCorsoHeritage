@@ -14,7 +14,7 @@ function AuthActions(props) {
         (key) => getTranslation(language, 'account', key),
         [language],
     );
-    const { user, loading, roleLoading, isAdmin, isActive, logout } = useAuth();
+    const { user, loading, roleLoading, roleError, isAdmin, isActive, logout } = useAuth();
     const [profileState, setProfileState] = useState({
         userId: null,
         profile: null,
@@ -190,7 +190,15 @@ function AuthActions(props) {
                         </span>
                         <span className="signed-in-user-copy">
                             <strong>{identity.displayName}</strong>
-                            <small>{!isActive ? t('inactive') : isAdmin ? t('administrator') : t('member')}</small>
+                            <small>
+                                {roleError
+                                    ? t('statusUnavailable')
+                                    : !isActive
+                                        ? t('inactive')
+                                        : isAdmin
+                                            ? t('administrator')
+                                            : t('member')}
+                            </small>
                         </span>
                     </NavLink>
                 )}

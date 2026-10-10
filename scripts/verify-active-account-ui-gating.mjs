@@ -25,10 +25,17 @@ function deferred() {
     return { promise, resolve, reject };
 }
 
-function mountGuest({ initialUser = null, initialLoading = false, initialRoleLoading = false, initialIsActive = false } = {}) {
+function mountGuest({
+    initialUser = null,
+    initialLoading = false,
+    initialRoleLoading = false,
+    initialRoleError = false,
+    initialIsActive = false,
+} = {}) {
     let user = initialUser;
     let loading = initialLoading;
     let roleLoading = initialRoleLoading;
+    let roleError = initialRoleError;
     let isActive = initialIsActive;
     const profileRequests = [];
     const hooks = [];
@@ -63,7 +70,7 @@ function mountGuest({ initialUser = null, initialLoading = false, initialRoleLoa
                 });
             }
         },
-        useAuth: () => ({ user, loading, roleLoading, isActive }),
+        useAuth: () => ({ user, loading, roleLoading, roleError, isActive }),
         useLanguage: () => ({ language: 'en' }),
         getTranslation: (_language, _section, key) => key,
         useLocation: () => ({ pathname: '/login', state: { from: '/my-files' } }),
@@ -98,6 +105,7 @@ function mountGuest({ initialUser = null, initialLoading = false, initialRoleLoa
             if ('user' in next) user = next.user;
             if ('loading' in next) loading = next.loading;
             if ('roleLoading' in next) roleLoading = next.roleLoading;
+            if ('roleError' in next) roleError = next.roleError;
             if ('isActive' in next) isActive = next.isActive;
             return render();
         },
@@ -124,6 +132,18 @@ function mountGuest({ initialUser = null, initialLoading = false, initialRoleLoa
     assert.equal(h.profileRequests.length, 0, 'Unknown account status must not trigger private profile reads');
     h.dispose();
     console.log('PASS: role loading waits without reading private profile data');
+}
+
+{
+    const h = mountGuest({
+        initialUser: { id: 'A' },
+        initialRoleError: true,
+        initialIsActive: false,
+    });
+    assert.equal(h.render().kind, 'loading');
+    assert.equal(h.profileRequests.length, 0);
+    h.dispose();
+    console.log('PASS: account verification failure stays blocked without an inactive redirect');
 }
 
 {

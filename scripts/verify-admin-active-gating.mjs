@@ -9,13 +9,13 @@ const source = readFileSync(
 
 assert.match(
     source,
-    /const \{ user, loading, roleLoading, isAdmin, isActive \} = useAuth\(\);/,
+    /const \{ user, loading, roleLoading, roleError, isAdmin, isActive \} = useAuth\(\);/,
     'RequireAdmin must consume explicit active-account state.',
 );
 
 assert.match(
     source,
-    /if \(loading \|\| roleLoading\)/,
+    /if \(loading \|\| roleLoading \|\| \(user && roleError\)\)/,
     'RequireAdmin must wait until authentication and role/status loading are complete.',
 );
 

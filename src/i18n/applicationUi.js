@@ -1,7 +1,7 @@
 export const applicationUi = {
     en: {
         systemUi: {
-            loadingPage: 'Loading page...', checkingAccount: 'Checking account...', checkingAdmin: 'Checking administrator access...', checkingProfile: 'Checking profile setup...',
+            loadingPage: 'Loading page...', checkingAccount: 'Checking account...', checkingAdmin: 'Checking administrator access...', checkingProfile: 'Checking profile setup...', accountCheckError: 'Unable to verify your account right now. Please try again.', profileCheckError: 'Unable to verify your profile right now. Please try again.',
             pageNotFound: 'Page not found.', pageNotFoundCopy: 'The address does not match a page in Cane Corso Heritage.', backHome: 'Back to Home',
             languageSelection: 'Language selection', footerNavigation: 'Footer navigation', trademark: 'trademark', visualIdentity: 'Unico Suo Genere visual identity',
             close: 'Close', selectCountry: 'Select country', selectCity: 'Select city', selectCountryFirst: 'Select country first',
@@ -41,7 +41,7 @@ export const applicationUi = {
     },
     bg: {
         systemUi: {
-            loadingPage: 'Зареждане на страницата...', checkingAccount: 'Проверка на акаунта...', checkingAdmin: 'Проверка на администраторския достъп...', checkingProfile: 'Проверка на настройката на профила...',
+            loadingPage: 'Зареждане на страницата...', checkingAccount: 'Проверка на акаунта...', checkingAdmin: 'Проверка на администраторския достъп...', checkingProfile: 'Проверка на настройката на профила...', accountCheckError: 'В момента акаунтът не може да бъде проверен. Опитайте отново.', profileCheckError: 'В момента профилът не може да бъде проверен. Опитайте отново.',
             pageNotFound: 'Страницата не е намерена.', pageNotFoundCopy: 'Адресът не съответства на страница в Cane Corso Heritage.', backHome: 'Назад към Начало',
             languageSelection: 'Избор на език', footerNavigation: 'Навигация във футъра', trademark: 'търговска марка', visualIdentity: 'Визуална идентичност Unico Suo Genere',
             close: 'Затвори', selectCountry: 'Избери държава', selectCity: 'Избери град', selectCountryFirst: 'Първо избери държава',
@@ -81,7 +81,7 @@ export const applicationUi = {
     },
     it: {
         systemUi: {
-            loadingPage: 'Caricamento pagina...', checkingAccount: 'Verifica account...', checkingAdmin: 'Verifica accesso amministratore...', checkingProfile: 'Verifica configurazione profilo...',
+            loadingPage: 'Caricamento pagina...', checkingAccount: 'Verifica account...', checkingAdmin: 'Verifica accesso amministratore...', checkingProfile: 'Verifica configurazione profilo...', accountCheckError: 'Impossibile verificare l’account in questo momento. Riprova.', profileCheckError: 'Impossibile verificare il profilo in questo momento. Riprova.',
             pageNotFound: 'Pagina non trovata.', pageNotFoundCopy: 'L’indirizzo non corrisponde a una pagina di Cane Corso Heritage.', backHome: 'Torna alla Home',
             languageSelection: 'Selezione lingua', footerNavigation: 'Navigazione piè di pagina', trademark: 'marchio', visualIdentity: 'Identità visiva Unico Suo Genere',
             close: 'Chiudi', selectCountry: 'Seleziona paese', selectCity: 'Seleziona città', selectCountryFirst: 'Seleziona prima il paese',
