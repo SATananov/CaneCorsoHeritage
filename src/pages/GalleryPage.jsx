@@ -225,16 +225,34 @@ useEffect(() => {
             }
 
             if (sortMode === SORT_OPTIONS.TOP_RATED) {
-                const ratingDiff = Number(b.averageRating ?? 0) - Number(a.averageRating ?? 0);
-                if (ratingDiff !== 0) return ratingDiff;
+                const aRatingAvailable = a.averageRating != null && a.ratingCount != null;
+                const bRatingAvailable = b.averageRating != null && b.ratingCount != null;
 
-                const countDiff = Number(b.ratingCount ?? 0) - Number(a.ratingCount ?? 0);
-                if (countDiff !== 0) return countDiff;
+                if (aRatingAvailable !== bRatingAvailable) {
+                    return bRatingAvailable ? 1 : -1;
+                }
+
+                if (aRatingAvailable && bRatingAvailable) {
+                    const ratingDiff = Number(b.averageRating) - Number(a.averageRating);
+                    if (ratingDiff !== 0) return ratingDiff;
+
+                    const countDiff = Number(b.ratingCount) - Number(a.ratingCount);
+                    if (countDiff !== 0) return countDiff;
+                }
             }
 
             if (sortMode === SORT_OPTIONS.MOST_COMMENTED) {
-                const commentDiff = Number(b.commentCount ?? 0) - Number(a.commentCount ?? 0);
-                if (commentDiff !== 0) return commentDiff;
+                const aCommentsAvailable = a.commentCount != null;
+                const bCommentsAvailable = b.commentCount != null;
+
+                if (aCommentsAvailable !== bCommentsAvailable) {
+                    return bCommentsAvailable ? 1 : -1;
+                }
+
+                if (aCommentsAvailable && bCommentsAvailable) {
+                    const commentDiff = Number(b.commentCount) - Number(a.commentCount);
+                    if (commentDiff !== 0) return commentDiff;
+                }
             }
 
             const aTime = new Date(a.created_at ?? 0).getTime();
@@ -400,8 +418,15 @@ useEffect(() => {
                                         </div>
 
                                         <div className={styles.catalogMetrics} aria-label={t('metricsLabel')}>
-                                            <span>{'★'} {Number(file.averageRating ?? 0).toFixed(1)} {' '}({file.ratingCount ?? 0})</span>
-                                            <span>{t('commentsMetric')}: {file.commentCount ?? 0}</span>
+                                            <span>
+                                                {'★'} {file.averageRating == null
+                                                    ? '—'
+                                                    : Number(file.averageRating).toFixed(1)}
+                                                {' '}({file.ratingCount == null ? '—' : file.ratingCount})
+                                            </span>
+                                            <span>
+                                                {t('commentsMetric')}: {file.commentCount == null ? '—' : file.commentCount}
+                                            </span>
                                         </div>
 
                                         <div className={styles.actionSlot}>

@@ -255,8 +255,10 @@ export async function enrichCommunityMediaWithMetrics(files, options = {}) {
 
     const ratingStats = new Map();
     const commentCounts = new Map();
+    const ratingsAvailable = !ratingsResult.error;
+    const commentsAvailable = !commentsResult.error;
 
-    if (!ratingsResult.error) {
+    if (ratingsAvailable) {
         for (const row of ratingsResult.data ?? []) {
             const current = ratingStats.get(row.file_id) ?? { total: 0, count: 0 };
             current.total += Number(row.rating ?? 0);
@@ -265,19 +267,29 @@ export async function enrichCommunityMediaWithMetrics(files, options = {}) {
         }
     }
 
-    if (!commentsResult.error) {
+    if (commentsAvailable) {
         for (const row of commentsResult.data ?? []) {
             commentCounts.set(row.target_id, (commentCounts.get(row.target_id) ?? 0) + 1);
         }
     }
 
     return safeFiles.map((file) => {
-        const rating = ratingStats.get(file.id) ?? { total: 0, count: 0 };
+        const rating = ratingsAvailable
+            ? ratingStats.get(file.id) ?? { total: 0, count: 0 }
+            : null;
+
         return {
             ...file,
-            averageRating: rating.count > 0 ? rating.total / rating.count : 0,
-            ratingCount: rating.count,
-            commentCount: commentCounts.get(file.id) ?? 0,
+            averageRating: ratingsAvailable
+                ? rating.count > 0
+                    ? rating.total / rating.count
+                    : 0
+                : null,
+            ratingCount: ratingsAvailable ? rating.count : null,
+            commentCount: commentsAvailable
+                ? commentCounts.get(file.id) ?? 0
+                : null,
+            metricsWarning: !ratingsAvailable || !commentsAvailable,
         };
     });
 }

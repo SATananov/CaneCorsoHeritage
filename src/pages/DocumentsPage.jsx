@@ -150,10 +150,19 @@ function DocumentsPage() {
             }
 
             if (sortMode === SORT_OPTIONS.MOST_COMMENTED) {
-                const commentDiff = Number(b.commentCount ?? 0)
-                    - Number(a.commentCount ?? 0);
+                const aCommentsAvailable = a.commentCount != null;
+                const bCommentsAvailable = b.commentCount != null;
 
-                if (commentDiff !== 0) return commentDiff;
+                if (aCommentsAvailable !== bCommentsAvailable) {
+                    return bCommentsAvailable ? 1 : -1;
+                }
+
+                if (aCommentsAvailable && bCommentsAvailable) {
+                    const commentDiff = Number(b.commentCount)
+                        - Number(a.commentCount);
+
+                    if (commentDiff !== 0) return commentDiff;
+                }
             }
 
             const aTime = new Date(a.created_at ?? 0).getTime();
@@ -242,7 +251,7 @@ function DocumentsPage() {
 
                                     <div className={styles.metrics}>
                                         <span>
-                                            {t('commentsMetric')}: {file.commentCount ?? 0}
+                                            {t('commentsMetric')}: {file.commentCount == null ? '—' : file.commentCount}
                                         </span>
                                     </div>
 
