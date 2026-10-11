@@ -9,6 +9,14 @@ It is currently developed as a standalone application and is planned to become a
 
 The project combines public educational content with authenticated community features, member profiles, media sharing, ratings, comments and administration. Supabase provides authentication, PostgreSQL data, Storage and Row Level Security.
 
+## Exam Evaluation
+
+- **Live Application:** https://cane-corso-heritage.netlify.app
+- **Functional Guide:** [Jump to Functional Guide](#functional-guide)
+- **Demo Accounts:** [Jump to Demo Accounts](#demo-accounts-for-evaluation)
+- **Main CRUD Collection:** Stories
+- **Backend:** Supabase
+
 ## Main features
 
 ### Public experience
