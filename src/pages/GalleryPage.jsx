@@ -8,8 +8,10 @@ import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
 import { useLanguage } from '../context/languageContext';
+import useAuth from '../hooks/useAuth';
 import { getTranslation } from '../i18n/translations';
 import {
+    createMemberDownloadUrl,
     enrichCommunityMediaWithMetrics,
     fetchCommunityMediaFiles,
 } from '../services/fileService';
@@ -78,13 +80,21 @@ function formatFileSize(size) {
     return `${megabytes.toFixed(megabytes >= 100 ? 0 : 1)} MB`;
 }
 function GalleryPage() {
+    const { user } = useAuth();
     const { language } = useLanguage();
     const t = useCallback(
         (key) => getTranslation(language, 'gallery', key),
         [language],
     );
 
+    const tf = useCallback(
+        (key) => getTranslation(language, 'myFiles', key),
+        [language],
+    );
+
     const [files, setFiles] = useState([]);
+    const [downloadingFileId, setDownloadingFileId] = useState(null);
+    const [downloadErrorFileId, setDownloadErrorFileId] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
 
     const requestedFilter = searchParams.get('type');
@@ -272,6 +282,19 @@ useEffect(() => {
         [MEDIA_FILTERS.DOCUMENTS, t('filterDocuments')],
     ];
 
+    async function downloadHandler(file) {
+        setDownloadErrorFileId(null);
+        setDownloadingFileId(file.id);
+
+        try {
+            const downloadUrl = await createMemberDownloadUrl(file);
+            window.location.assign(downloadUrl);
+        } catch {
+            setDownloadErrorFileId(file.id);
+        } finally {
+            setDownloadingFileId(null);
+        }
+    }
     return (
         <main className={styles.page}>
             <div className={styles.shell}>
@@ -448,6 +471,28 @@ useEffect(() => {
                                                 >
                                                     {t('openFile')}
                                                 </a>
+                                            )}
+
+                                            {user && (
+                                                file.user_id === user.id
+                                                || file.allow_member_download === true
+                                            ) && (
+                                                <button
+                                                    className={styles.downloadFileLink}
+                                                    type="button"
+                                                    disabled={downloadingFileId === file.id}
+                                                    onClick={() => downloadHandler(file)}
+                                                >
+                                                    {downloadingFileId === file.id
+                                                        ? tf('downloading')
+                                                        : tf('download')}
+                                                </button>
+                                            )}
+
+                                            {downloadErrorFileId === file.id && (
+                                                <span className={styles.downloadError}>
+                                                    {tf('downloadError')}
+                                                </span>
                                             )}
                                         </div>
 

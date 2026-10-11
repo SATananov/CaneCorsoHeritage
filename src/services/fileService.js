@@ -129,6 +129,7 @@ export async function uploadUserFiles(
     {
         storyId = null,
         visibility = 'private',
+        allowMemberDownload = false,
     } = {},
 ) {
     if (!files?.length) {
@@ -163,6 +164,7 @@ export async function uploadUserFiles(
                 mime_type: mimeType,
                 file_size: file.size,
                 visibility,
+                allow_member_download: Boolean(allowMemberDownload),
                 moderation_status: visibility === 'community' ? 'pending' : 'approved',
                 moderated_at: null,
                 moderated_by: null,
@@ -371,6 +373,70 @@ export async function updateUserFileVisibility(fileId, visibility) {
     }
 }
 
+export async function createMemberDownloadUrl(file) {
+    if (!file?.id) {
+        throw new Error('A file is required for download.');
+    }
+
+    const user = await getCurrentUser();
+
+    const { data: metadata, error: metadataError } = await supabase
+        .from('user_files')
+        .select('id,user_id,file_name,storage_path,allow_member_download')
+        .eq('id', file.id)
+        .single();
+
+    if (metadataError || !metadata) {
+        throw new Error(
+            metadataError?.message
+            || 'Unable to verify file download permission.',
+        );
+    }
+
+    const isOwner = metadata.user_id === user.id;
+
+    if (!isOwner && metadata.allow_member_download !== true) {
+        throw new Error('Member download is not enabled for this file.');
+    }
+
+    const { data, error } = await supabase.storage
+        .from('user-files')
+        .createSignedUrl(
+            metadata.storage_path,
+            60,
+            {
+                download: metadata.file_name || file.file_name || true,
+            },
+        );
+
+    if (error || !data?.signedUrl) {
+        throw new Error(
+            error?.message
+            || 'Unable to create download link.',
+        );
+    }
+
+    return data.signedUrl;
+}
+export async function updateUserFileDownloadPermission(fileId, allowMemberDownload) {
+    await getCurrentUser();
+
+    const { data, error } = await supabase.rpc(
+        'set_user_file_download_permission',
+        {
+            p_file_id: fileId,
+            p_allow_member_download: Boolean(allowMemberDownload),
+        },
+    );
+
+    if (error) {
+        throw new Error(error.message || 'Unable to update file download permission.');
+    }
+
+    if (data !== true) {
+        throw new Error('File download permission update was not authorized.');
+    }
+}
 export async function syncStoryFilesVisibility(storyId, visibility) {
     const { error } = await supabase
         .from('user_files')

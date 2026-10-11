@@ -557,3 +557,26 @@
     font-size: 0.94rem;
     line-height: 1.45;
 }
+/* Member Download Permissions 01 */
+
+.uploadPanel .downloadPermissionUpload {
+    display: inline-flex;
+    width: auto;
+    min-height: 42px;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-self: start;
+    gap: 8px;
+    padding: 0 13px;
+}
+
+.uploadPanel .downloadPermissionUpload input {
+    width: 16px;
+    height: 16px;
+    min-height: 0;
+    padding: 0;
+    flex: 0 0 16px;
+    accent-color: #d4af37;
+}
+
+/* End Member Download Permissions 01 */

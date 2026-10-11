@@ -610,3 +610,38 @@
 }
 
 /* End Gallery Comments Pill Polish 01 */
+/* Gallery Member Download 01 */
+
+.downloadFileLink {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #d4af37;
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 160ms ease;
+}
+
+.downloadFileLink:hover,
+.downloadFileLink:focus-visible {
+    color: #f3d46f;
+    text-decoration: underline;
+}
+
+.downloadFileLink:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.downloadError {
+    flex-basis: 100%;
+    color: #e7a9a9;
+    font-size: 0.68rem;
+    line-height: 1.4;
+}
+
+/* End Gallery Member Download 01 */

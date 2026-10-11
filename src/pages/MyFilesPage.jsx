@@ -8,6 +8,7 @@ import {
     deleteUserFile,
     fetchMyFiles,
     updateUserFileVisibility,
+    updateUserFileDownloadPermission,
     uploadUserFiles,
 } from '../services/fileService';
 import styles from './MyFilesPage.module.css';
@@ -41,6 +42,7 @@ function MyFilesPage() {
     const [files, setFiles] = useState([]);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [visibility, setVisibility] = useState('private');
+    const [allowMemberDownload, setAllowMemberDownload] = useState(false);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
@@ -114,13 +116,17 @@ function MyFilesPage() {
             // upload, even if its name/size match a previous selection.
             for (const file of selectedFiles) {
                 if (batch.completed.has(file)) continue;
-                await uploadUserFiles([file], { visibility });
+                await uploadUserFiles([file], {
+                    visibility,
+                    allowMemberDownload,
+                });
                 // The service resolves only after both storage and metadata succeed.
                 batch.completed.add(file);
             }
             uploadsComplete = true;
             await refreshFiles();
             setSelectedFiles([]);
+            setAllowMemberDownload(false);
             form.reset();
             uploadBatchRef.current = { userId: user.id, completed: new WeakSet() };
         } catch {
@@ -163,6 +169,32 @@ function MyFilesPage() {
         }
     }
 
+    async function downloadPermissionHandler(file) {
+        const nextValue = file.allow_member_download !== true;
+        setError('');
+
+        try {
+            await updateUserFileDownloadPermission(file.id, nextValue);
+        } catch {
+            setError(t('downloadPermissionError'));
+            return;
+        }
+
+        setFiles((current) => current.map((item) => (
+            item.id === file.id
+                ? {
+                    ...item,
+                    allow_member_download: nextValue,
+                }
+                : item
+        )));
+
+        try {
+            await refreshFiles();
+        } catch {
+            setError(t('loadError'));
+        }
+    }
     async function deleteHandler(file) {
         setError('');
 
@@ -233,6 +265,15 @@ function MyFilesPage() {
                     </label>
 
                     <button type="submit" disabled={uploading}>{uploading ? t('uploading') : t('upload')}</button>
+                    <label className={`${styles.publicCheck} ${styles.downloadPermissionUpload}`}>
+                        <input
+                            type="checkbox"
+                            checked={allowMemberDownload}
+                            onChange={(event) => setAllowMemberDownload(event.target.checked)}
+                            disabled={uploading}
+                        />
+                        <span>{t('allowMemberDownload')}</span>
+                    </label>
                 </form>
 
                 <p className={styles.fileHint}>{t('fileHint')}</p>
@@ -268,6 +309,14 @@ function MyFilesPage() {
                                         <label className={`${styles.publicCheck}${file.story_id ? ` ${styles.publicCheckDisabled}` : ''}`}>
                                             <input type="checkbox" checked={file.visibility === 'community'} disabled={Boolean(file.story_id)} onChange={() => visibilityHandler(file)} />
                                             <span>{t('public')}</span>
+                                        </label>
+                                        <label className={styles.publicCheck}>
+                                            <input
+                                                type="checkbox"
+                                                checked={file.allow_member_download === true}
+                                                onChange={() => downloadPermissionHandler(file)}
+                                            />
+                                            <span>{t('memberDownload')}</span>
                                         </label>
                                         {file.story_id && <span className={styles.storyVisibility}>{t('followsStory')}</span>}
                                         <button className={styles.deleteButton} type="button" onClick={() => deleteHandler(file)}>{t('delete')}</button>
