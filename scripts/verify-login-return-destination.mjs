@@ -29,8 +29,6 @@ const formSource = `${form.slice(formStart, formEnd)}
 }
 AuthPreparationSection;`;
 
-// Run actual handlers and guards, replacing only presentation with descriptors.
-// Mock services never import the Supabase client or perform network requests.
 function deferred() {
     let resolve;
     let reject;
@@ -125,7 +123,6 @@ function harness({ from = target, mode = 'login', authenticated = false } = {}) 
         fetchOwnPrivateProfileDetails(id, { signal } = {}) {
             const request = { id, signal, ...deferred() };
             profileRequests.push(request);
-            // Deliberately ignore abort to exercise stale response protection.
             return request.promise;
         },
     };
@@ -167,7 +164,6 @@ function harness({ from = target, mode = 'login', authenticated = false } = {}) 
             const view = guest.render();
             assert.equal(view.kind, 'redirect');
             navigation.push({ owner: 'guard', to: view.to, replace: view.replace });
-            // A committed Navigate leaves the guest route and unmounts its form.
             guest.dispose(); formInstance.dispose(); guardMounted = false;
             return view.to;
         },

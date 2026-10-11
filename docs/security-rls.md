@@ -76,15 +76,15 @@ where schemaname = 'public'
 order by tablename, policyname;
 ```
 
-The policy output was reviewed for the 15 tables listed in the verification matrix above. The canonical policy state is also represented by the tracked migration chain, including `20261006100000_supabase_baseline_01.sql` and `20261008104500_rls_policy_consistency_01.sql`.
+The policy output was reviewed for the 15 tables listed in the verification matrix above. The canonical policy state is also represented by the tracked migration chain, including `20261006100000_supabase_start.sql` and `20261008104500_security_policies.sql`.
 
 ## Migration reproducibility status
 
 **Status: VERIFIED**
 
-On 2026-10-08, `20261006100000_supabase_baseline_01.sql` was added to capture the project-owned database objects that predated the first previously tracked feature migration. The complete local migration chain was then verified with repeated clean `supabase db reset` runs. All tracked migrations applied successfully in timestamp order.
+On 2026-10-08, `20261006100000_supabase_start.sql` was added to capture the project-owned database objects that predated the first previously tracked feature migration. The complete local migration chain was then verified with repeated clean `supabase db reset` runs. All tracked migrations applied successfully in timestamp order.
 
-The linked production migration history was aligned by marking the baseline migration as already applied; the baseline SQL was not executed again against the existing production schema. After alignment, local and linked migration histories matched 1:1 through `20261008104500_rls_policy_consistency_01.sql`.
+The linked production migration history was aligned by marking the baseline migration as already applied; the baseline SQL was not executed again against the existing production schema. After alignment, local and linked migration histories matched 1:1 through `20261008104500_security_policies.sql`.
 
 ## Evidence scope
 

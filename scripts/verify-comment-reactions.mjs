@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 
 function read(path) {
     return fs.readFileSync(path, 'utf8');
@@ -12,7 +12,7 @@ function expect(condition, label) {
     console.log(`PASS: ${label}`);
 }
 
-const migration = read('supabase/migrations/20261006180000_comment_reactions_01.sql');
+const migration = read('supabase/migrations/20261006180000_comment_reactions.sql');
 const service = read('src/services/commentReactionService.js');
 const comments = read('src/components/CommentsSection.jsx');
 const translations = read('src/i18n/translations.js');

@@ -23,9 +23,9 @@ for (const [label, ok] of checks) {
 }
 
 if (failed) {
-  console.error(`STATIC STORY CARDS LOCALIZATION FIX 01: FAIL (${failed})`);
+  console.error(`STATIC STORY CARDS LOCALIZATION: FAIL (${failed})`);
   process.exit(1);
 }
 
-console.log('STATIC STORY CARDS LOCALIZATION FIX 01: PASS');
+console.log('STATIC STORY CARDS LOCALIZATION: PASS');
 console.log('Legacy editorial Story titles remain identified for exclusion; only real community Stories use machine translation and the enriched community catalog is rendered.');

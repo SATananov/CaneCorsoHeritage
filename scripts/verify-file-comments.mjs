@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 
 function read(path) {
     return fs.readFileSync(path, 'utf8');
@@ -13,13 +13,12 @@ function expect(condition, label) {
 }
 
 const migration = read(
-    'supabase/migrations/20261006190000_comments_01b_file_visibility.sql',
+    'supabase/migrations/20261006190000_file_comments.sql',
 );
 const service = read('src/services/commentService.js');
 const myFiles = read('src/pages/MyFilesPage.jsx');
 const userDetails = read('src/pages/UserDetailsPage.jsx');
 
-/* DATABASE / SECURITY */
 
 expect(
     migration.includes("target_type in ('story', 'heritage', 'file')"),
@@ -72,7 +71,6 @@ expect(
 );
 
 
-/* CLIENT SERVICE */
 
 expect(
     service.includes("new Set(['story', 'heritage', 'file'])"),
@@ -80,7 +78,6 @@ expect(
 );
 
 
-/* MY FILES */
 
 expect(
     myFiles.includes("import CommentsSection from '../components/CommentsSection';"),
@@ -94,7 +91,6 @@ expect(
 );
 
 
-/* COMMUNITY FILES */
 
 expect(
     userDetails.includes("import CommentsSection from '../components/CommentsSection';"),
@@ -108,7 +104,7 @@ expect(
 );
 
 console.log('');
-console.log('COMMENTS 01B: PASS');
+console.log('FILE COMMENTS: PASS');
 console.log(
     'Owned/private and approved community files are wired to visibility-aware comments and reactions.'
 );

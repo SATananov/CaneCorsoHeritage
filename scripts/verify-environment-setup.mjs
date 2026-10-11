@@ -92,4 +92,4 @@ for (const path of trackedSourceFiles) {
     );
 }
 
-console.log('PASS: FIX 15 reproducible environment setup');
+console.log('PASS: environment setup');

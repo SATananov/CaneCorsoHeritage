@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 
 function read(path) {
     return fs.readFileSync(path, 'utf8');
@@ -13,7 +13,7 @@ function expect(condition, label) {
 }
 
 const migration = read(
-    'supabase/migrations/20261006183000_heritage_rating_01.sql'
+    'supabase/migrations/20261006183000_heritage_rating.sql'
 );
 
 const service = read(
@@ -28,7 +28,6 @@ const translations = read(
     'src/i18n/translations.js'
 );
 
-/* DATABASE */
 
 expect(
     migration.includes('create table if not exists public.heritage_ratings'),
@@ -62,7 +61,6 @@ expect(
     'rating totals are publicly readable',
 );
 
-/* SERVICE */
 
 expect(
     service.includes(".from('heritage_ratings')"),
@@ -95,7 +93,6 @@ expect(
     'current user rating is restored',
 );
 
-/* COMPONENT */
 
 expect(
     component.includes('const ratingValues = [1, 2, 3, 4, 5]'),
@@ -127,7 +124,6 @@ expect(
     'Heritage rating component has no local hardcoded language object',
 );
 
-/* I18N */
 
 const requiredKeys = [
     'heritageRatingTitle',

@@ -22,7 +22,7 @@ const storyService = read('src/services/storyTranslationService.js');
 const heritageService = read('src/services/heritageTranslationService.js');
 const storyEdge = read('supabase/functions/translate-story/index.ts');
 const heritageEdge = read('supabase/functions/translate-heritage/index.ts');
-const migration = read('supabase/migrations/20261006160000_content_localization_01.sql');
+const migration = read('supabase/migrations/20261006160000_content_languages.sql');
 const translations = read('src/i18n/translations.js');
 
 expect(storiesPreview, /LEGACY_EDITORIAL_STORY_TITLES/, 'legacy editorial Story cards are separated from community content');

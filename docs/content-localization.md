@@ -13,7 +13,7 @@ The selected EN / BG / IT language controls both application UI and readable con
 ## Supabase migration
 Run:
 
-`supabase/migrations/20261006160000_content_localization_01.sql`
+`supabase/migrations/20261006160000_content_languages.sql`
 
 This creates the public read-only `heritage_translations` cache with RLS. Browser clients receive SELECT only. Writes are Edge Function service-role only.
 

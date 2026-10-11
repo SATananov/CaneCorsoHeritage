@@ -19,7 +19,7 @@ Translation access follows the Story visibility rules: approved public Stories m
 
 Run the contents of:
 
-`supabase/migrations/20261006152000_story_translation_01.sql`
+`supabase/migrations/20261006152000_story_translation.sql`
 
 in the Supabase SQL Editor for the CaneCorsoHeritage project.
 

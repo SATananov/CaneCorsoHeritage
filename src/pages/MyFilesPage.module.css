@@ -387,7 +387,7 @@
     }
 }
 
-/* Custom file upload control */
+
 .fileUploadField {
     display: grid;
     gap: 8px;
@@ -517,7 +517,7 @@
     }
 }
 
-/* My Files visual polish */
+
 .heading {
     padding-top: 34px;
     padding-bottom: 34px;
@@ -557,7 +557,7 @@
     font-size: 0.94rem;
     line-height: 1.45;
 }
-/* Member Download Permissions 01 */
+
 
 .uploadPanel .downloadPermissionUpload {
     display: inline-flex;
@@ -579,4 +579,3 @@
     accent-color: #d4af37;
 }
 
-/* End Member Download Permissions 01 */

@@ -268,9 +268,7 @@
     margin-bottom: 0;
 }
 
-/* ADMIN TABLE STICKY ACTIONS 01
-   Keep the action column visible while wide admin tables scroll horizontally.
-*/
+
 .table th:last-child,
 .table td:last-child {
     position: sticky;
@@ -292,8 +290,8 @@
     background: #151516;
 }
 
-/* End ADMIN TABLE STICKY ACTIONS 01 */
-/* ADMIN STORY DIRECT OPEN 01 */
+
+
 .storyOpenLink {
     color: var(--usg-gold-light, #e3c766);
     text-decoration: underline;
@@ -307,8 +305,8 @@
     color: var(--usg-ivory, #f8f5ef);
 }
 
-/* End ADMIN STORY DIRECT OPEN 01 */
-/* ADMIN FILE DIRECT OPEN 01 */
+
+
 .fileOpenLink {
     color: var(--usg-gold-light, #e3c766);
     text-decoration: underline;
@@ -322,7 +320,7 @@
     color: var(--usg-ivory, #f8f5ef);
 }
 
-/* End ADMIN FILE DIRECT OPEN 01 */
+
 @media (max-width: 900px) {
     .shell {
         grid-template-columns: 1fr;

@@ -12,7 +12,7 @@
     margin: 0 auto;
 }
 
-/* Header */
+
 
 .site-header {
     position: sticky;
@@ -107,7 +107,7 @@
     background: rgba(212, 175, 55, 0.06);
 }
 
-/* Automatic image banner */
+
 
 .heritage-slider-section {
     padding: 10px 0 30px;
@@ -262,7 +262,7 @@
     }
 }
 
-/* Entrance hero */
+
 
 .hero {
     padding: 24px 0 38px;
@@ -456,7 +456,7 @@
     text-transform: uppercase;
 }
 
-/* Home hero card balance */
+
 @media (min-width: 921px) {
     .hero-copy-panel {
         aspect-ratio: 1;
@@ -471,7 +471,7 @@
     }
 }
 
-/* Entrance cards */
+
 
 .paths-section {
     padding: 64px 0 92px;
@@ -554,7 +554,7 @@
     text-transform: uppercase;
 }
 
-/* Footer */
+
 
 .site-footer {
     border-top: 1px solid rgba(212, 175, 55, 0.12);
@@ -627,7 +627,7 @@
     letter-spacing: 0.08em;
 }
 
-/* Responsive */
+
 
 @media (max-width: 920px) {
     .hero-shell {
@@ -780,7 +780,7 @@
 }
 
 
-/* Heritage slider imagery */
+
 .heritage-slide-main-image,
 .heritage-slide-side-image {
     position: absolute;
@@ -853,7 +853,7 @@
     }
 }
 
-/* Section links */
+
 #home,
 #stories,
 #heritage,
@@ -881,7 +881,7 @@
         scroll-margin-top: 210px;
     }
 }
-/* Home layout */
+
 @media (min-width: 921px) {
     .hero {
         padding-top: 18px;
@@ -964,7 +964,7 @@
     }
 }
 
-/* Card images */
+
 .entrance-card {
     min-height: 420px;
     overflow: hidden;
@@ -1021,7 +1021,7 @@
 }
 
 
-/* Visitor view */
+
 .visitor-auth {
     display: inline-flex;
     align-items: center;
@@ -1293,7 +1293,7 @@
     color: var(--usg-gold);
 }
 
-/* Responsive layout */
+
 @media (min-width: 1500px) {
     .site-container {
         width: min(1460px, calc(100% - 96px));
@@ -1689,7 +1689,7 @@
     }
 }
 
-/* Visitor feature image sizing */
+
 .visitor-feature-image {
     width: min(100%, 420px, 52vh);
     min-height: 0;
@@ -1722,9 +1722,9 @@
         width: min(100%, 310px);
     }
 }
-/* End visitor feature image sizing */
 
-/* Platform image link */
+
+
 .visitor-platform-link {
     width: 100%;
     display: flex;
@@ -1757,9 +1757,9 @@
 .visitor-platform-link:focus-visible {
     outline: none;
 }
-/* End platform image link */
 
-/* Platform explore label */
+
+
 .visitor-feature-image-about {
     position: relative;
     overflow: visible;
@@ -1806,10 +1806,10 @@
         font-size: 0.68rem;
     }
 }
-/* End platform explore label */
 
 
-/* Section card rhythm */
+
+
 .section-feature-intro {
     margin-bottom: 38px;
 }
@@ -1842,9 +1842,9 @@
         margin-bottom: 20px;
     }
 }
-/* End section card rhythm */
 
-/* Visual polish */
+
+
 html {
     scroll-behavior: smooth;
 }
@@ -2497,9 +2497,9 @@ body {
         padding: 18px;
     }
 }
-/* End visual polish */
 
-/* Hero layout balance */
+
+
 @media (min-width: 921px) {
     .hero-shell {
         min-height: 440px;
@@ -2540,9 +2540,9 @@ body {
         width: min(100%, 420px);
     }
 }
-/* End hero layout balance */
 
-/* Hero edge alignment */
+
+
 @media (min-width: 921px) {
     .hero-copy-panel {
         justify-self: start;
@@ -2552,9 +2552,9 @@ body {
         justify-self: end;
     }
 }
-/* End hero edge alignment */
 
-/* About USG */
+
+
 .about-usg-intro {
     margin-bottom: clamp(44px, 5vw, 70px);
 }
@@ -2754,15 +2754,15 @@ body {
         padding: 0.52rem 0.92rem;
     }
 }
-/* End About USG */
 
-/* Full representative images */
+
+
 .visitor-feature-image img,
 .visitor-platform-link img {
     object-fit: contain;
 }
 
-/* React Routing 01 */
+
 
 .route-page {
     min-height: 62vh;
@@ -2914,7 +2914,7 @@ body {
     background: rgba(212, 175, 55, 0.2);
 }
 
-/* Profile Completion 01 */
+
 
 .profile-completion-notice {
     border-bottom: 1px solid rgba(212, 175, 55, 0.2);
@@ -3002,7 +3002,7 @@ body {
     }
 }
 
-/* Visitor Access 01 */
+
 
 .guest-access-page {
     min-height: calc(100vh - 220px);
@@ -3100,7 +3100,7 @@ body {
     line-height: 1.55;
 }
 
-/* About Platform Structure 02 */
+
 
 .about-usg-platform-intro {
     color: rgba(248, 245, 239, 0.84);
@@ -3165,7 +3165,7 @@ body {
     color: rgba(248, 245, 239, 0.72);
 }
 
-/* About One of a Kind Closing 01 */
+
 
 .about-usg-closing-statement {
     margin: 30px 0 0;
@@ -3178,7 +3178,7 @@ body {
     line-height: 1.35;
 }
 
-/* Language System 01 */
+
 
 .language-switcher {
     display: inline-flex;
@@ -3220,7 +3220,7 @@ body {
     }
 }
 
-/* About Story Vision 01 */
+
 
 .about-story-copy > p:empty {
     display: none;
@@ -3232,7 +3232,7 @@ body {
     border-top: 1px solid rgba(212, 175, 55, 0.18);
     color: rgba(248, 245, 239, 0.86);
 }
-/* Header Language Polish 01 */
+
 .language-switcher {
     flex: 0 0 auto;
     align-self: center;
@@ -3266,8 +3266,8 @@ body {
         align-self: auto;
     }
 }
-/* End Header Language Polish 01 */
-/* MOBILE NAVIGATION 01 */
+
+
 .mobile-nav-toggle {
     display: none;
     width: 44px;
@@ -3342,15 +3342,9 @@ body {
         display: flex;
     }
 }
-/* End MOBILE NAVIGATION 01 */
-/* Header Responsive Balance 01 */
-/*
-   Intermediate desktop/laptop layout:
-   - brand remains stable at the left
-   - public navigation + language selector stay on the first nav row
-   - signed-in account controls move to a second nav row
-   - existing <=1060px responsive rules remain authoritative
-*/
+
+
+
 @media (min-width: 1061px) and (max-width: 1450px) {
     .header-inner {
         align-items: center;
@@ -3410,12 +3404,9 @@ body {
         gap: 5px;
     }
 }
-/* End Header Responsive Balance 01 */
 
-/* HEADER NARROW LAPTOP FIX 01
-   Keep the brand readable on narrowed laptop windows while preserving
-   the existing <=1060px mobile navigation contract.
-*/
+
+
 @media (min-width: 1061px) and (max-width: 1680px) {
     .header-inner {
         align-items: center;
@@ -3476,12 +3467,8 @@ body {
         gap: 5px;
     }
 }
-/* End HEADER NARROW LAPTOP FIX 01 */
-/* HEADER NARROW LAPTOP FIX 02
-   Wider laptop/zoomed-window safety band.
-   Keep the brand readable and move account actions to their own row
-   before the mobile navigation breakpoint is reached.
-*/
+
+
 @media (min-width: 1061px) and (max-width: 1900px) {
     .header-inner {
         align-items: flex-start;
@@ -3514,11 +3501,8 @@ body {
         gap: 6px;
     }
 }
-/* End HEADER NARROW LAPTOP FIX 02 */
-/* HEADER BRAND ACCOUNT SHRINK FIX 01
-   Protect brand/account controls from excessive flex shrinking.
-   This is intentionally independent of browser zoom percentage.
-*/
+
+
 .brand-logo {
     flex: 0 0 auto;
 }
@@ -3545,11 +3529,8 @@ body {
 .visitor-auth {
     min-width: max-content;
 }
-/* End HEADER BRAND ACCOUNT SHRINK FIX 01 */
-/* HEADER ACCOUNT OVERFLOW FIX 01
-   Allow account actions to wrap inside the header instead of forcing
-   a max-content row beyond the right edge.
-*/
+
+
 .visitor-auth {
     min-width: 0;
     max-width: 100%;
@@ -3559,8 +3540,8 @@ body {
 .visitor-auth > * {
     max-width: 100%;
 }
-/* End HEADER ACCOUNT OVERFLOW FIX 01 */
-/* Story community catalog */
+
+
 .story-catalog-heading > p {
     max-width: 720px;
     margin-inline: auto;
@@ -3686,9 +3667,9 @@ body {
         gap: 4px;
     }
 }
-/* End story community catalog */
 
-/* Admin pending moderation badge */
+
+
 .admin-nav-link {
     display: inline-flex;
     align-items: center;
@@ -3717,9 +3698,9 @@ body {
         font-size: 0.66rem;
     }
 }
-/* End admin pending moderation badge */
 
-/* Story Catalog Card Polish 01 */
+
+
 
 .story-catalog-card {
     overflow: hidden;
@@ -3744,8 +3725,7 @@ body {
     box-shadow: 0 22px 48px rgba(0, 0, 0, 0.34);
 }
 
-/* PreviewCard remains reusable elsewhere.
-   Only the public Story catalog removes its inner shell. */
+
 .story-catalog-card .story-preview-card {
     flex: 1;
     min-height: 205px;
@@ -3807,4 +3787,4 @@ body {
     }
 }
 
-/* End Story Catalog Card Polish 01 */
+

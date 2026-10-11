@@ -12,9 +12,9 @@ function expect(condition, label) {
     console.log(`PASS: ${label}`);
 }
 
-const migration = read('supabase/migrations/20261006173000_comments_01a.sql');
-const fileVisibilityMigration = read('supabase/migrations/20261006190000_comments_01b_file_visibility.sql');
-const rlsConsistencyMigration = read('supabase/migrations/20261008104500_rls_policy_consistency_01.sql');
+const migration = read('supabase/migrations/20261006173000_comments.sql');
+const fileVisibilityMigration = read('supabase/migrations/20261006190000_file_comments.sql');
+const rlsConsistencyMigration = read('supabase/migrations/20261008104500_security_policies.sql');
 const comments = read('src/components/CommentsSection.jsx');
 const service = read('src/services/commentService.js');
 const heritage = read('src/pages/HeritageArticlePage.jsx');
@@ -46,18 +46,18 @@ expect(
     migration.includes('for update') &&
     migration.includes('using (author_id = auth.uid())') &&
     migration.includes('with check (author_id = auth.uid())'),
-    'COMMENTS 01A initially restricts comment updates to the author',
+    'Initial comment rules restrict updates to the author',
 );
 
 expect(
     migration.includes('for delete') &&
     migration.includes('using (author_id = auth.uid())'),
-    'COMMENTS 01A initially restricts comment deletes to the author',
+    'Initial comment rules restrict deletes to the author',
 );
 
 expect(
     fileVisibilityMigration.includes("target_type in ('story', 'heritage', 'file')"),
-    'COMMENTS 01B extends comment targets to files',
+    'File comments extend comment targets to files',
 );
 
 expect(
@@ -99,5 +99,5 @@ expect(
     'Story details page renders comments',
 );
 
-console.log('COMMENTS 01A/01B + RLS CONSISTENCY: PASS');
+console.log('COMMENTS AND RLS: PASS');
 console.log('Public read, authenticated own-create, file targets, author UI controls and final author-or-admin RLS mutations are verified.');

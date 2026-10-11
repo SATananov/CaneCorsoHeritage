@@ -381,7 +381,7 @@
     color: #d4af37;
 }
 
-/* Gallery Visual Polish 01 */
+
 
 .grid {
     gap: 22px;
@@ -547,9 +547,9 @@
     }
 }
 
-/* End Gallery Visual Polish 01 */
 
-/* Gallery Comments Pill Polish 01 */
+
+
 
 .commentsDisclosure {
     border-top: 0;
@@ -609,8 +609,8 @@
     background: rgba(212, 175, 55, 0.10);
 }
 
-/* End Gallery Comments Pill Polish 01 */
-/* Gallery Member Download 01 */
+
+
 
 .downloadFileLink {
     padding: 0;
@@ -644,4 +644,3 @@
     line-height: 1.4;
 }
 
-/* End Gallery Member Download 01 */

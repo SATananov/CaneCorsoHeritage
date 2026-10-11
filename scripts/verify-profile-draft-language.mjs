@@ -12,8 +12,6 @@ const logicStart = source.indexOf('const USERNAME_PATTERN =');
 const presentationStart = source.indexOf('    if (!editorOpen) {');
 assert.ok(logicStart >= 0 && presentationStart > logicStart, 'Locate editor logic before JSX');
 
-// Execute the real editor logic, dependencies, setters and submit handler.
-// Only replace JSX with observable state; no service or network code is loaded.
 const editorSource = `${source.slice(logicStart, presentationStart)}
     return {
         firstName, lastName, country, city, phone,
@@ -101,7 +99,6 @@ function createHarness() {
         fetchOwnPrivateProfileDetails(userId, { signal }) {
             const request = { userId, signal, ...deferred() };
             requests.push(request);
-            // Deliberately ignore abort to exercise completion guards.
             return request.promise;
         },
         updateOwnProfile: async (...args) => { saves.push(['public', ...args]); },

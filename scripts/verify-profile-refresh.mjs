@@ -12,8 +12,6 @@ function logic(file, startMarker, endMarker, result) {
     return `${source.slice(start, end)}\nreturn ${result};\n}\n${file};`;
 }
 
-// Execute actual component handlers, effect dependencies, and notice visibility.
-// JSX alone is replaced by observable state. All service calls are local mocks.
 const editorSource = logic('ProfileEditor', 'const USERNAME_PATTERN', '    if (!editorOpen)', `{
     submitHandler, removeAvatarHandler, saving, errorMessage, message,
     setters: { displayName: setDisplayName, firstName: setFirstName, lastName: setLastName,
@@ -125,7 +123,6 @@ function harness() {
     const read = (target) => (id, { signal }) => {
         const request = { id, signal, ...deferred() };
         requests[target].push(request);
-        // Ignore cancellation to verify guards also reject late success/error.
         return request.promise;
     };
     const write = (stage) => async (...args) => {

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const migration = readFileSync(new URL(
-    '../supabase/migrations/20261008120000_attachment_privacy_active_admin_01.sql', import.meta.url,
+    '../supabase/migrations/20261008120000_file_privacy.sql', import.meta.url,
 ), 'utf8');
 const policies = migration.split(/alter policy /i).slice(1);
 for (const name of ['Public can read approved community user files', 'user_files_storage_read']) {
@@ -23,9 +23,6 @@ for (const operation of ['select', 'insert', 'update', 'delete']) {
 }
 console.log('STORY SECURITY: PASS (migration assertions)');
 
-// Optional live coverage against the existing LOCAL Supabase stack only.
-// Both migration and fixtures roll back; a psql error also aborts the transaction.
-// Run: node scripts/verify-story-security.mjs --database
 if (process.argv.includes('--database')) {
     const sql = `BEGIN;
 SET LOCAL statement_timeout = '30s';

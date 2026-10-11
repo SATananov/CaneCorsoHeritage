@@ -18,4 +18,4 @@ for (const [label, ok] of checks) {
   if (!ok) failed = true;
 }
 if (failed) process.exit(1);
-console.log('STORY LANGUAGE FALLBACK FIX 01: PASS');
+console.log('STORY LANGUAGE FALLBACK: PASS');

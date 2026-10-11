@@ -19,7 +19,7 @@ const form = read('src/components/AddStoryModal.jsx');
 const details = read('src/pages/StoryDetailsPage.jsx');
 const hook = read('src/hooks/useStoryTranslation.js');
 const service = read('src/services/storyTranslationService.js');
-const migration = read('supabase/migrations/20261006152000_story_translation_01.sql');
+const migration = read('supabase/migrations/20261006152000_story_translation.sql');
 const edge = read('supabase/functions/translate-story/index.ts');
 
 expect(form, /original_language:\s*formData\.originalLanguage/, 'author original language is stored as metadata');

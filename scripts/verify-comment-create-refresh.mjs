@@ -10,8 +10,6 @@ assert.ok(start >= 0 && end > start, 'Locate actual component logic');
 const keyExpression = source.match(/key=\{(JSON\.stringify\([^\n]+)\}/)?.[1];
 assert.ok(keyExpression, 'The component scopes state with a React key');
 const getKey = runInNewContext(`({ targetType, targetId, user }) => ${keyExpression}`);
-// Execute production handlers/effects with persistent hooks, replacing only JSX
-// and imported services. No copied submission logic and no network requests.
 const componentSource = `${source.slice(source.indexOf('const MAX_COMMENT_LENGTH'), source.indexOf('function CommentsSection('))}
 ${source.slice(start, end)}
     return { comments, profilesById, commentText, editingId, editText, loading,
@@ -228,8 +226,6 @@ await check('successful create survives primary refresh failure and repeated sub
     expectSaved(h);
     assert.equal(h.render().error, 'loadError');
     assert.equal(h.render().comments[0].id, h.database[0].id);
-    // A submit retry cannot reuse the consumed draft. Repeated language
-    // reload failures exercise the existing UI's list reload path.
     for (const language of ['bg', 'it']) {
         await h.submit();
         h.outcomes.fetch.push(new Error('Read still failed'));

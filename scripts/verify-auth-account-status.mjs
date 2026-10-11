@@ -190,4 +190,4 @@ await withHarness(async (h) => {
     assert.equal(h.snapshot().isActive, false);
 });
 
-console.log('PASS: FIX 19 fail-closed account status loading');
+console.log('PASS: account status loading');
