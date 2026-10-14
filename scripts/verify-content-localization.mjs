@@ -25,8 +25,9 @@ const heritageEdge = read('supabase/functions/translate-heritage/index.ts');
 const migration = read('supabase/migrations/20261006160000_content_languages.sql');
 const translations = read('src/i18n/translations.js');
 
-expect(storiesPreview, /LEGACY_EDITORIAL_STORY_TITLES/, 'legacy editorial Story cards are separated from community content');
-expect(storiesPreview, /localizeStoryCollection\(\s*communityStories,\s*language,\s*\)/, 'real community Story cards follow selected language');
+expect(storiesPreview, /localizeStoryCollection\(\s*data,\s*language,\s*\)/, 'all approved community Story cards follow selected language');
+if (/LEGACY_EDITORIAL_STORY_TITLES|\.has\(story\.title\)/.test(storiesPreview)) { throw new Error('FAIL: Story catalog must not exclude member records by title'); }
+console.log('PASS: Story catalog does not exclude member records by title');
 expect(storiesPreview, /setStories\(enrichedStories\)/, 'localized community Story catalog is committed after catalog enrichment');
 expect(storyService, /fetchStoryTranslations/, 'Story list reuses cached translations');
 expect(storyService, /requestStoryTranslation/, 'missing community Story translations are generated server-side');
@@ -45,4 +46,4 @@ expect(heritageEdge, /\.eq\('status', 'published'\)/, 'only published Heritage c
 expect(heritageService, /resolveHeritageArticle/, 'translated Heritage is presentation-only and canonical source stays intact');
 
 console.log('CONTENT LOCALIZATION ARCHITECTURE 01: PASS');
-console.log('Static editorial Story cards use EN/BG/IT i18n; real community Stories use translation cache/Edge Function; Heritage translations remain separate and canonical content stays intact.');
+console.log('All approved community Stories use the translation cache/Edge Function without title-based exclusion; Heritage translations remain separate and canonical content stays intact.');

@@ -25,6 +25,9 @@ function errorQueue() {
 }
 
 const myFilesSource = read('src/pages/MyFilesPage.jsx');
+assert.match(myFilesSource, /const fileLoadRequestRef = useRef\(0\);/, 'My Files tracks the latest list request');
+assert.match(myFilesSource, /requestId === fileLoadRequestRef\.current/, 'My Files ignores stale list responses');
+assert.match(myFilesSource, /deleteCleanupWarning/, 'My Files surfaces pending storage cleanup after metadata deletion');
 const myFilesHandlers = between(
     myFilesSource,
     '    async function visibilityHandler(file) {',
@@ -55,6 +58,7 @@ function myFilesHarness() {
     let error = '';
     let visibilityCalls = 0;
     let deleteCalls = 0;
+    let deleteResult = { deleted: true, cleanupPending: false };
     let refreshCalls = 0;
     const visibilityOutcome = errorQueue();
     const deleteOutcome = errorQueue();
@@ -72,7 +76,7 @@ function myFilesHarness() {
         },
         deleteUserFile: async () => {
             deleteCalls += 1;
-            return deleteOutcome.take(() => undefined);
+            return deleteOutcome.take(() => deleteResult);
         },
         refreshFiles: async () => {
             refreshCalls += 1;
@@ -88,6 +92,7 @@ function myFilesHarness() {
         error: () => error,
         visibilityOutcome,
         deleteOutcome,
+        setDeleteResult: (value) => { deleteResult = value; },
         refreshOutcome,
         calls: () => ({ visibilityCalls, deleteCalls, refreshCalls }),
     };
@@ -230,6 +235,16 @@ await check('My Files committed delete survives refresh failure and reports load
     h.refreshOutcome.fail('read failed');
     await h.deleteHandler(target);
     assert.equal(h.error(), 'loadError');
+    assert.equal(h.files().length, 0);
+    assert.deepEqual(h.calls(), { visibilityCalls: 0, deleteCalls: 1, refreshCalls: 1 });
+});
+
+await check('My Files committed delete reports pending storage cleanup', async () => {
+    const h = myFilesHarness();
+    const target = { ...h.file() };
+    h.setDeleteResult({ deleted: true, cleanupPending: true });
+    await h.deleteHandler(target);
+    assert.equal(h.error(), 'deleteCleanupWarning');
     assert.equal(h.files().length, 0);
     assert.deepEqual(h.calls(), { visibilityCalls: 0, deleteCalls: 1, refreshCalls: 1 });
 });

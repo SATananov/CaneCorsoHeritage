@@ -48,6 +48,7 @@ function MyFilesPage() {
     const [error, setError] = useState('');
     const [zoomedImage, setZoomedImage] = useState(null);
     const uploadingRef = useRef(false);
+    const fileLoadRequestRef = useRef(0);
     const uploadBatchRef = useRef({ userId: null, completed: new WeakSet() });
 
     function getFileVisibilityLabel(file) {
@@ -62,16 +63,25 @@ function MyFilesPage() {
 
     useEffect(() => {
         let active = true;
+        const requestId = ++fileLoadRequestRef.current;
+
         async function loadFiles() {
             try {
                 const data = await fetchMyFiles(user.id);
-                if (active) setFiles(data);
+                if (active && requestId === fileLoadRequestRef.current) {
+                    setFiles(data);
+                }
             } catch {
-                if (active) setError(t('loadError'));
+                if (active && requestId === fileLoadRequestRef.current) {
+                    setError(t('loadError'));
+                }
             } finally {
-                if (active) setLoading(false);
+                if (active && requestId === fileLoadRequestRef.current) {
+                    setLoading(false);
+                }
             }
         }
+
         loadFiles();
         return () => { active = false; };
     }, [t, user.id]);
@@ -91,8 +101,12 @@ function MyFilesPage() {
     }, [zoomedImage]);
 
     async function refreshFiles() {
+        const requestId = ++fileLoadRequestRef.current;
         const data = await fetchMyFiles(user.id);
-        setFiles(data);
+
+        if (requestId === fileLoadRequestRef.current) {
+            setFiles(data);
+        }
     }
 
     async function uploadHandler(event) {
@@ -198,8 +212,10 @@ function MyFilesPage() {
     async function deleteHandler(file) {
         setError('');
 
+        let deletionResult;
+
         try {
-            await deleteUserFile(file);
+            deletionResult = await deleteUserFile(file);
         } catch {
             setError(t('deleteError'));
             return;
@@ -210,6 +226,9 @@ function MyFilesPage() {
 
         try {
             await refreshFiles();
+            if (deletionResult?.cleanupPending) {
+                setError(t('deleteCleanupWarning'));
+            }
         } catch {
             setError(t('loadError'));
         }

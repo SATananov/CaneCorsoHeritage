@@ -8,12 +8,6 @@ import { enrichStoriesWithCatalogMetrics } from '../services/storyCatalogService
 import { fetchStories } from '../services/storyService';
 import { localizeStoryCollection } from '../services/storyTranslationService';
 
-const LEGACY_EDITORIAL_STORY_TITLES = new Set([
-    'Where every story begins',
-    'The bond that stays',
-    'Stories carried forward',
-]);
-
 const SORT_OPTIONS = {
     NEWEST: 'newest',
     TOP_RATED: 'topRated',
@@ -50,12 +44,8 @@ function StoriesPreviewSection() {
             try {
                 const data = await fetchStories({ signal: controller.signal });
 
-                const communityStories = data.filter(
-                    (story) => !LEGACY_EDITORIAL_STORY_TITLES.has(story.title),
-                );
-
                 const localizedStories = await localizeStoryCollection(
-                    communityStories,
+                    data,
                     language,
                 );
 

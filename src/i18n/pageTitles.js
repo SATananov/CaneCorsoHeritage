@@ -8,6 +8,8 @@ const ROUTE_TITLES = {
     en: {
         home: 'Cane Corso Heritage | USG - Unico Suo Genere',
         stories: 'Stories',
+        gallery: 'Gallery',
+        documents: 'Documents',
         story: 'Story',
         heritage: 'Heritage',
         heritageArticle: 'Heritage Article',
@@ -27,6 +29,8 @@ const ROUTE_TITLES = {
     bg: {
         home: 'Кане Корсо Наследство | USG - Unico Suo Genere',
         stories: 'Истории',
+        gallery: 'Галерия',
+        documents: 'Документи',
         story: 'История',
         heritage: 'Наследство',
         heritageArticle: 'Материал от Наследство',
@@ -46,6 +50,8 @@ const ROUTE_TITLES = {
     it: {
         home: 'Patrimonio Cane Corso | USG - Unico Suo Genere',
         stories: 'Storie',
+        gallery: 'Galleria',
+        documents: 'Documenti',
         story: 'Storia',
         heritage: 'Patrimonio',
         heritageArticle: 'Articolo del Patrimonio',
@@ -74,6 +80,8 @@ export function getPageTitle(language, pathname) {
 
     if (pathname === '/') return titles.home;
     if (pathname === '/stories') return withBrand(activeLanguage, titles.stories);
+    if (pathname === '/gallery') return withBrand(activeLanguage, titles.gallery);
+    if (pathname === '/documents') return withBrand(activeLanguage, titles.documents);
     if (pathname.startsWith('/stories/')) return withBrand(activeLanguage, titles.story);
     if (pathname === '/heritage') return withBrand(activeLanguage, titles.heritage);
     if (pathname.startsWith('/heritage/')) return withBrand(activeLanguage, titles.heritageArticle);

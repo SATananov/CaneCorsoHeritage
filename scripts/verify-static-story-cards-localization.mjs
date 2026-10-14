@@ -4,9 +4,8 @@ const section = fs.readFileSync('src/components/StoriesPreviewSection.jsx', 'utf
 const translations = fs.readFileSync('src/i18n/translations.js', 'utf8');
 
 const checks = [
-  ['legacy editorial titles are explicitly identified', section.includes('LEGACY_EDITORIAL_STORY_TITLES')],
-  ['legacy editorial rows are filtered before machine translation', section.includes('const communityStories = data.filter(') && section.includes('!LEGACY_EDITORIAL_STORY_TITLES.has(story.title)')],
-  ['only real community stories enter machine translation', /localizeStoryCollection\(\s*communityStories,\s*language,\s*\)/.test(section)],
+  ['community catalog does not exclude records by title', !section.includes('LEGACY_EDITORIAL_STORY_TITLES') && !section.includes('.has(story.title)')],
+  ['all approved community stories enter machine translation', /localizeStoryCollection\(\s*data,\s*language,\s*\)/.test(section)],
   ['localized community Story catalog is committed after catalog enrichment', section.includes('setStories(enrichedStories)')],
   ['EN static story keys exist',
     translations.includes("fallbackOriginsTitle: 'Where every story begins'") &&
@@ -28,4 +27,4 @@ if (failed) {
 }
 
 console.log('STATIC STORY CARDS LOCALIZATION: PASS');
-console.log('Legacy editorial Story titles remain identified for exclusion; only real community Stories use machine translation and the enriched community catalog is rendered.');
+console.log('Approved community Stories are never excluded by title; all records use machine translation as needed and the enriched community catalog is rendered.');
