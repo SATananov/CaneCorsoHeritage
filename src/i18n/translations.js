@@ -451,6 +451,8 @@ export const translations = {
                 comments: {
             community: 'Community',
             title: 'Comments',
+            openComments: 'Open comments',
+            closeComments: 'Close comments',
             loading: 'Loading comments...',
             noComments: 'No comments yet. Be the first to join the conversation.',
             loadError: 'Unable to load comments.',
@@ -970,6 +972,8 @@ export const translations = {
                 comments: {
             community: 'Общност',
             title: 'Коментари',
+            openComments: 'Отвори коментарите',
+            closeComments: 'Затвори коментарите',
             loading: 'Зареждане на коментарите...',
             noComments: 'Все още няма коментари. Бъдете първият, който ще се включи.',
             loadError: 'Коментарите не могат да бъдат заредени.',
@@ -1489,6 +1493,8 @@ export const translations = {
                 comments: {
             community: 'Comunità',
             title: 'Commenti',
+            openComments: 'Apri i commenti',
+            closeComments: 'Chiudi i commenti',
             loading: 'Caricamento dei commenti...',
             noComments: 'Non ci sono ancora commenti. Partecipa per primo alla conversazione.',
             loadError: 'Impossibile caricare i commenti.',

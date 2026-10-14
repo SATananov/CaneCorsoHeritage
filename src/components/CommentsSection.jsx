@@ -104,6 +104,7 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
     const [editingId, setEditingId] = useState('');
     const [editText, setEditText] = useState('');
     const [loading, setLoading] = useState(true);
+    const [commentsOpen, setCommentsOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [actionId, setActionId] = useState('');
     const [reactions, setReactions] = useState([]);
@@ -422,8 +423,20 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
     }
 
     return (
-        <section className={styles.comments} aria-labelledby={`comments-${targetType}-${targetId}`}>
-            <div className={styles.headingRow}>
+        <details
+            className={styles.disclosure}
+            onToggle={(event) => setCommentsOpen(event.currentTarget.open)}
+        >
+            <summary className={styles.disclosureSummary}>
+                <span>{commentsOpen ? t('closeComments') : t('openComments')}</span>
+                <span className={styles.disclosureCount} aria-label={`${comments.length} ${t('title').toLowerCase()}`}>
+                    {loading ? '…' : comments.length}
+                </span>
+            </summary>
+
+            <div className={styles.disclosureContent}>
+                <section className={styles.comments} aria-labelledby={`comments-${targetType}-${targetId}`}>
+                    <div className={styles.headingRow}>
                 <div>
                     <span className={styles.kicker}>{t('community')}</span>
                     <h2
@@ -646,7 +659,9 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
                     {error}
                 </p>
             )}
-        </section>
+                </section>
+            </div>
+        </details>
     );
 }
 

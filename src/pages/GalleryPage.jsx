@@ -505,21 +505,10 @@ useEffect(() => {
                                             </div>
                                         )}
 
-                                        <details className={styles.commentsDisclosure}>
-                                            <summary>
-                                                <span>{t('commentsMetric')}</span>
-                                                <span className={styles.commentsCount}>
-                                                    {file.commentCount == null ? '—' : file.commentCount}
-                                                </span>
-                                            </summary>
-
-                                            <div className={styles.commentsContent}>
-                                                <CommentsSection
-                                                    targetType="file"
-                                                    targetId={file.id}
-                                                />
-                                            </div>
-                                        </details>
+                                        <CommentsSection
+                                            targetType="file"
+                                            targetId={file.id}
+                                        />
                                     </div>
                                 </article>
                             );

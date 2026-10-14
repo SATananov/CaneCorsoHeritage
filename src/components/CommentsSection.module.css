@@ -1,3 +1,90 @@
+
+.disclosure {
+    margin-top: 28px;
+}
+
+.disclosureSummary {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 8px 10px 8px 16px;
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-radius: 999px;
+    background: rgba(248, 245, 239, 0.035);
+    color: rgba(248, 245, 239, 0.78);
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    list-style: none;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        color 160ms ease;
+}
+
+.disclosureSummary::-webkit-details-marker {
+    display: none;
+}
+
+.disclosureSummary::after {
+    content: "+";
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    place-items: center;
+    border: 1px solid rgba(212, 175, 55, 0.34);
+    border-radius: 50%;
+    background: rgba(212, 175, 55, 0.05);
+    color: #d4af37;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.disclosure[open] .disclosureSummary::after {
+    content: "−";
+    background: rgba(212, 175, 55, 0.10);
+}
+
+.disclosureSummary:hover,
+.disclosureSummary:focus-visible,
+.disclosure[open] .disclosureSummary {
+    border-color: rgba(212, 175, 55, 0.72);
+    background: rgba(212, 175, 55, 0.10);
+    color: #f3d46f;
+    outline: none;
+}
+
+.disclosureCount {
+    margin-left: auto;
+    display: inline-grid;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 7px;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(248, 245, 239, 0.08);
+    color: rgba(248, 245, 239, 0.82);
+    font-size: 0.7rem;
+}
+
+.disclosure[open] .disclosureCount {
+    background: rgba(212, 175, 55, 0.16);
+    color: #f3d46f;
+}
+
+.disclosureContent {
+    padding-top: 8px;
+}
+
+.disclosureContent .comments {
+    margin-top: 0;
+}
+
 .comments {
     display: grid;
     gap: 18px;
@@ -306,6 +393,15 @@
 }
 
 @media (max-width: 640px) {
+    .disclosure {
+        margin-top: 22px;
+    }
+
+    .disclosureSummary {
+        min-height: 42px;
+        padding-left: 14px;
+    }
+
     .comments {
         gap: 15px;
         margin-top: 22px;
