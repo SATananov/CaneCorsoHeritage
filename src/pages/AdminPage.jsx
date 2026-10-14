@@ -114,7 +114,10 @@ function AdminDashboard({ user }) {
                 // File preview URLs are secondary UI enrichment and must not delay
                 // or invalidate the dashboard's moderation/queue state.
                 try {
-                    const filesWithUrls = await addFileSignedUrls(nextData.files ?? []);
+                    const [filesWithUrls, pendingFilesWithUrls] = await Promise.all([
+                        addFileSignedUrls(nextData.files ?? []),
+                        addFileSignedUrls(nextData.pendingFiles ?? []),
+                    ]);
                     if (!isCurrent()) return true;
 
                     setData((currentData) => (
@@ -122,6 +125,7 @@ function AdminDashboard({ user }) {
                             ? {
                                 ...currentData,
                                 files: filesWithUrls,
+                                pendingFiles: pendingFilesWithUrls,
                             }
                             : currentData
                     ));

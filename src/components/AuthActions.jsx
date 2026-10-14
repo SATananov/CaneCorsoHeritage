@@ -166,6 +166,12 @@ function AuthActions(props) {
                 >
                     {t('myFiles')}
                 </NavLink>
+                <NavLink
+                    className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
+                    to="/my-documents"
+                >
+                    {t('myDocuments')}
+                </NavLink>
                 {isAdmin && (
                     <NavLink
                         className={({ isActive }) => `login-button admin-nav-link${isActive ? ' auth-route-active' : ''}`}

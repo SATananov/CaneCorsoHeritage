@@ -24,6 +24,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'));
 const MyStoriesPage = lazy(() => import('./pages/MyStoriesPage'));
 const MyFilesPage = lazy(() => import('./pages/MyFilesPage'));
+const MyDocumentsPage = lazy(() => import('./pages/MyDocumentsPage'));
 const UsersPage = lazy(() => import('./pages/UsersPage'));
 const UserDetailsPage = lazy(() => import('./pages/UserDetailsPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
@@ -83,6 +84,7 @@ function App() {
                         <Route element={<RequireCompleteProfile />}>
                             <Route path="my-stories" element={<MyStoriesPage />} />
                             <Route path="my-files" element={<MyFilesPage />} />
+                            <Route path="my-documents" element={<MyDocumentsPage />} />
                         </Route>
                     </Route>
 

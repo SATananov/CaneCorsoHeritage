@@ -81,7 +81,20 @@ function AdminPendingSection({
                         <tbody>
                             {pendingFiles.map((file) => (
                                 <tr key={file.id}>
-                                    <td>{file.file_name}</td>
+                                    <td>
+                                        {file.url ? (
+                                            <a
+                                                className={styles.fileOpenLink}
+                                                href={file.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {file.file_name}
+                                            </a>
+                                        ) : (
+                                            file.file_name
+                                        )}
+                                    </td>
                                     <td>
                                         {memberNameById.get(file.user_id) ?? (
                                             <span className={styles.unlinkedMember}>

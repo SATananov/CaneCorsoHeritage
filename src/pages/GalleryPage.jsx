@@ -15,6 +15,7 @@ import {
     enrichCommunityMediaWithMetrics,
     fetchCommunityMediaFiles,
 } from '../services/fileService';
+import { isDocumentCategoryFile } from '../utils/fileCategories';
 import styles from './GalleryPage.module.css';
 
 const MEDIA_FILTERS = {
@@ -22,6 +23,7 @@ const MEDIA_FILTERS = {
     IMAGES: 'images',
     AUDIO: 'audio',
     VIDEO: 'video',
+    STORIES: 'stories',
     DOCUMENTS: 'documents',
 };
 
@@ -35,14 +37,33 @@ const SORT_OPTIONS = {
     MOST_COMMENTED: 'most-commented',
 };
 
+function isStoryTextFile(file) {
+    if (!file.story_id) return false;
+
+    const mimeType = file.mime_type ?? '';
+    const fileName = file.file_name?.toLowerCase() ?? '';
+
+    return mimeType.startsWith('text/')
+        || fileName.endsWith('.txt')
+        || fileName.endsWith('.md');
+}
+
 function getMediaType(file) {
     const mimeType = file.mime_type ?? '';
 
+    if (isDocumentCategoryFile(file)) return MEDIA_FILTERS.DOCUMENTS;
     if (mimeType.startsWith('image/')) return MEDIA_FILTERS.IMAGES;
     if (mimeType.startsWith('audio/')) return MEDIA_FILTERS.AUDIO;
     if (mimeType.startsWith('video/')) return MEDIA_FILTERS.VIDEO;
+    if (isStoryTextFile(file)) return MEDIA_FILTERS.STORIES;
 
     return MEDIA_FILTERS.DOCUMENTS;
+}
+
+function isImageDocument(file) {
+    return isDocumentCategoryFile(file)
+        && (file.mime_type ?? '').startsWith('image/')
+        && Boolean(file.url);
 }
 
 function getDocumentLabel(file) {
@@ -200,6 +221,7 @@ useEffect(() => {
             [MEDIA_FILTERS.IMAGES]: 0,
             [MEDIA_FILTERS.AUDIO]: 0,
             [MEDIA_FILTERS.VIDEO]: 0,
+            [MEDIA_FILTERS.STORIES]: 0,
             [MEDIA_FILTERS.DOCUMENTS]: 0,
         };
 
@@ -279,6 +301,7 @@ useEffect(() => {
         [MEDIA_FILTERS.IMAGES, t('filterImages')],
         [MEDIA_FILTERS.AUDIO, t('filterAudio')],
         [MEDIA_FILTERS.VIDEO, t('filterVideo')],
+        [MEDIA_FILTERS.STORIES, t('filterStories')],
         [MEDIA_FILTERS.DOCUMENTS, t('filterDocuments')],
     ];
 
@@ -392,7 +415,7 @@ useEffect(() => {
                             return (
                                 <article className={styles.card} key={file.id}>
                                     <div className={styles.mediaFrame}>
-                                        {mediaType === MEDIA_FILTERS.IMAGES && file.url ? (
+                                        {(mediaType === MEDIA_FILTERS.IMAGES || isImageDocument(file)) && file.url ? (
                                             <button
                                                 className={styles.previewButton}
                                                 type="button"
@@ -423,7 +446,9 @@ useEffect(() => {
                                             </video>
                                         ) : (
                                             <div className={styles.documentPreview}>
-                                                <span>{getDocumentLabel(file)}</span>
+                                                <span>{mediaType === MEDIA_FILTERS.STORIES
+                                                    ? t('storyTypeLabel')
+                                                    : getDocumentLabel(file)}</span>
                                             </div>
                                         )}
                                     </div>
@@ -496,14 +521,12 @@ useEffect(() => {
                                             )}
                                         </div>
 
-                                        {mediaType !== MEDIA_FILTERS.DOCUMENTS && (
-                                            <div className={styles.ratingBlock}>
-                                                <MediaRating
-                                                    fileId={file.id}
-                                                    ownerId={file.user_id}
-                                                />
-                                            </div>
-                                        )}
+                                        <div className={styles.ratingBlock}>
+                                            <MediaRating
+                                                fileId={file.id}
+                                                ownerId={file.user_id}
+                                            />
+                                        </div>
 
                                         <CommentsSection
                                             targetType="file"

@@ -23,6 +23,7 @@ const ROUTE_TITLES = {
         updatePassword: 'Update Password',
         myStories: 'My Stories',
         myFiles: 'My Files',
+        myDocuments: 'My Documents',
         admin: 'Administration',
         notFound: 'Page Not Found',
     },
@@ -44,6 +45,7 @@ const ROUTE_TITLES = {
         updatePassword: 'Нова парола',
         myStories: 'Моите истории',
         myFiles: 'Моите файлове',
+        myDocuments: 'Моите документи',
         admin: 'Администрация',
         notFound: 'Страницата не е намерена',
     },
@@ -65,6 +67,7 @@ const ROUTE_TITLES = {
         updatePassword: 'Nuova password',
         myStories: 'Le mie storie',
         myFiles: 'I miei file',
+        myDocuments: 'I miei documenti',
         admin: 'Amministrazione',
         notFound: 'Pagina non trovata',
     },
@@ -95,6 +98,7 @@ export function getPageTitle(language, pathname) {
     if (pathname === '/update-password') return withBrand(activeLanguage, titles.updatePassword);
     if (pathname === '/my-stories') return withBrand(activeLanguage, titles.myStories);
     if (pathname === '/my-files') return withBrand(activeLanguage, titles.myFiles);
+    if (pathname === '/my-documents') return withBrand(activeLanguage, titles.myDocuments);
     if (pathname === '/admin') return withBrand(activeLanguage, titles.admin);
 
     return withBrand(activeLanguage, titles.notFound);

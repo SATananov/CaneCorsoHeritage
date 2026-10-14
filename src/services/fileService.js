@@ -92,6 +92,7 @@ function safeFileName(fileName) {
         || 'file';
 }
 
+
 async function getCurrentUser() {
     const { data, error } = await supabase.auth.getUser();
 
@@ -130,6 +131,7 @@ export async function uploadUserFiles(
         storyId = null,
         visibility = 'private',
         allowMemberDownload = false,
+        contentCategory = null,
     } = {},
 ) {
     if (!files?.length) {
@@ -141,7 +143,8 @@ export async function uploadUserFiles(
 
     for (const file of files) {
         const mimeType = validateFile(file);
-        const storagePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName(file.name)}`;
+        const categoryFolder = contentCategory === 'document' ? 'documents/' : '';
+        const storagePath = `${user.id}/${categoryFolder}${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName(file.name)}`;
 
         const { error: uploadError } = await supabase.storage
             .from('user-files')
@@ -322,6 +325,7 @@ export async function fetchCommunityGalleryImages(options = {}) {
         .eq('visibility', 'community')
         .eq('moderation_status', 'approved')
         .like('mime_type', 'image/%')
+        .not('storage_path', 'like', '%/documents/%')
         .order('created_at', { ascending: false });
 
     if (options.signal) {
@@ -478,3 +482,4 @@ export async function deleteUserFile(file) {
         cleanupError: storageError?.message || null,
     };
 }
+

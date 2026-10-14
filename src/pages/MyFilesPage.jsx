@@ -11,6 +11,7 @@ import {
     updateUserFileDownloadPermission,
     uploadUserFiles,
 } from '../services/fileService';
+import { isDocumentCategoryFile } from '../utils/fileCategories';
 import styles from './MyFilesPage.module.css';
 
 function formatSize(bytes) {
@@ -31,15 +32,45 @@ function getFileTypeLabel(file) {
     return 'TEXT';
 }
 
-function MyFilesPage() {
+
+function isStoryTextFile(file) {
+    if (!file.story_id) return false;
+
+    const mimeType = file.mime_type ?? '';
+    const fileName = file.file_name?.toLowerCase() ?? '';
+
+    return mimeType.startsWith('text/')
+        || fileName.endsWith('.txt')
+        || fileName.endsWith('.md');
+}
+
+function isDocumentFile(file) {
+    if (isDocumentCategoryFile(file)) return true;
+
+    const mimeType = file.mime_type ?? '';
+
+    return !isStoryTextFile(file)
+        && !mimeType.startsWith('image/')
+        && !mimeType.startsWith('audio/')
+        && !mimeType.startsWith('video/');
+}
+
+function MyFilesPage({ mode = 'all' } = {}) {
     const { user } = useAuth();
     const { language } = useLanguage();
-    const t = useCallback((key) => getTranslation(language, 'myFiles', key), [language]);
+    const translationSection = mode === 'documents' ? 'myDocuments' : 'myFiles';
+    const t = useCallback((key) => {
+        const value = getTranslation(language, translationSection, key);
+        return mode === 'documents' && value === key
+            ? getTranslation(language, 'myFiles', key)
+            : value;
+    }, [language, mode, translationSection]);
     const format = (key, values) => Object.entries(values).reduce(
         (text, [name, value]) => text.replace(`{${name}}`, value),
         t(key),
     );
     const [files, setFiles] = useState([]);
+    const visibleFiles = mode === 'documents' ? files.filter(isDocumentFile) : files;
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [visibility, setVisibility] = useState('private');
     const [allowMemberDownload, setAllowMemberDownload] = useState(false);
@@ -189,6 +220,7 @@ function MyFilesPage() {
                 await uploadUserFiles([file], {
                     visibility,
                     allowMemberDownload,
+                    contentCategory: mode === 'documents' ? 'document' : null,
                 });
                 // The service resolves only after both storage and metadata succeed.
                 batch.completed.add(file);
@@ -317,7 +349,9 @@ function MyFilesPage() {
                                     className={styles.fileInput}
                                     type="file"
                                     multiple
-                                    accept="image/*,audio/*,video/mp4,text/*,.txt,.md,.csv,.tsv,.json,.xml,.rtf,.pdf,.doc,.docx,.odt"
+                                    accept={mode === 'documents'
+                                        ? "image/*,.txt,.md,.csv,.tsv,.json,.xml,.rtf,.pdf,.doc,.docx,.odt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,text/*"
+                                        : "image/*,audio/*,video/mp4,text/*,.txt,.md,.csv,.tsv,.json,.xml,.rtf,.pdf,.doc,.docx,.odt"}
                                     onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []))}
                                     disabled={uploading}
                                 />
@@ -356,11 +390,11 @@ function MyFilesPage() {
                 <p className={styles.fileHint}>{t('fileHint')}</p>
                 {error && <div className={styles.message} role="alert">{error}</div>}
                 {loading && <LoadingSpinner label={t('loading')} />}
-                {!loading && files.length === 0 && <div className={styles.message}>{t('empty')}</div>}
+                {!loading && visibleFiles.length === 0 && <div className={styles.message}>{t('empty')}</div>}
 
-                {!loading && files.length > 0 && (
+                {!loading && visibleFiles.length > 0 && (
                     <section className={styles.grid} aria-label={t('filesLabel')}>
-                        {files.map((file) => (
+                        {visibleFiles.map((file) => (
                             <article className={styles.card} key={file.id}>
                                 {file.mime_type?.startsWith('image/') && file.url ? (
                                     <button className={styles.previewButton} type="button" onClick={() => setZoomedImage(file)} aria-label={format('zoomFile', { name: file.file_name })}>

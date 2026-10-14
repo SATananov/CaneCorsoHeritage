@@ -6,12 +6,14 @@ import CatalogLoadMore from '../components/CatalogLoadMore';
 import CatalogResultSummary from '../components/CatalogResultSummary';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
+import MediaRating from '../components/MediaRating';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import {
     enrichCommunityMediaWithMetrics,
     fetchCommunityMediaFiles,
 } from '../services/fileService';
+import { isDocumentCategoryFile } from '../utils/fileCategories';
 import styles from './DocumentsPage.module.css';
 
 const PAGE_SIZE = 9;
@@ -23,12 +25,32 @@ const SORT_OPTIONS = {
     MOST_COMMENTED: 'most-commented',
 };
 
+function isStoryTextFile(file) {
+    if (!file.story_id) return false;
+
+    const mimeType = file.mime_type ?? '';
+    const fileName = file.file_name?.toLowerCase() ?? '';
+
+    return mimeType.startsWith('text/')
+        || fileName.endsWith('.txt')
+        || fileName.endsWith('.md');
+}
+
 function isDocument(file) {
+    if (isDocumentCategoryFile(file)) return true;
+
     const mimeType = file.mime_type ?? '';
 
-    return !mimeType.startsWith('image/')
+    return !isStoryTextFile(file)
+        && !mimeType.startsWith('image/')
         && !mimeType.startsWith('audio/')
         && !mimeType.startsWith('video/');
+}
+
+function isImageDocument(file) {
+    return isDocumentCategoryFile(file)
+        && (file.mime_type ?? '').startsWith('image/')
+        && Boolean(file.url);
 }
 
 function getDocumentLabel(file) {
@@ -234,7 +256,23 @@ function DocumentsPage() {
                         {pagedFiles.map((file) => (
                             <article className={styles.card} key={file.id}>
                                 <div className={styles.documentPreview}>
-                                    <span>{getDocumentLabel(file)}</span>
+                                    {isImageDocument(file) ? (
+                                        <a
+                                            className={styles.imageDocumentLink}
+                                            href={file.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            aria-label={`${t('openFile')}: ${file.file_name}`}
+                                        >
+                                            <img
+                                                className={styles.imageDocumentPreview}
+                                                src={file.url}
+                                                alt={file.file_name}
+                                            />
+                                        </a>
+                                    ) : (
+                                        <span>{getDocumentLabel(file)}</span>
+                                    )}
                                 </div>
 
                                 <div className={styles.cardBody}>
@@ -275,6 +313,14 @@ function DocumentsPage() {
                                                 {t('openFile')}
                                             </a>
                                         )}
+                                    </div>
+
+
+                                    <div className={styles.ratingBlock}>
+                                        <MediaRating
+                                            fileId={file.id}
+                                            ownerId={file.user_id}
+                                        />
                                     </div>
 
                                     <CommentsSection
