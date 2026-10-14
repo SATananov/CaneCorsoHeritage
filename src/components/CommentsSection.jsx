@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { startTransition, useEffect, useMemo, useOptimistic, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
@@ -25,6 +25,37 @@ const DATE_LOCALES = {
     bg: 'bg-BG',
     it: 'it-IT',
 };
+
+function optimisticReactionReducer(_currentChange, optimisticChange) {
+    return optimisticChange;
+}
+
+function applyOptimisticReaction(currentReactions, optimisticChange) {
+    if (!optimisticChange) {
+        return currentReactions;
+    }
+
+    const withoutCurrentUserReaction = currentReactions.filter(
+        (item) => !(
+            item.comment_id === optimisticChange.commentId
+            && item.user_id === optimisticChange.userId
+        ),
+    );
+
+    if (!optimisticChange.reaction) {
+        return withoutCurrentUserReaction;
+    }
+
+    return [
+        ...withoutCurrentUserReaction,
+        {
+            comment_id: optimisticChange.commentId,
+            user_id: optimisticChange.userId,
+            reaction: optimisticChange.reaction,
+            optimistic: true,
+        },
+    ];
+}
 
 
 async function fetchCommentSecondaryData(comments, options) {
@@ -76,6 +107,14 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
     const [saving, setSaving] = useState(false);
     const [actionId, setActionId] = useState('');
     const [reactions, setReactions] = useState([]);
+    const [optimisticReaction, addOptimisticReaction] = useOptimistic(
+        null,
+        optimisticReactionReducer,
+    );
+    const visibleReactions = useMemo(
+        () => applyOptimisticReaction(reactions, optimisticReaction),
+        [reactions, optimisticReaction],
+    );
     const [reactionActionId, setReactionActionId] = useState('');
     const [error, setError] = useState('');
     const scopeRef = useRef(null);
@@ -316,38 +355,50 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
         const currentReaction = reactions.find(
             (item) => item.comment_id === commentId && item.user_id === user.id,
         );
+        const nextReaction = currentReaction?.reaction === reaction ? '' : reaction;
 
         setReactionActionId(commentId);
         setError('');
 
-        try {
-            if (currentReaction?.reaction === reaction) {
-                await removeCommentReaction(commentId);
+        await new Promise((resolve) => {
+            startTransition(async () => {
+                addOptimisticReaction({
+                    commentId,
+                    userId: user.id,
+                    reaction: nextReaction,
+                });
 
-                setReactions((current) => current.filter(
-                    (item) => !(
-                        item.comment_id === commentId
-                        && item.user_id === user.id
-                    ),
-                ));
-            } else {
-                const savedReaction = await setCommentReaction(commentId, reaction);
+                try {
+                    if (currentReaction?.reaction === reaction) {
+                        await removeCommentReaction(commentId);
 
-                setReactions((current) => [
-                    ...current.filter(
-                        (item) => !(
-                            item.comment_id === commentId
-                            && item.user_id === user.id
-                        ),
-                    ),
-                    savedReaction,
-                ]);
-            }
-        } catch {
-            setError(t('reactionError'));
-        } finally {
-            setReactionActionId('');
-        }
+                        setReactions((current) => current.filter(
+                            (item) => !(
+                                item.comment_id === commentId
+                                && item.user_id === user.id
+                            ),
+                        ));
+                    } else {
+                        const savedReaction = await setCommentReaction(commentId, reaction);
+
+                        setReactions((current) => [
+                            ...current.filter(
+                                (item) => !(
+                                    item.comment_id === commentId
+                                    && item.user_id === user.id
+                                ),
+                            ),
+                            savedReaction,
+                        ]);
+                    }
+                } catch {
+                    setError(t('reactionError'));
+                } finally {
+                    setReactionActionId('');
+                    resolve();
+                }
+            });
+        });
     }
 
     function authorLabel(profile) {
@@ -404,7 +455,7 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
                         const isBusy = actionId === comment.id;
                         const isReactionBusy = reactionActionId === comment.id;
 
-                        const commentReactions = reactions.filter(
+                        const commentReactions = visibleReactions.filter(
                             (item) => item.comment_id === comment.id,
                         );
 

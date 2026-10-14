@@ -53,6 +53,26 @@ expect(
 );
 
 expect(
+    comments.includes('useOptimistic')
+    && comments.includes('optimisticReactionReducer')
+    && comments.includes('applyOptimisticReaction')
+    && comments.includes('addOptimisticReaction'),
+    'comment reactions use React optimistic state over authoritative persisted reactions',
+);
+
+expect(
+    comments.includes('startTransition(async () =>') && comments.includes('await new Promise((resolve) =>')
+    && comments.includes('reaction: nextReaction'),
+    'optimistic reaction state is applied while the mutation is pending',
+);
+
+expect(
+    comments.includes('const visibleReactions = useMemo(')
+    && comments.includes('const commentReactions = visibleReactions.filter('),
+    'reaction counts and active state render from authoritative reactions plus a pending optimistic overlay',
+);
+
+expect(
     comments.includes("currentReaction?.reaction === reaction"),
     'pressing the same reaction removes it',
 );
@@ -81,5 +101,5 @@ expect(
     'reaction UI is localized in EN/BG/IT',
 );
 
-console.log('COMMENT REACTIONS 01: PASS');
-console.log('Like/dislike, toggle, switch, one reaction per user and EN/BG/IT UI are verified.');
+console.log('COMMENT REACTIONS 02: PASS');
+console.log('Like/dislike, toggle, switch, optimistic UI, one reaction per user and EN/BG/IT UI are verified.');

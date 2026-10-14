@@ -87,6 +87,12 @@ function harness() {
                 return instance.slots[instance.cursor++] ??= { current: initial };
             },
             useMemo(callback) { return callback(); },
+            useOptimistic(state) {
+                return [state, () => {}];
+            },
+            startTransition(callback) {
+                callback();
+            },
             useEffect(callback, deps) {
                 const index = instance.cursor++;
                 const previous = instance.slots[index];
