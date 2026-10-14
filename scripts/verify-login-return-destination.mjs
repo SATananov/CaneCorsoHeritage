@@ -133,6 +133,7 @@ function harness({ from = target, mode = 'login', authenticated = false } = {}) 
     const change = (name, value) => formInstance.render().handleChange({ target: { name, value } });
     change('email', 'member@example.test');
     change('password', 'secret123');
+    change('confirmPassword', 'secret123');
     change('displayName', 'Member A');
     change('username', 'member.a');
     return {

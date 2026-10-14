@@ -19,6 +19,7 @@ function AuthPreparationSection({ mode = 'login' }) {
         username: '',
         email: '',
         password: '',
+        confirmPassword: '',
     });
     const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -43,6 +44,7 @@ function AuthPreparationSection({ mode = 'login' }) {
         const username = formData.username.trim().toLowerCase();
         const email = formData.email.trim();
         const password = formData.password;
+        const confirmPassword = formData.confirmPassword;
 
         if (!email || !password) {
             setErrorMessage(t('emailPasswordRequired'));
@@ -66,6 +68,16 @@ function AuthPreparationSection({ mode = 'login' }) {
 
         if (password.length < 6) {
             setErrorMessage(t('passwordMin'));
+            return;
+        }
+
+        if (!isLogin && !confirmPassword) {
+            setErrorMessage(t('confirmPasswordRequired'));
+            return;
+        }
+
+        if (!isLogin && password !== confirmPassword) {
+            setErrorMessage(t('passwordMismatch'));
             return;
         }
 
@@ -103,6 +115,7 @@ function AuthPreparationSection({ mode = 'login' }) {
             setFormData((current) => ({
                 ...current,
                 password: '',
+                confirmPassword: '',
             }));
         } catch (error) {
             const message = error?.message || '';
@@ -222,6 +235,21 @@ function AuthPreparationSection({ mode = 'login' }) {
                                         disabled={submitting}
                                     />
                                 </label>
+
+                                {!isLogin && (
+                                    <label>
+                                        <span>{t('confirmPassword')}</span>
+                                        <input
+                                            type="password"
+                                            name="confirmPassword"
+                                            autoComplete="new-password"
+                                            placeholder={t('confirmPasswordPlaceholder')}
+                                            value={formData.confirmPassword}
+                                            onChange={handleChange}
+                                            disabled={submitting}
+                                        />
+                                    </label>
+                                )}
 
                                 <button type="submit" disabled={submitting}>
                                     {submitting
