@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../../hooks/useAuth';
 import { useLanguage } from '../../context/languageContext';

@@ -1,4 +1,4 @@
-﻿import { startTransition, useEffect, useMemo, useOptimistic, useRef, useState } from 'react';
+import { startTransition, useEffect, useMemo, useOptimistic, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';

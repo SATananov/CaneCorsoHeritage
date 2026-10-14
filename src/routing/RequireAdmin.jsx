@@ -1,4 +1,4 @@
-﻿import { Navigate, Outlet } from 'react-router';
+import { Navigate, Outlet } from 'react-router';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import useAuth from '../hooks/useAuth';

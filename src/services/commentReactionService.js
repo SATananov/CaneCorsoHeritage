@@ -1,4 +1,4 @@
-﻿import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 const VALID_REACTIONS = new Set(['like', 'dislike']);
 
