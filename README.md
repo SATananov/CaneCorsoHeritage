@@ -60,28 +60,33 @@ The project combines public educational content with authenticated community fea
 
 ## Architecture
 
-The application uses a small layered React architecture. Route pages compose reusable components, Context and custom Hooks manage shared/reusable state, Services isolate backend access, and Supabase provides the remote platform and security layer.
+The application uses a small layered React architecture. React Router resolves both public and protected routes. Protected routes pass through route guards before rendering pages. Route pages compose reusable components, Context and custom Hooks manage shared/reusable state, Services isolate backend access, and Supabase provides the remote platform and security layer.
 
 ```mermaid
 flowchart TD
     A[User / Browser] --> B[Netlify]
     B --> C[React + Vite SPA]
     C --> D[React Router]
-    D --> E[Route Guards]
-    D --> F[Pages]
 
-    F --> G[Reusable Components]
-    F --> H[Context & Custom Hooks]
+    D --> E[Public Routes]
+    D --> F[Protected Routes]
+    F --> G[Route Guards]
 
-    G --> I[Services]
-    H --> I
+    E --> H[Pages]
+    G --> H
 
-    I --> J[Supabase]
+    H --> I[Reusable Components]
+    H --> J[Context & Custom Hooks]
 
-    J --> K[Auth]
-    J --> L[PostgreSQL + RLS]
-    J --> M[Storage]
-    J --> N[Edge Functions]
+    I --> K[Services]
+    J --> K
+
+    K --> L[Supabase]
+
+    L --> M[Auth]
+    L --> N[PostgreSQL + RLS]
+    L --> O[Storage]
+    L --> P[Edge Functions]
 ```
 
 **Primary data flow:** `Page / Component → Hook or Service → Supabase → React state → UI`
