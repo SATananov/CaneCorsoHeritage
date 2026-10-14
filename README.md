@@ -107,8 +107,10 @@ flowchart TD
 | `/stories/:storyId` | Public / owner-aware | Story details |
 | `/heritage` | Public | Heritage library |
 | `/heritage/:slug` | Public | Heritage article details |
-| `/users` | Public | Members catalog |
-| `/users/:userId` | Public | Member profile |
+| `/members` | Public | Members catalog |
+| `/members/:username` | Public | Friendly member profile |
+| `/users` | Public | Legacy compatibility route to Members |
+| `/users/:userId` | Public | Legacy UUID profile fallback |
 | `/about` | Public | About USG |
 | `/help/:topic?` | Public | Help topics |
 | `/login` | Guest | Login |
@@ -154,8 +156,9 @@ Guests can access the public parts of the application, including:
 - Heritage article details (`/heritage/:slug`)
 - Gallery (`/gallery`)
 - Documents (`/documents`)
-- Members catalog (`/users`)
-- Public member profiles (`/users/:userId`)
+- Members catalog (`/members`)
+- Public member profiles (`/members/:username`)
+- Legacy compatibility routes (`/users`, `/users/:userId`) remain available for older links
 - About USG (`/about`)
 - Help (`/help/:topic?`)
 - Login, registration and password-recovery pages
@@ -211,10 +214,12 @@ The application contains more than five client-side routes and several dynamic r
 
 - `/stories/:storyId`
 - `/heritage/:slug`
-- `/users/:userId`
+- `/members/:username`
 - `/help/:topic?`
 
-Nested routing is used for Stories, Heritage and Users under the common application layout.
+Legacy compatibility routes `/users` and `/users/:userId` remain available so older links continue to work.
+
+Stories, Heritage and Members are routed under the common application layout. Member profile URLs use the public username for readable links, while UUID-based `/users/:userId` URLs are retained only as a backward-compatible fallback.
 
 ### 5. List → Details Flow
 
@@ -224,9 +229,9 @@ The application contains multiple list-to-details flows:
 
 - **Stories**: `/stories` → `/stories/:storyId`
 - **Heritage**: `/heritage` → `/heritage/:slug`
-- **Members**: `/users` → `/users/:userId`
+- **Members**: `/members` → `/members/:username`
 
-Catalog pages load remote records from Supabase-backed services and render lists/cards. Navigation to a specific record is handled by React Router links/navigation and the record identifier becomes part of the URL.
+Catalog pages load remote records from Supabase-backed services and render lists/cards. Navigation to a specific record is handled by React Router links/navigation. Story routes use the Story identifier, Heritage routes use the article slug, and Member routes use the public username for a readable URL.
 
 #### Details pages
 
@@ -327,7 +332,7 @@ The UI uses external CSS and CSS Modules. Styling is separated from React logic 
 
 ### 10. Typical User Flow
 
-1. A visitor opens the deployed application and browses Stories, Heritage, Members or other public content.
+1. A visitor opens the deployed application and browses Stories, Heritage, Members or other public content. Member profiles open with readable URLs such as `/members/<username>`.
 2. The visitor registers or logs in through Supabase Auth.
 3. After completing the required profile, the member opens **My Stories** and creates a new Story.
 4. The Story can later be viewed, edited or deleted by its owner, while eligible public content can receive ratings, comments and reactions from authenticated members.
