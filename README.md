@@ -303,6 +303,10 @@ The project uses React Hooks throughout the application, including:
 - `useState` for local UI/form/data state
 - `useEffect` for lifecycle and asynchronous state synchronization
 - `useMemo` where shared/context values benefit from memoization
+- `useCallback` for stable callback references in interactive and data-driven components
+- `useOptimistic` for immediate Like/Dislike feedback while comment reaction mutations are pending
+- `React.lazy` and `Suspense` for route-level lazy loading and smaller initial page bundles
+- React DevTools Profiler was used to review render behavior before introducing additional memoization
 - `useRef` for request/submission coordination and stable mutable references
 - custom Hooks such as `useAuth`, `useStoryDetails` and `useStoryTranslation`
 
