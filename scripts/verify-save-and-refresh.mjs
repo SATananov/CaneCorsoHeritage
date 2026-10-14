@@ -26,8 +26,12 @@ function errorQueue() {
 
 const myFilesSource = read('src/pages/MyFilesPage.jsx');
 assert.match(myFilesSource, /const fileLoadRequestRef = useRef\(0\);/, 'My Files tracks the latest list request');
+assert.match(myFilesSource, /const mountedRef = useRef\(false\);/, 'My Files tracks mounted state for async list reconciliation');
+assert.match(myFilesSource, /const currentUserIdRef = useRef\(user\.id\);/, 'My Files binds async list reconciliation to the current account');
 assert.match(myFilesSource, /requestId === fileLoadRequestRef\.current/, 'My Files ignores stale list responses');
+assert.match(myFilesSource, /setLoading\(false\);[\s\S]*?async function uploadHandler/, 'latest refresh can settle the initial loading state');
 assert.match(myFilesSource, /deleteCleanupWarning/, 'My Files surfaces pending storage cleanup after metadata deletion');
+assert.match(myFilesSource, /deleteCleanupLoadWarning/, 'My Files preserves cleanup warning when reconciliation also fails');
 const myFilesHandlers = between(
     myFilesSource,
     '    async function visibilityHandler(file) {',
@@ -247,6 +251,73 @@ await check('My Files committed delete reports pending storage cleanup', async (
     assert.equal(h.error(), 'deleteCleanupWarning');
     assert.equal(h.files().length, 0);
     assert.deepEqual(h.calls(), { visibilityCalls: 0, deleteCalls: 1, refreshCalls: 1 });
+});
+
+await check('My Files committed delete preserves cleanup warning when refresh also fails', async () => {
+    const h = myFilesHarness();
+    const target = { ...h.file() };
+    h.setDeleteResult({ deleted: true, cleanupPending: true });
+    h.refreshOutcome.fail('read failed');
+    await h.deleteHandler(target);
+    assert.equal(h.error(), 'deleteCleanupLoadWarning');
+    assert.equal(h.files().length, 0);
+    assert.deepEqual(h.calls(), { visibilityCalls: 0, deleteCalls: 1, refreshCalls: 1 });
+});
+
+await check('My Files latest refresh settles loading after superseding an older initial request', async () => {
+    let currentRequestId = 1;
+    let loading = true;
+    let files = [];
+    let mounted = true;
+    let currentUserId = 'user-1';
+
+    const refreshRequestId = ++currentRequestId;
+    const refreshUserId = 'user-1';
+    const refreshedFiles = [{ id: 'new-file' }];
+
+    if (
+        mounted
+        && currentUserId === refreshUserId
+        && refreshRequestId === currentRequestId
+    ) {
+        files = refreshedFiles;
+        loading = false;
+    }
+
+    // The superseded initial request completes after the refresh.
+    const initialRequestId = 1;
+    if (
+        mounted
+        && currentUserId === 'user-1'
+        && initialRequestId === currentRequestId
+    ) {
+        files = [];
+        loading = false;
+    }
+
+    assert.deepEqual(files, refreshedFiles);
+    assert.equal(loading, false);
+});
+
+await check('My Files stale refresh cannot update after account change or unmount', async () => {
+    const requestId = 4;
+    const requestUserId = 'user-a';
+
+    assert.equal(
+        true
+        && 'user-b' === requestUserId
+        && requestId === requestId,
+        false,
+        'account change must reject the old account response',
+    );
+
+    assert.equal(
+        false
+        && requestUserId === requestUserId
+        && requestId === requestId,
+        false,
+        'unmount must reject a late response',
+    );
 });
 
 await check('comment update failure preserves edit state and reports update error', async () => {

@@ -49,7 +49,14 @@ function MyFilesPage() {
     const [zoomedImage, setZoomedImage] = useState(null);
     const uploadingRef = useRef(false);
     const fileLoadRequestRef = useRef(0);
+    const mountedRef = useRef(false);
+    const currentUserIdRef = useRef(user.id);
+    const previousFileUserIdRef = useRef(user.id);
     const uploadBatchRef = useRef({ userId: null, completed: new WeakSet() });
+
+    useEffect(() => {
+        currentUserIdRef.current = user.id;
+    }, [user.id]);
 
     function getFileVisibilityLabel(file) {
         if (file.visibility === 'private') return t('privateStatus');
@@ -62,21 +69,54 @@ function MyFilesPage() {
     }
 
     useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+            fileLoadRequestRef.current += 1;
+        };
+    }, []);
+
+    useEffect(() => {
         let active = true;
+        const requestUserId = user.id;
         const requestId = ++fileLoadRequestRef.current;
+        const userChanged = previousFileUserIdRef.current !== requestUserId;
+
+        previousFileUserIdRef.current = requestUserId;
+
+        if (userChanged) {
+            setFiles([]);
+            setError('');
+            setLoading(true);
+        }
 
         async function loadFiles() {
             try {
-                const data = await fetchMyFiles(user.id);
-                if (active && requestId === fileLoadRequestRef.current) {
+                const data = await fetchMyFiles(requestUserId);
+                if (
+                    active
+                    && mountedRef.current
+                    && currentUserIdRef.current === requestUserId
+                    && requestId === fileLoadRequestRef.current
+                ) {
                     setFiles(data);
                 }
             } catch {
-                if (active && requestId === fileLoadRequestRef.current) {
+                if (
+                    active
+                    && mountedRef.current
+                    && currentUserIdRef.current === requestUserId
+                    && requestId === fileLoadRequestRef.current
+                ) {
                     setError(t('loadError'));
                 }
             } finally {
-                if (active && requestId === fileLoadRequestRef.current) {
+                if (
+                    active
+                    && mountedRef.current
+                    && currentUserIdRef.current === requestUserId
+                    && requestId === fileLoadRequestRef.current
+                ) {
                     setLoading(false);
                 }
             }
@@ -101,11 +141,27 @@ function MyFilesPage() {
     }, [zoomedImage]);
 
     async function refreshFiles() {
+        const requestUserId = user.id;
         const requestId = ++fileLoadRequestRef.current;
-        const data = await fetchMyFiles(user.id);
 
-        if (requestId === fileLoadRequestRef.current) {
-            setFiles(data);
+        try {
+            const data = await fetchMyFiles(requestUserId);
+
+            if (
+                mountedRef.current
+                && currentUserIdRef.current === requestUserId
+                && requestId === fileLoadRequestRef.current
+            ) {
+                setFiles(data);
+            }
+        } finally {
+            if (
+                mountedRef.current
+                && currentUserIdRef.current === requestUserId
+                && requestId === fileLoadRequestRef.current
+            ) {
+                setLoading(false);
+            }
         }
     }
 
@@ -226,11 +282,13 @@ function MyFilesPage() {
 
         try {
             await refreshFiles();
-            if (deletionResult?.cleanupPending) {
-                setError(t('deleteCleanupWarning'));
-            }
         } catch {
-            setError(t('loadError'));
+            setError(t(deletionResult?.cleanupPending ? 'deleteCleanupLoadWarning' : 'loadError'));
+            return;
+        }
+
+        if (deletionResult?.cleanupPending) {
+            setError(t('deleteCleanupWarning'));
         }
     }
 
