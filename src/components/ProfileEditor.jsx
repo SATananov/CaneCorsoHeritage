@@ -23,6 +23,7 @@ function ProfileEditor({
     contact,
     currentEmail,
     onSaved,
+    onUsernameChanged,
     requiredCompletion = false,
 }) {
     const { language } = useLanguage();
@@ -177,11 +178,17 @@ function ProfileEditor({
             notifyProfileRefresh(profile.id);
             setMessage(t('updated'));
             setOpen(false);
+            if (cleanUsername !== profile.username) {
+                onUsernameChanged?.(cleanUsername);
+            }
             onSaved({ partial: false });
         } catch {
             if (hasCommittedChanges) {
                 notifyProfileRefresh(profile.id);
                 setError(t('partialUpdate'));
+                if (cleanUsername !== profile.username) {
+                    onUsernameChanged?.(cleanUsername);
+                }
                 onSaved({ partial: true });
             } else {
                 setError(t('updateError'));

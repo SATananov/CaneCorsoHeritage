@@ -103,6 +103,11 @@ function AuthActions(props) {
     const profile = profileState.userId === user?.id
         ? profileState.profile
         : null;
+    const profilePath = profile?.username?.trim()
+        ? `/members/${encodeURIComponent(profile.username.trim().toLowerCase())}`
+        : user?.id
+            ? `/users/${user.id}`
+            : '/members';
 
     const identity = useMemo(() => {
         if (!user) {
@@ -145,7 +150,7 @@ function AuthActions(props) {
             <div className={props.className} role="group" aria-label={props.ariaLabel}>
                 <NavLink
                     className={({ isActive }) => `login-button${isActive ? ' auth-route-active' : ''}`}
-                    to={`/users/${user.id}`}
+                    to={profilePath}
                 >
                     {t('myProfile')}
                 </NavLink>
@@ -180,7 +185,7 @@ function AuthActions(props) {
                 {identity && (
                     <NavLink
                         className="signed-in-user"
-                        to={`/users/${user.id}`}
+                        to={profilePath}
                         aria-label={`${t('signedInAs')} ${identity.displayName}`}
                     >
                         <span className="signed-in-user-avatar" aria-hidden="true">

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 import './App.css';
 import { useLanguage } from './context/languageContext';
 import { getTranslation } from './i18n/translations';
@@ -58,8 +58,13 @@ function App() {
                         <Route path=":slug" element={<HeritageArticlePage />} />
                     </Route>
 
-                    <Route path="users">
+                    <Route path="members">
                         <Route index element={<UsersPage />} />
+                        <Route path=":username" element={<UserDetailsPage />} />
+                    </Route>
+
+                    <Route path="users">
+                        <Route index element={<Navigate to="/members" replace />} />
                         <Route path=":userId" element={<UserDetailsPage />} />
                     </Route>
 

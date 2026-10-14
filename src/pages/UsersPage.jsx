@@ -98,7 +98,7 @@ function UsersPage() {
                                 <Link
                                     className={styles.memberCard}
                                     key={profile.id}
-                                    to={`/users/${profile.id}`}
+                                    to={`/members/${encodeURIComponent(profile.username)}`}
                                 >
                                     <div className={styles.avatar} aria-hidden="true">
                                         {avatarUrl ? (

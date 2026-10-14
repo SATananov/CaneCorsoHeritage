@@ -75,7 +75,7 @@ function Header() {
                     <NavLink className={getNavClassName} to="/gallery">{t('gallery')}</NavLink>
                     <NavLink className={getNavClassName} to="/documents">{t('documents')}</NavLink>
                     <NavLink className={getNavClassName} to="/heritage">{t('heritage')}</NavLink>
-                    <NavLink className={getNavClassName} to="/users">{t('members')}</NavLink>
+                    <NavLink className={getNavClassName} to="/members">{t('members')}</NavLink>
                     <NavLink className={getNavClassName} to="/about">{t('about')}</NavLink>
                     <NavLink className={getNavClassName} to="/help">{t('help')}</NavLink>
 

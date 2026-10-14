@@ -85,8 +85,8 @@ export function getPageTitle(language, pathname) {
     if (pathname.startsWith('/stories/')) return withBrand(activeLanguage, titles.story);
     if (pathname === '/heritage') return withBrand(activeLanguage, titles.heritage);
     if (pathname.startsWith('/heritage/')) return withBrand(activeLanguage, titles.heritageArticle);
-    if (pathname === '/users') return withBrand(activeLanguage, titles.members);
-    if (pathname.startsWith('/users/')) return withBrand(activeLanguage, titles.member);
+    if (pathname === '/members' || pathname === '/users') return withBrand(activeLanguage, titles.members);
+    if (pathname.startsWith('/members/') || pathname.startsWith('/users/')) return withBrand(activeLanguage, titles.member);
     if (pathname === '/about') return withBrand(activeLanguage, titles.about);
     if (pathname === '/help' || pathname.startsWith('/help/')) return withBrand(activeLanguage, titles.help);
     if (pathname === '/login') return withBrand(activeLanguage, titles.login);

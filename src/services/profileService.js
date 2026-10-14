@@ -45,6 +45,33 @@ export async function fetchProfileById(userId, options = {}) {
     return data[0] ?? null;
 }
 
+export async function fetchProfileByUsername(username, options = {}) {
+    if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Supabase configuration is missing.');
+    }
+
+    const normalizedUsername = username?.trim().toLowerCase();
+
+    if (!normalizedUsername) {
+        return null;
+    }
+
+    const response = await fetch(
+        `${supabaseUrl}/rest/v1/profiles?select=id,display_name,username,avatar_url,avatar_path,bio,created_at,updated_at,last_seen_at&username=eq.${encodeURIComponent(normalizedUsername)}&limit=1`,
+        {
+            headers: { apikey: supabaseKey },
+            signal: options.signal,
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error('Unable to load this member.');
+    }
+
+    const data = await response.json();
+    return data[0] ?? null;
+}
+
 export async function fetchPublicContacts(options = {}) {
     let query = supabase
         .from('profile_public_contacts')

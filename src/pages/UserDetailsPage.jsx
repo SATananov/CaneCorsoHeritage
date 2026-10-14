@@ -11,6 +11,7 @@ import { fetchCommunityFilesByUser } from '../services/fileService';
 import {
     fetchOwnPrivateProfileDetails,
     fetchProfileById,
+    fetchProfileByUsername,
     fetchProfilePublicContact,
     fetchPublishedStoriesByAuthor,
     getProfileAvatarUrl,
@@ -67,7 +68,8 @@ function UserDetailsPage() {
         (text, [name, value]) => text.replace(`{${name}}`, value),
         t(key),
     );
-    const { userId } = useParams();
+    const { username, userId } = useParams();
+    const memberRouteKey = username ? `username:${username.toLowerCase()}` : `id:${userId}`;
     const navigate = useNavigate();
     const { user, roleLoading, isActive } = useAuth();
     const [profile, setProfile] = useState(null);
@@ -83,14 +85,14 @@ function UserDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [profileSaveNotice, setProfileSaveNotice] = useState({ userId: null, key: '' });
-    const [loadIdentity, setLoadIdentity] = useState({ userId, viewerId: user?.id, refreshKey });
+    const [loadIdentity, setLoadIdentity] = useState({ memberRouteKey, viewerId: user?.id, refreshKey });
 
     if (
-        loadIdentity.userId !== userId
+        loadIdentity.memberRouteKey !== memberRouteKey
         || loadIdentity.viewerId !== user?.id
         || loadIdentity.refreshKey !== refreshKey
     ) {
-        setLoadIdentity({ userId, viewerId: user?.id, refreshKey });
+        setLoadIdentity({ memberRouteKey, viewerId: user?.id, refreshKey });
         setLoading(true);
         setError('');
         setProfile(null);
@@ -110,10 +112,15 @@ function UserDetailsPage() {
 
         const loadProfile = async () => {
             try {
-                const profileData = await fetchProfileById(
-                    userId,
-                    { signal: controller.signal },
-                );
+                const profileData = username
+                    ? await fetchProfileByUsername(
+                        username,
+                        { signal: controller.signal },
+                    )
+                    : await fetchProfileById(
+                        userId,
+                        { signal: controller.signal },
+                    );
 
                 if (!active || controller.signal.aborted) {
                     return;
@@ -161,12 +168,12 @@ function UserDetailsPage() {
 
                 const [storiesResult, filesResult, contactResult] = await Promise.allSettled([
                     fetchPublishedStoriesByAuthor(
-                        userId,
+                        profileData.id,
                         { signal: controller.signal },
                     ),
-                    fetchCommunityFilesByUser(userId),
+                    fetchCommunityFilesByUser(profileData.id),
                     fetchProfilePublicContact(
-                        userId,
+                        profileData.id,
                         { signal: controller.signal },
                     ),
                 ]);
@@ -226,9 +233,18 @@ function UserDetailsPage() {
             active = false;
             controller.abort();
         };
-    }, [isActive, refreshKey, roleLoading, user?.id, userId]);
+    }, [isActive, refreshKey, roleLoading, user?.id, userId, username]);
 
-    const isCurrentMember = loadIdentity.userId === userId;
+    useEffect(() => {
+        if (!username && userId && profile?.username) {
+            navigate(
+                `/members/${encodeURIComponent(profile.username)}`,
+                { replace: true },
+            );
+        }
+    }, [navigate, profile?.username, userId, username]);
+
+    const isCurrentMember = loadIdentity.memberRouteKey === memberRouteKey;
 
     const displayName = profile?.display_name || t('defaultMember');
     const avatarUrl = getProfileAvatarUrl(profile);
@@ -256,7 +272,7 @@ function UserDetailsPage() {
     return (
         <main className={styles.page}>
             <div className={styles.detailsShell}>
-                <button className={styles.backButton} type="button" onClick={() => navigate('/users')}>
+                <button className={styles.backButton} type="button" onClick={() => navigate('/members')}>
                     {t('back')}
                 </button>
 
@@ -346,6 +362,12 @@ function UserDetailsPage() {
                                         key: partial ? 'partialUpdate' : '',
                                     });
                                     setRefreshKey((value) => value + 1);
+                                }}
+                                onUsernameChanged={(savedUsername) => {
+                                    navigate(
+                                        `/members/${encodeURIComponent(savedUsername)}`,
+                                        { replace: true },
+                                    );
                                 }}
                             />
                         )}
