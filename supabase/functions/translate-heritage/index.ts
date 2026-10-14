@@ -142,7 +142,7 @@ Deno.serve(async (request) => {
         const body = await request.json();
         const targetLanguage = body?.targetLanguage;
         const slugs = Array.isArray(body?.slugs)
-            ? [...new Set(body.slugs.filter((slug: unknown): slug is string => typeof slug === 'string' && slug.trim()))]
+           ? [...new Set(body.slugs.filter((slug: unknown): slug is string => typeof slug === 'string' && slug.trim().length > 0))]
             : [];
 
         if (!SUPPORTED_LANGUAGES.has(targetLanguage) || slugs.length === 0) {
