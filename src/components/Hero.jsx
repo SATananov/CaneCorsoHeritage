@@ -23,8 +23,8 @@ function Hero() {
                                 {t('stories')}
                             </Link>
 
-                            <Link className="button button-outline" to="/about">
-                                {t('about')}
+                            <Link className="button button-outline" to="/heritage">
+                                {t('heritage')}
                             </Link>
                         </div>
                     </div>

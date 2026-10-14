@@ -77,9 +77,9 @@ export const translations = {
         hero: {
             kicker: 'Welcome to Cane Corso Heritage',
             title: 'Enter the world of Cane Corso Heritage.',
-            lead: 'Discover the stories, history and heritage of Cane Corso.',
+            lead: 'Discover the stories, heritage, archives and community around Cane Corso.',
             stories: 'Explore Stories',
-            about: 'About the project',
+            heritage: 'Explore Heritage',
         },
         help: {
             kicker: 'Help',
@@ -601,9 +601,9 @@ export const translations = {
         hero: {
             kicker: 'Добре дошли в Cane Corso Heritage',
             title: 'Влезте в света на Cane Corso Heritage.',
-            lead: 'Открийте историите, историята и наследството на Cane Corso.',
+            lead: 'Открийте историите, наследството, архивите и общността около Cane Corso.',
             stories: 'Разгледай историите',
-            about: 'За проекта',
+            heritage: 'Разгледай наследството',
         },
         help: {
             kicker: 'Помощ',
@@ -1125,9 +1125,9 @@ export const translations = {
         hero: {
             kicker: 'Benvenuti in Cane Corso Heritage',
             title: 'Entra nel mondo di Cane Corso Heritage.',
-            lead: 'Scopri le storie, la storia e il patrimonio del Cane Corso.',
+            lead: 'Scopri le storie, il patrimonio, gli archivi e la comunità intorno al Cane Corso.',
             stories: 'Esplora le storie',
-            about: 'Il progetto',
+            heritage: 'Esplora il patrimonio',
         },
         help: {
             kicker: 'Aiuto',
