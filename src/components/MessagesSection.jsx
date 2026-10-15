@@ -8,7 +8,9 @@ import {
     fetchPrivateConversations,
     markConversationRead,
     openOrCreatePrivateConversation,
+    getPrivateMessageAttachmentUrl,
     sendPrivateMessage,
+    sendPrivateMessageAttachment,
     subscribeToConversationMessages,
 } from '../services/messageService';
 import { getMessageTranslation } from '../i18n/messageTranslations';
@@ -59,6 +61,147 @@ function appendUniqueMessage(messages, message) {
 
     return [...messages, message];
 }
+function formatAttachmentSize(size) {
+    if (!Number.isFinite(size) || size <= 0) {
+        return '';
+    }
+
+    if (size < 1024 * 1024) {
+        return `${Math.max(1, Math.round(size / 1024))} KB`;
+    }
+
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function MessageAttachment({ message, t }) {
+    const attachmentPath = message?.attachment_path || '';
+    const [attachmentState, setAttachmentState] = useState({
+        path: '',
+        url: '',
+        loadError: false,
+    });
+
+    useEffect(() => {
+        if (!attachmentPath) {
+            return undefined;
+        }
+
+        let active = true;
+
+        getPrivateMessageAttachmentUrl({ attachment_path: attachmentPath })
+            .then((signedUrl) => {
+                if (active) {
+                    setAttachmentState({
+                        path: attachmentPath,
+                        url: signedUrl || '',
+                        loadError: false,
+                    });
+                }
+            })
+            .catch(() => {
+                if (active) {
+                    setAttachmentState({
+                        path: attachmentPath,
+                        url: '',
+                        loadError: true,
+                    });
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [attachmentPath]);
+
+    if (!attachmentPath) {
+        return null;
+    }
+
+    const currentState = attachmentState.path === attachmentPath
+        ? attachmentState
+        : { url: '', loadError: false };
+    const mimeType = message.attachment_mime_type || '';
+    const fileName = message.attachment_name || t('attachmentOpen');
+    const size = formatAttachmentSize(message.attachment_size);
+
+    if (currentState.loadError) {
+        return <p className={styles.attachmentError}>{t('attachmentLoadError')}</p>;
+    }
+
+    if (!currentState.url) {
+        return <p className={styles.attachmentState}>{t('loading')}</p>;
+    }
+
+    const url = currentState.url;
+
+    if (mimeType.startsWith('image/')) {
+        return (
+            <a
+                className={styles.attachmentMediaLink}
+                href={url}
+                rel="noreferrer"
+                target="_blank"
+            >
+                <img
+                    alt={fileName}
+                    className={styles.messageAttachmentImage}
+                    loading="lazy"
+                    src={url}
+                />
+                <span>{fileName}{size ? ` · ${size}` : ''}</span>
+            </a>
+        );
+    }
+
+    if (mimeType.startsWith('audio/')) {
+        return (
+            <div className={styles.attachmentMedia}>
+                <audio
+                    className={styles.messageAttachmentAudio}
+                    controls
+                    preload="metadata"
+                    src={url}
+                >
+                    <track kind="captions" />
+                </audio>
+                <a href={url} rel="noreferrer" target="_blank">
+                    {fileName}{size ? ` · ${size}` : ''}
+                </a>
+            </div>
+        );
+    }
+
+    if (mimeType.startsWith('video/')) {
+        return (
+            <div className={styles.attachmentMedia}>
+                <video
+                    className={styles.messageAttachmentVideo}
+                    controls
+                    preload="metadata"
+                    src={url}
+                />
+                <a href={url} rel="noreferrer" target="_blank">
+                    {fileName}{size ? ` · ${size}` : ''}
+                </a>
+            </div>
+        );
+    }
+
+    return (
+        <a
+            className={styles.attachmentFileLink}
+            href={url}
+            rel="noreferrer"
+            target="_blank"
+        >
+            <span aria-hidden="true">📄</span>
+            <span>
+                <strong>{fileName}</strong>
+                {size && <small>{size}</small>}
+            </span>
+        </a>
+    );
+}
 function MessageThread({ conversation, otherProfile, onMessageSent }) {
     const { language } = useLanguage();
     const { user } = useAuth();
@@ -72,6 +215,8 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
     const textareaRef = useRef(null);
     const emojiPickerRef = useRef(null);    const [sending, setSending] = useState(false);
     const [sendError, setSendError] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (!conversation?.id || !user?.id) {
@@ -261,7 +406,7 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
 
         const value = draft.trim();
 
-        if (!value || sending) {
+        if ((!value && !selectedFile) || sending) {
             return;
         }
 
@@ -269,15 +414,28 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
         setSendError(false);
 
         try {
-            const saved = await sendPrivateMessage(
-                conversation.id,
-                user.id,
-                value,
-            );
+            const saved = selectedFile
+                ? await sendPrivateMessageAttachment(
+                    conversation.id,
+                    user.id,
+                    selectedFile,
+                    value,
+                )
+                : await sendPrivateMessage(
+                    conversation.id,
+                    user.id,
+                    value,
+                );
 
             setMessages((current) => appendUniqueMessage(current, saved));
             setLoadedConversationId(conversation.id);
             setDraft('');
+            setSelectedFile(null);
+
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+
             onMessageSent?.(saved);
             window.dispatchEvent(new Event('cch:messages-changed'));
         } catch {
@@ -318,7 +476,10 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
                                 key={message.id}
                             >
                                 <span>{own ? t('you') : profileName(otherProfile, t('memberFallback'))}</span>
-                                <p>{message.body}</p>
+                                {(!message.attachment_path || message.body !== message.attachment_name) && (
+                                    <p>{message.body}</p>
+                                )}
+                                <MessageAttachment message={message} t={t} />
                                 <small>{formatMessageTime(message.created_at, language)}</small>
                             </div>
                         );
@@ -331,6 +492,28 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
             )}
 
             <form className={styles.composer} onSubmit={handleSubmit}>
+                <div className={styles.attachmentPicker}>
+                    <input
+                        accept="image/*,audio/*,video/*,.pdf,.txt,.csv,.doc,.docx,.odt,.xls,.xlsx"
+                        className={styles.attachmentInput}
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={(event) => {
+                            setSelectedFile(event.target.files?.[0] || null);
+                            setSendError(false);
+                        }}
+                    />
+                    <button
+                        aria-label={t('attachmentButtonLabel')}
+                        className={styles.attachmentButton}
+                        disabled={sending}
+                        title={t('attachmentButtonLabel')}
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                    >
+                        <span aria-hidden="true">📎</span>
+                    </button>
+                </div>
                 <div className={styles.emojiPicker} ref={emojiPickerRef}>
                     <button
                         aria-expanded={emojiOpen}
@@ -363,6 +546,25 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
                         </div>
                     )}
                 </div>
+                {selectedFile && (
+                    <div className={styles.attachmentPreview}>
+                        <span>
+                            {t('attachmentSelected')}: <strong>{selectedFile.name}</strong>
+                        </span>
+                        <button
+                            aria-label={t('attachmentRemoveLabel')}
+                            type="button"
+                            onClick={() => {
+                                setSelectedFile(null);
+                                if (fileInputRef.current) {
+                                    fileInputRef.current.value = '';
+                                }
+                            }}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
                 <textarea
                     ref={textareaRef}
                     maxLength={2000}
@@ -376,7 +578,7 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
                         }
                     }}
                 />
-                <button disabled={sending || !draft.trim()} type="submit">
+                <button disabled={sending || (!draft.trim() && !selectedFile)} type="submit">
                     {sending ? t('sending') : t('send')}
                 </button>
             </form>

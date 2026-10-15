@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabaseClient';
 
 const CONVERSATION_COLUMNS = 'id,user_one_id,user_two_id,created_by,created_at';
-const MESSAGE_COLUMNS = 'id,conversation_id,sender_id,body,created_at';
+const MESSAGE_COLUMNS = 'id,conversation_id,sender_id,body,created_at, attachment_path, attachment_name, attachment_mime_type, attachment_size';
 const PROFILE_COLUMNS = 'id,username,display_name';
 const READ_COLUMNS = 'conversation_id,user_id,last_read_at';
 
@@ -166,6 +166,163 @@ export async function fetchConversationMessages(conversationId, options = {}) {
     return data || [];
 }
 
+const MESSAGE_ATTACHMENT_BUCKET = 'message-attachments';
+const MESSAGE_ATTACHMENT_MAX_SIZE = 25 * 1024 * 1024;
+const MESSAGE_ATTACHMENT_MIME_TYPES = new Set([
+    'application/pdf',
+    'text/plain',
+    'text/csv',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+]);
+
+const MESSAGE_ATTACHMENT_EXTENSION_TYPES = new Map([
+    ['mp3', 'audio/mpeg'],
+    ['wav', 'audio/wav'],
+    ['ogg', 'audio/ogg'],
+    ['m4a', 'audio/mp4'],
+    ['aac', 'audio/aac'],
+    ['flac', 'audio/flac'],
+    ['jpg', 'image/jpeg'],
+    ['jpeg', 'image/jpeg'],
+    ['png', 'image/png'],
+    ['gif', 'image/gif'],
+    ['webp', 'image/webp'],
+    ['mp4', 'video/mp4'],
+    ['webm', 'video/webm'],
+    ['pdf', 'application/pdf'],
+    ['txt', 'text/plain'],
+    ['csv', 'text/csv'],
+    ['doc', 'application/msword'],
+    ['docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    ['odt', 'application/vnd.oasis.opendocument.text'],
+    ['xls', 'application/vnd.ms-excel'],
+    ['xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+]);
+
+function attachmentExtension(name) {
+    const match = (name || '').toLowerCase().match(/\.([a-z0-9]{1,10})$/);
+    return match?.[1] || '';
+}
+
+function normalizedAttachmentType(file) {
+    const browserType = file?.type?.trim();
+
+    if (browserType) {
+        return browserType;
+    }
+
+    return MESSAGE_ATTACHMENT_EXTENSION_TYPES.get(attachmentExtension(file?.name)) || '';
+}
+
+function isSupportedMessageAttachment(file) {
+    const type = normalizedAttachmentType(file);
+
+    return (
+        type.startsWith('image/')
+        || type.startsWith('audio/')
+        || type.startsWith('video/')
+        || MESSAGE_ATTACHMENT_MIME_TYPES.has(type)
+    );
+}
+
+function displayAttachmentName(name) {
+    const value = (name || 'attachment').trim().slice(0, 255);
+    return value || 'attachment';
+}
+
+export async function sendPrivateMessageAttachment(
+    conversationId,
+    senderId,
+    file,
+    caption = '',
+) {
+    requireId(conversationId, 'Conversation id');
+    requireId(senderId, 'Sender id');
+
+    if (!file?.name || typeof file.size !== 'number') {
+        throw new Error('Attachment file is required.');
+    }
+
+    if (file.size < 1 || file.size > MESSAGE_ATTACHMENT_MAX_SIZE) {
+        throw new Error('Attachment file is too large.');
+    }
+
+    if (!isSupportedMessageAttachment(file)) {
+        throw new Error('Attachment file type is not supported.');
+    }
+
+    const displayName = displayAttachmentName(file.name);
+    const message = caption?.trim() || displayName;
+    const mimeType = normalizedAttachmentType(file);
+    const extension = attachmentExtension(file.name);
+    const uniqueId = globalThis.crypto?.randomUUID?.()
+        || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+    // Storage object names intentionally avoid the original user filename.
+    // Supabase Storage object names are safest with its documented ASCII-safe
+    // character set; the original Unicode filename is preserved in messages.
+    const storageFileName = extension ? `${uniqueId}.${extension}` : uniqueId;
+    const storagePath = `${conversationId}/${senderId}/${storageFileName}`;
+
+    const { error: uploadError } = await supabase
+        .storage
+        .from(MESSAGE_ATTACHMENT_BUCKET)
+        .upload(storagePath, file, {
+            cacheControl: '3600',
+            contentType: mimeType,
+            upsert: false,
+        });
+
+    if (uploadError) {
+        throw uploadError;
+    }
+
+    const { data, error } = await supabase
+        .from('messages')
+        .insert({
+            conversation_id: conversationId,
+            sender_id: senderId,
+            body: message.slice(0, 2000),
+            attachment_path: storagePath,
+            attachment_name: displayName,
+            attachment_mime_type: mimeType,
+            attachment_size: file.size,
+        })
+        .select(MESSAGE_COLUMNS)
+        .single();
+
+    if (error) {
+        await supabase
+            .storage
+            .from(MESSAGE_ATTACHMENT_BUCKET)
+            .remove([storagePath]);
+
+        throw error;
+    }
+
+    return data;
+}
+
+export async function getPrivateMessageAttachmentUrl(message) {
+    if (!message?.attachment_path) {
+        return null;
+    }
+
+    const { data, error } = await supabase
+        .storage
+        .from(MESSAGE_ATTACHMENT_BUCKET)
+        .createSignedUrl(message.attachment_path, 3600);
+
+    if (error) {
+        throw error;
+    }
+
+    return data?.signedUrl || null;
+}
 export async function sendPrivateMessage(conversationId, senderId, body) {
     requireId(conversationId, 'Conversation id');
     requireId(senderId, 'Sender id');
