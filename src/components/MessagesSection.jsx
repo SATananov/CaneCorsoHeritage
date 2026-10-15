@@ -699,15 +699,25 @@ function MessagesSection({ profileId, isOwnProfile }) {
             || loadedOwnerId !== userId
             || location.hash !== '#private-messages'
         ) {
-            return;
+            return undefined;
         }
 
-        window.requestAnimationFrame(() => {
+        function focusPrivateMessages() {
             document.getElementById('private-messages')?.scrollIntoView({
-                behavior: 'smooth',
+                behavior: 'auto',
                 block: 'start',
             });
-        });
+        }
+
+        const frameId = window.requestAnimationFrame(focusPrivateMessages);
+        const shortRetryId = window.setTimeout(focusPrivateMessages, 120);
+        const lateRetryId = window.setTimeout(focusPrivateMessages, 420);
+
+        return () => {
+            window.cancelAnimationFrame(frameId);
+            window.clearTimeout(shortRetryId);
+            window.clearTimeout(lateRetryId);
+        };
     }, [isOwnProfile, loadedOwnerId, location.hash, userId]);
 
     if (!canUseMessages) {

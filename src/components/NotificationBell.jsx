@@ -9,6 +9,7 @@ import {
 } from '../services/friendshipService';
 import {
     fetchUnreadMessageNotifications,
+    openOrCreatePrivateConversation,
     subscribeToPrivateMessageChanges,
 } from '../services/messageService';
 import {
@@ -78,6 +79,7 @@ function NotificationBell() {
     const rootRef = useRef(null);
     const [open, setOpen] = useState(false);
     const [incoming, setIncoming] = useState([]);
+    const [friends, setFriends] = useState([]);
     const [messageNotifications, setMessageNotifications] = useState([]);
     const [commentNotifications, setCommentNotifications] = useState([]);
     const [engagementNotifications, setEngagementNotifications] = useState([]);
@@ -120,6 +122,7 @@ function NotificationBell() {
             ]);
 
             setIncoming(overview.incoming);
+            setFriends(overview.friends);
             setMessageNotifications(unreadMessages);
             setCommentNotifications(unreadComments);
             setEngagementNotifications(unreadEngagements);
@@ -226,6 +229,7 @@ function NotificationBell() {
 
     const ready = loadedForUserId === user.id;
     const visibleIncoming = ready ? incoming : [];
+    const visibleFriends = ready ? friends : [];
     const visibleMessages = ready ? messageNotifications : [];
     const visibleComments = ready ? commentNotifications : [];
     const visibleEngagements = ready ? engagementNotifications : [];
@@ -268,6 +272,23 @@ function NotificationBell() {
         }
     }
 
+    async function handleFriendMessageOpen(event, friendId) {
+        event.preventDefault();
+        setActionError(false);
+
+        try {
+            const conversation = await openOrCreatePrivateConversation(
+                user.id,
+                friendId,
+            );
+            setOpen(false);
+            window.location.assign(
+                `/users/${encodeURIComponent(user.id)}?conversation=${encodeURIComponent(conversation.id)}#private-messages`,
+            );
+        } catch {
+            setActionError(true);
+        }
+    }
     async function handleCommentOpen(commentId) {
         try {
             await markCommentNotificationRead(user.id, commentId);
@@ -444,7 +465,61 @@ function NotificationBell() {
                                             </article>
                                         );
                                     })}
-                                </AccordionSection>
+                                    <div className={styles.messageFriendList}>
+                                        <p className={styles.messageFriendHeading}>
+                                            {t('friendsYouCanMessage')}
+                                        </p>
+
+                                        {visibleFriends.length === 0 ? (
+                                            <p className={styles.messageFriendEmpty}>
+                                                {t('noAcceptedFriends')}
+                                            </p>
+                                        ) : (
+                                            visibleFriends.map((item) => {
+                                                const friendUnreadNotifications = visibleMessages
+                                                    .filter((notification) => (
+                                                        notification.profile?.id === item.other_user_id
+                                                        || notification.other_user_id === item.other_user_id
+                                                    ));
+                                                const unreadCount = friendUnreadNotifications
+                                                    .reduce(
+                                                        (sum, notification) => sum + notification.count,
+                                                        0,
+                                                    );
+                                                const conversationId = friendUnreadNotifications[0]?.conversation_id;
+                                                const path = conversationId
+                                                    ? `/users/${encodeURIComponent(user.id)}?conversation=${encodeURIComponent(conversationId)}#private-messages`
+                                                    : memberPath(item.profile)
+                                                        || `/users/${encodeURIComponent(item.other_user_id)}`;
+                                                const name = memberName(
+                                                    item.profile,
+                                                    t('privateMessages'),
+                                                );
+
+                                                return (
+                                                    <Link
+                                                        className={styles.messageFriendLink}
+                                                        key={item.id}
+                                                        to={path}
+                                                        onClick={(event) => handleFriendMessageOpen(event, item.other_user_id)}
+                                                    >
+                                                        <span>{name}</span>
+                                                        <span className={styles.messageFriendActions}>
+                                                            {unreadCount > 0 && (
+                                                                <strong
+                                                                    className={styles.messageFriendUnread}
+                                                                    aria-label={`${unreadCount} ${t('privateMessages')}`}
+                                                                >
+                                                                    {unreadCount}
+                                                                </strong>
+                                                            )}
+                                                            <small>{t('openMessages')}</small>
+                                                        </span>
+                                                    </Link>
+                                                );
+                                            })
+                                        )}
+                                    </div>                                </AccordionSection>
 
                                 <AccordionSection
                                     count={friendRequestCount}

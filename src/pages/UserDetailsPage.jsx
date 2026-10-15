@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProfileEditor from '../components/ProfileEditor';
 import FriendshipSection from '../components/FriendshipSection';
@@ -72,6 +72,7 @@ function UserDetailsPage() {
     );
     const { username, userId } = useParams();
     const memberRouteKey = username ? `username:${username.toLowerCase()}` : `id:${userId}`;
+    const location = useLocation();
     const navigate = useNavigate();
     const { user, roleLoading, isActive } = useAuth();
     const [profile, setProfile] = useState(null);
@@ -240,11 +241,18 @@ function UserDetailsPage() {
     useEffect(() => {
         if (!username && userId && profile?.username) {
             navigate(
-                `/members/${encodeURIComponent(profile.username)}`,
+                `/members/${encodeURIComponent(profile.username)}${location.search}${location.hash}`,
                 { replace: true },
             );
         }
-    }, [navigate, profile?.username, userId, username]);
+    }, [
+        location.hash,
+        location.search,
+        navigate,
+        profile?.username,
+        userId,
+        username,
+    ]);
 
     const isCurrentMember = loadIdentity.memberRouteKey === memberRouteKey;
 
