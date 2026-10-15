@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import AuthActions from './AuthActions';
+import NotificationBell from './NotificationBell';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
@@ -80,6 +81,7 @@ function Header() {
                     <NavLink className={getNavClassName} to="/help">{t('help')}</NavLink>
 
                     <LanguageSwitcher />
+                    <NotificationBell />
                     <AuthActions className="visitor-auth" ariaLabel={tg('accountOptions')} />
                 </nav>
             </div>

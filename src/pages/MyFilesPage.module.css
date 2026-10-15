@@ -578,4 +578,13 @@
     flex: 0 0 16px;
     accent-color: #d4af37;
 }
-
+.card:target {
+    scroll-margin-top: 150px;
+    border-color: rgba(239, 200, 74, 0.78);
+    box-shadow:
+        0 0 0 1px rgba(239, 200, 74, 0.18),
+        0 0 30px rgba(239, 200, 74, 0.2);
+    background:
+        linear-gradient(135deg, rgba(239, 200, 74, 0.08), transparent 46%),
+        rgba(248, 245, 239, 0.025);
+}

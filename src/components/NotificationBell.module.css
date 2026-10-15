@@ -1,0 +1,395 @@
+.root {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.bellButton {
+    position: relative;
+    display: inline-grid;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    place-items: center;
+    border: 1px solid rgba(212, 175, 55, 0.42);
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 50% 40%, rgba(212, 175, 55, 0.11), transparent 68%),
+        rgba(212, 175, 55, 0.04);
+    color: #d4af37;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+}
+
+.bellButton:hover,
+.bellButton:focus-visible,
+.bellButton[aria-expanded="true"] {
+    border-color: rgba(212, 175, 55, 0.82);
+    background: rgba(212, 175, 55, 0.13);
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.16);
+    outline: none;
+}
+
+.bellButton:active {
+    transform: translateY(1px);
+}
+
+.hasUnread {
+    border-color: rgba(239, 200, 74, 0.96);
+    background:
+        radial-gradient(circle at 50% 42%, rgba(239, 200, 74, 0.24), transparent 68%),
+        rgba(212, 175, 55, 0.10);
+    box-shadow:
+        0 0 0 1px rgba(239, 200, 74, 0.16),
+        0 0 20px rgba(239, 200, 74, 0.26);
+    animation: notificationPulse 2.2s ease-in-out infinite;
+}
+
+.hasUnread .bellIcon {
+    animation: notificationBellRing 2.2s ease-in-out infinite;
+}
+
+.bellIcon {
+    display: grid;
+    width: 22px;
+    height: 22px;
+    place-items: center;
+}
+
+.bellIcon svg {
+    width: 22px;
+    height: 22px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.9;
+}
+
+.badge {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    display: grid;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 6px;
+    place-items: center;
+    border: 2px solid #0a0a0b;
+    border-radius: 999px;
+    background: #efc84a;
+    box-shadow:
+        0 0 0 2px rgba(239, 200, 74, 0.14),
+        0 0 16px rgba(239, 200, 74, 0.38);
+    color: #080809;
+    font-size: 0.65rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.panel {
+    position: absolute;
+    z-index: 1000;
+    top: calc(100% + 12px);
+    right: 0;
+    width: min(420px, calc(100vw - 28px));
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.34);
+    border-radius: 18px;
+    background: #101012;
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+}
+
+.panelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 17px 18px 15px;
+    border-bottom: 1px solid rgba(248, 245, 239, 0.08);
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.09), transparent 65%);
+}
+
+.panelHeader div {
+    min-width: 0;
+}
+
+.panelHeader span,
+.panelHeader strong,
+.panelHeader small {
+    display: block;
+}
+
+.panelHeader span {
+    color: #d4af37;
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.panelHeader strong {
+    margin-top: 4px;
+    color: #f8f5ef;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.08rem;
+}
+
+.panelHeader small {
+    margin-top: 3px;
+    color: rgba(248, 245, 239, 0.47);
+    font-size: 0.63rem;
+}
+
+.closeButton {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid rgba(248, 245, 239, 0.13);
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(248, 245, 239, 0.72);
+    cursor: pointer;
+    font-size: 1.15rem;
+}
+
+.panelBody {
+    max-height: min(520px, 68vh);
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.accordionSection + .accordionSection {
+    margin-top: 8px;
+}
+
+.accordionSection {
+    overflow: hidden;
+    border: 1px solid rgba(248, 245, 239, 0.08);
+    border-radius: 14px;
+    background: rgba(248, 245, 239, 0.018);
+}
+
+.accordionTrigger {
+    display: flex;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 13px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    border: 0;
+    background: transparent;
+    color: #f8f5ef;
+    cursor: pointer;
+    font: inherit;
+}
+
+.accordionTrigger:hover,
+.accordionTrigger:focus-visible {
+    background: rgba(212, 175, 55, 0.055);
+    outline: none;
+}
+
+.accordionTitle {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 850;
+    letter-spacing: 0.025em;
+}
+
+.chevron {
+    display: inline-grid;
+    width: 18px;
+    height: 18px;
+    place-items: center;
+    color: #d4af37;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.sectionCount,
+.sectionCountActive {
+    display: grid;
+    min-width: 25px;
+    height: 25px;
+    padding: 0 7px;
+    place-items: center;
+    border-radius: 999px;
+    font-size: 0.62rem;
+    font-weight: 900;
+}
+
+.sectionCount {
+    border: 1px solid rgba(248, 245, 239, 0.1);
+    background: rgba(248, 245, 239, 0.035);
+    color: rgba(248, 245, 239, 0.45);
+}
+
+.sectionCountActive {
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    background: rgba(212, 175, 55, 0.14);
+    color: #e8cf72;
+}
+
+.accordionPanel {
+    padding: 0 10px 10px;
+    border-top: 1px solid rgba(248, 245, 239, 0.06);
+}
+
+.notification {
+    padding: 13px 4px 12px;
+    border-bottom: 1px solid rgba(248, 245, 239, 0.07);
+}
+
+.notification:last-child {
+    border-bottom: 0;
+}
+
+.notificationCopy p {
+    margin: 0;
+    color: rgba(248, 245, 239, 0.88);
+    font-size: 0.77rem;
+    line-height: 1.5;
+}
+
+.profileLink {
+    display: inline-block;
+    margin-top: 5px;
+    color: #d4af37;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.profileLink:hover,
+.profileLink:focus-visible {
+    color: #ecd773;
+    text-decoration: underline;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 11px;
+}
+
+.acceptButton,
+.declineButton {
+    min-height: 34px;
+    padding: 0 13px;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.acceptButton {
+    border: 1px solid rgba(212, 175, 55, 0.62);
+    background: rgba(212, 175, 55, 0.15);
+    color: #e4c85d;
+}
+
+.declineButton {
+    border: 1px solid rgba(248, 245, 239, 0.15);
+    background: rgba(248, 245, 239, 0.035);
+    color: rgba(248, 245, 239, 0.72);
+}
+
+.acceptButton:disabled,
+.declineButton:disabled {
+    cursor: wait;
+    opacity: 0.55;
+}
+
+.status,
+.empty,
+.error,
+.inlineError {
+    margin: 8px 4px;
+    padding: 11px;
+    border-radius: 11px;
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.status,
+.empty {
+    color: rgba(248, 245, 239, 0.52);
+    background: rgba(248, 245, 239, 0.022);
+}
+
+.error,
+.inlineError {
+    color: #efb0a5;
+    background: rgba(120, 30, 20, 0.1);
+}
+
+@keyframes notificationPulse {
+    0%,
+    100% {
+        box-shadow:
+            0 0 0 1px rgba(239, 200, 74, 0.10),
+            0 0 12px rgba(239, 200, 74, 0.18);
+    }
+
+    50% {
+        box-shadow:
+            0 0 0 3px rgba(239, 200, 74, 0.08),
+            0 0 24px rgba(239, 200, 74, 0.36);
+    }
+}
+
+@keyframes notificationBellRing {
+    0%,
+    86%,
+    100% {
+        transform: rotate(0);
+    }
+
+    89% {
+        transform: rotate(8deg);
+    }
+
+    92% {
+        transform: rotate(-7deg);
+    }
+
+    95% {
+        transform: rotate(5deg);
+    }
+
+    98% {
+        transform: rotate(-3deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hasUnread,
+    .hasUnread .bellIcon {
+        animation: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .panel {
+        position: fixed;
+        top: 84px;
+        right: 14px;
+        left: 14px;
+        width: auto;
+    }
+}

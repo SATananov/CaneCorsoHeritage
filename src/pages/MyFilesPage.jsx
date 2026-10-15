@@ -324,6 +324,32 @@ function MyFilesPage({ mode = 'all' } = {}) {
         }
     }
 
+    useEffect(() => {
+        if (loading || files.length === 0) {
+            return;
+        }
+
+        const hash = window.location.hash;
+
+        if (!hash.startsWith('#file-')) {
+            return;
+        }
+
+        const element = document.getElementById(hash.slice(1));
+
+        if (!element) {
+            return;
+        }
+
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+            });
+        });
+    }, [files, loading]);
     return (
         <main className={styles.page}>
             <div className={styles.shell}>
@@ -395,7 +421,7 @@ function MyFilesPage({ mode = 'all' } = {}) {
                 {!loading && visibleFiles.length > 0 && (
                     <section className={styles.grid} aria-label={t('filesLabel')}>
                         {visibleFiles.map((file) => (
-                            <article className={styles.card} key={file.id}>
+                            <article className={styles.card} id={`file-${file.id}`} key={file.id}>
                                 {file.mime_type?.startsWith('image/') && file.url ? (
                                     <button className={styles.previewButton} type="button" onClick={() => setZoomedImage(file)} aria-label={format('zoomFile', { name: file.file_name })}>
                                         <img className={styles.preview} src={file.url} alt={file.file_name} />

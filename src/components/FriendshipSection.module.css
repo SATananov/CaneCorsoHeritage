@@ -1,0 +1,230 @@
+.section,
+.compactSection {
+    margin-top: 28px;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 22px;
+    background:
+        linear-gradient(145deg, rgba(212, 175, 55, 0.055), transparent 42%),
+        rgba(16, 16, 18, 0.96);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.22);
+}
+
+.section {
+    padding: clamp(24px, 4vw, 34px);
+}
+
+.compactSection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 24px;
+}
+
+.heading {
+    margin-bottom: 22px;
+}
+
+.kicker {
+    margin: 0;
+    color: #d4af37;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.heading h2,
+.compactSection h2,
+.listBlock h3 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 600;
+}
+
+.heading h2,
+.compactSection h2 {
+    margin: 8px 0 0;
+    color: #f8f5ef;
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+}
+
+.heading > p:last-child {
+    max-width: 720px;
+    margin: 12px 0 0;
+    color: rgba(248, 245, 239, 0.68);
+    line-height: 1.65;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.listBlock {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid rgba(212, 175, 55, 0.14);
+    border-radius: 16px;
+    background: rgba(248, 245, 239, 0.02);
+}
+
+.listBlock h3 {
+    margin: 0 0 14px;
+    color: #f8f5ef;
+    font-size: 1rem;
+}
+
+.listBlock h3 span {
+    color: #d4af37;
+    font-family: inherit;
+    font-size: 0.75rem;
+}
+
+.friendRow {
+    padding: 14px 0;
+    border-top: 1px solid rgba(248, 245, 239, 0.08);
+}
+
+.friendRow:first-of-type {
+    border-top: 0;
+}
+
+.friendIdentity {
+    min-width: 0;
+}
+
+.friendIdentity a,
+.friendIdentity strong {
+    display: block;
+    overflow: hidden;
+    color: #f8f5ef;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.friendIdentity a:hover,
+.friendIdentity a:focus-visible {
+    color: #e3c766;
+    text-decoration: underline;
+}
+
+.friendIdentity span {
+    display: block;
+    margin-top: 4px;
+    overflow: hidden;
+    color: rgba(248, 245, 239, 0.5);
+    font-size: 0.7rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rowActions,
+.profileActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.rowActions {
+    margin-top: 10px;
+}
+
+.profileActions {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.actionButton,
+.secondaryButton {
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.actionButton {
+    border: 1px solid rgba(212, 175, 55, 0.7);
+    background: rgba(212, 175, 55, 0.15);
+    color: #e3c766;
+}
+
+.secondaryButton {
+    border: 1px solid rgba(248, 245, 239, 0.18);
+    background: rgba(248, 245, 239, 0.035);
+    color: rgba(248, 245, 239, 0.7);
+}
+
+.actionButton:disabled,
+.secondaryButton:disabled {
+    cursor: wait;
+    opacity: 0.55;
+}
+
+.friendBadge,
+.status {
+    color: #d4af37;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.friendBadge {
+    padding: 8px 12px;
+    border: 1px solid rgba(212, 175, 55, 0.34);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+}
+
+.empty,
+.message,
+.error,
+.errorMessage {
+    color: rgba(248, 245, 239, 0.58);
+    font-size: 0.78rem;
+    line-height: 1.55;
+}
+
+.empty {
+    margin: 0;
+}
+
+.message,
+.errorMessage {
+    padding: 16px;
+    border: 1px solid rgba(248, 245, 239, 0.08);
+    border-radius: 14px;
+}
+
+.error,
+.errorMessage {
+    color: #efb0a5;
+}
+
+.errorMessage {
+    margin-top: 14px;
+    border-color: rgba(239, 176, 165, 0.2);
+    background: rgba(120, 30, 20, 0.08);
+}
+
+@media (max-width: 850px) {
+    .columns {
+        grid-template-columns: 1fr;
+    }
+
+    .compactSection {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .profileActions {
+        justify-content: flex-start;
+    }
+}

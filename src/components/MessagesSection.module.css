@@ -1,0 +1,289 @@
+.section,
+.compactSection {
+    margin-top: 28px;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 22px;
+    background:
+        linear-gradient(145deg, rgba(212, 175, 55, 0.05), transparent 42%),
+        rgba(16, 16, 18, 0.96);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.22);
+}
+
+.section {
+    padding: clamp(24px, 4vw, 34px);
+}
+
+.compactSection {
+    padding: 22px 24px;
+}
+
+.heading,
+.compactHeading {
+    margin-bottom: 20px;
+}
+
+.kicker {
+    margin: 0;
+    color: #d4af37;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.heading h2,
+.compactHeading h2 {
+    margin: 8px 0 0;
+    color: #f8f5ef;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.55rem, 3vw, 2.15rem);
+    font-weight: 600;
+}
+
+.heading > p:last-child,
+.compactHeading > p:last-child {
+    max-width: 760px;
+    margin: 10px 0 0;
+    color: rgba(248, 245, 239, 0.64);
+    line-height: 1.6;
+}
+
+.workspace {
+    display: grid;
+    grid-template-columns: minmax(190px, 0.34fr) minmax(0, 1fr);
+    gap: 18px;
+}
+
+.conversationList,
+.threadPane,
+.thread {
+    min-width: 0;
+}
+
+.conversationList {
+    padding: 14px;
+    border: 1px solid rgba(248, 245, 239, 0.08);
+    border-radius: 16px;
+    background: rgba(248, 245, 239, 0.02);
+}
+
+.conversationList h3 {
+    margin: 0 0 12px;
+    color: #f8f5ef;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1rem;
+}
+
+.conversationButton,
+.conversationButtonActive {
+    width: 100%;
+    margin-top: 7px;
+    padding: 11px 12px;
+    overflow: hidden;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.conversationButton {
+    border: 1px solid rgba(248, 245, 239, 0.1);
+    background: rgba(248, 245, 239, 0.025);
+    color: rgba(248, 245, 239, 0.68);
+}
+
+.conversationButtonActive {
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    background: rgba(212, 175, 55, 0.1);
+    color: #e2c45c;
+}
+
+.thread {
+    padding: 16px;
+    border: 1px solid rgba(248, 245, 239, 0.08);
+    border-radius: 16px;
+    background: rgba(8, 8, 10, 0.45);
+}
+
+.threadHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 13px;
+    border-bottom: 1px solid rgba(248, 245, 239, 0.08);
+}
+
+.threadHeader span,
+.threadHeader strong {
+    display: block;
+}
+
+.threadHeader span {
+    color: #d4af37;
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.threadHeader strong {
+    margin-top: 3px;
+    color: #f8f5ef;
+    font-size: 0.86rem;
+}
+
+.threadHeader a {
+    color: #d4af37;
+    font-size: 0.66rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.messageList {
+    display: flex;
+    min-height: 170px;
+    max-height: 360px;
+    padding: 16px 2px;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    max-width: min(76%, 520px);
+    padding: 10px 12px;
+    align-self: flex-start;
+    border: 1px solid rgba(248, 245, 239, 0.1);
+    border-radius: 14px 14px 14px 4px;
+    background: rgba(248, 245, 239, 0.04);
+}
+
+.ownMessage {
+    align-self: flex-end;
+    border-color: rgba(212, 175, 55, 0.27);
+    border-radius: 14px 14px 4px 14px;
+    background: rgba(212, 175, 55, 0.08);
+}
+
+.message span {
+    color: #d4af37;
+    font-size: 0.61rem;
+    font-weight: 800;
+}
+
+.message p {
+    margin: 5px 0;
+    color: rgba(248, 245, 239, 0.9);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.message small {
+    color: rgba(248, 245, 239, 0.4);
+    font-size: 0.58rem;
+}
+
+.composer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.composer textarea {
+    min-width: 0;
+    resize: vertical;
+    border: 1px solid rgba(248, 245, 239, 0.13);
+    border-radius: 13px;
+    outline: none;
+    background: rgba(248, 245, 239, 0.035);
+    color: #f8f5ef;
+    font: inherit;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    padding: 11px 12px;
+}
+
+.composer textarea:focus {
+    border-color: rgba(212, 175, 55, 0.52);
+}
+
+.composer button,
+.startButton {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid rgba(212, 175, 55, 0.62);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.14);
+    color: #e3c766;
+    font: inherit;
+    font-size: 0.67rem;
+    font-weight: 900;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.composer button:disabled,
+.startButton:disabled {
+    cursor: wait;
+    opacity: 0.5;
+}
+
+.state,
+.error,
+.inlineError {
+    margin: 0;
+    color: rgba(248, 245, 239, 0.58);
+    font-size: 0.76rem;
+    line-height: 1.55;
+}
+
+.error,
+.inlineError {
+    color: #efb0a5;
+}
+
+.inlineError {
+    margin-top: 10px;
+}
+
+@media (max-width: 780px) {
+    .workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .conversationList {
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .conversationList h3 {
+        flex: 0 0 auto;
+        margin: 0 4px 0 0;
+    }
+
+    .conversationButton,
+    .conversationButtonActive {
+        width: auto;
+        min-width: 160px;
+        margin-top: 0;
+    }
+
+    .composer {
+        grid-template-columns: 1fr;
+    }
+
+    .message {
+        max-width: 88%;
+    }
+}

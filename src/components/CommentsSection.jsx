@@ -422,6 +422,39 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
         return source.slice(0, 1).toUpperCase();
     }
 
+    useEffect(() => {
+        if (loading || comments.length === 0) {
+            return;
+        }
+
+        const hash = window.location.hash;
+
+        if (!hash.startsWith('#comment-')) {
+            return;
+        }
+
+        const element = document.getElementById(hash.slice(1));
+
+        if (!element) {
+            return;
+        }
+
+        const details = element.closest('details');
+
+        if (details && !details.open) {
+            details.open = true;
+        }
+
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+            });
+        });
+    }, [comments, loading]);
+
     return (
         <details
             className={styles.disclosure}
@@ -487,7 +520,7 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
                             : '';
 
                         return (
-                            <article className={styles.comment} key={comment.id}>
+                            <article className={styles.comment} id={`comment-${comment.id}`} key={comment.id}>
                                 <div className={styles.authorRow}>
                                     <div className={styles.avatar} aria-hidden="true">
                                         {avatarUrl ? (

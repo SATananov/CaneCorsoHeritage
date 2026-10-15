@@ -469,3 +469,13 @@
     cursor: default;
     opacity: 0.62;
 }
+.comment:target {
+    scroll-margin-top: 150px;
+    border-color: rgba(239, 200, 74, 0.72);
+    box-shadow:
+        0 0 0 1px rgba(239, 200, 74, 0.15),
+        0 0 24px rgba(239, 200, 74, 0.18);
+    background:
+        linear-gradient(135deg, rgba(239, 200, 74, 0.08), transparent 48%),
+        rgba(248, 245, 239, 0.035);
+}

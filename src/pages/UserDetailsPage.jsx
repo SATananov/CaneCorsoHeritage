@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProfileEditor from '../components/ProfileEditor';
+import FriendshipSection from '../components/FriendshipSection';
+import MessagesSection from '../components/MessagesSection';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
@@ -250,6 +252,19 @@ function UserDetailsPage() {
     const avatarUrl = getProfileAvatarUrl(profile);
     const memberSince = formatMemberSince(profile?.created_at, language);
     const isOwnProfile = Boolean(user?.id && profile?.id === user.id);
+
+    useEffect(() => {
+        if (!profile || window.location.hash !== '#friendship-section') {
+            return;
+        }
+
+        window.requestAnimationFrame(() => {
+            document.getElementById('friendship-section')?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        });
+    }, [profile]);
     const missingRequiredFields = isOwnProfile && privateDetailsLoaded
         ? [
             ['first_name', 'firstName'],
@@ -371,6 +386,17 @@ function UserDetailsPage() {
                                 }}
                             />
                         )}
+                        <div id="friendship-section">
+                            <FriendshipSection
+                                profileId={profile.id}
+                                isOwnProfile={isOwnProfile}
+                            />
+                        </div>
+
+                        <MessagesSection
+                            profileId={profile.id}
+                            isOwnProfile={isOwnProfile}
+                        />
                         {profileSaveNotice.userId === profile.id && profileSaveNotice.key && (
                             <div className={styles.message} role="status">
                                 {getTranslation(language, 'profileEditor', profileSaveNotice.key)}
