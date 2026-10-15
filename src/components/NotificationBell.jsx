@@ -77,6 +77,8 @@ function NotificationBell() {
     );
 
     const rootRef = useRef(null);
+    const notificationRequestRef = useRef(0);
+
     const [open, setOpen] = useState(false);
     const [incoming, setIncoming] = useState([]);
     const [friends, setFriends] = useState([]);
@@ -102,6 +104,10 @@ function NotificationBell() {
             return;
         }
 
+        const requestUserId = user.id;
+        const requestId = notificationRequestRef.current + 1;
+        notificationRequestRef.current = requestId;
+
         if (!silent) {
             setLoading(true);
         }
@@ -115,22 +121,28 @@ function NotificationBell() {
                 unreadComments,
                 unreadEngagements,
             ] = await Promise.all([
-                fetchFriendOverview(user.id),
-                fetchUnreadMessageNotifications(user.id),
-                fetchUnreadCommentNotifications(user.id),
-                fetchUnreadEngagementNotifications(user.id),
+                fetchFriendOverview(requestUserId),
+                fetchUnreadMessageNotifications(requestUserId),
+                fetchUnreadCommentNotifications(requestUserId),
+                fetchUnreadEngagementNotifications(requestUserId),
             ]);
+
+            if (notificationRequestRef.current !== requestId) {
+                return;
+            }
 
             setIncoming(overview.incoming);
             setFriends(overview.friends);
             setMessageNotifications(unreadMessages);
             setCommentNotifications(unreadComments);
             setEngagementNotifications(unreadEngagements);
-            setLoadedForUserId(user.id);
+            setLoadedForUserId(requestUserId);
         } catch {
-            setLoadError(true);
+            if (notificationRequestRef.current === requestId) {
+                setLoadError(true);
+            }
         } finally {
-            if (!silent) {
+            if (notificationRequestRef.current === requestId) {
                 setLoading(false);
             }
         }
@@ -185,6 +197,7 @@ function NotificationBell() {
 
         return () => {
             active = false;
+            notificationRequestRef.current += 1;
             window.removeEventListener('focus', refresh);
             window.removeEventListener('cch:friendships-changed', refresh);
             window.removeEventListener('cch:messages-changed', refresh);
