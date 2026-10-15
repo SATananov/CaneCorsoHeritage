@@ -14,8 +14,222 @@ The project combines public educational content with authenticated community fea
 - **Live Application:** https://cane-corso-heritage.netlify.app
 - **Functional Guide:** [Jump to Functional Guide](#functional-guide)
 - **Demo Accounts:** [Jump to Demo Accounts](#demo-accounts-for-evaluation)
+- **Project Implementation Map:** [Jump to Project Implementation Map](#project-implementation-map)
 - **Main CRUD Collection:** Stories
 - **Backend:** Supabase
+
+## Project Implementation Map
+
+This section is a navigation aid for evaluators. It maps the main React and application concepts to concrete implementation locations in the project. The detailed behavior and evaluation flow remain documented in the [Functional Guide](#functional-guide).
+
+### Quick map
+
+| Area | How it is implemented | Concrete locations |
+| --- | --- | --- |
+| React & JSX | SPA built from route pages and reusable feature components | `src/App.jsx`, `src/pages/`, `src/components/` |
+| Components & Props | Reusable components receive data/callbacks through props and compose page-level UI | `src/components/AddStoryModal.jsx`, `src/components/CommentsSection.jsx`, `src/components/MediaRating.jsx` |
+| Routing | React Router with nested, dynamic, protected and legacy-compatible routes | `src/App.jsx` |
+| Route Guards | Guest, authenticated, completed-profile and admin access boundaries | `src/routing/RequireGuest.jsx`, `src/routing/RequireAuth.jsx`, `src/routing/RequireCompleteProfile.jsx`, `src/routing/RequireAdmin.jsx` |
+| Forms & Validation | Controlled forms, synthetic events, validation, submitting/error states | `src/pages/LoginPage.jsx`, `src/pages/RegisterPage.jsx`, `src/components/AddStoryModal.jsx`, `src/components/ProfileEditor.jsx` |
+| React Hooks | State, effects, refs, memoization, callbacks and optimistic UI | `src/pages/MyStoriesPage.jsx`, `src/components/CommentsSection.jsx`, `src/hooks/` |
+| Context API | Shared authentication/session and language state | `src/context/`, `src/hooks/useAuth.js` |
+| Authentication | Supabase Auth with session restoration, login/register/logout and recovery | `src/context/`, `src/pages/LoginPage.jsx`, `src/pages/RegisterPage.jsx`, `src/pages/ForgotPasswordPage.jsx`, `src/pages/UpdatePasswordPage.jsx` |
+| CRUD | Full Create / Read / Update / Delete flow for Stories | `src/pages/MyStoriesPage.jsx`, `src/components/AddStoryModal.jsx`, `src/components/StoryDeleteModal.jsx`, `src/services/storyService.js` |
+| Remote Data | Supabase-backed data access isolated in services | `src/services/`, `src/lib/` |
+| Authorization & RLS | UI ownership checks plus database Row Level Security | `src/routing/`, `supabase/migrations/`, `docs/security-rls.md` |
+| User Interaction | Comments, Like/Dislike reactions and ratings through remote mutations | `src/components/CommentsSection.jsx`, `src/components/MediaRating.jsx`, `src/services/commentService.js`, `src/services/commentReactionService.js` |
+| Files & Storage | Uploads, signed URLs, media/documents and Story attachments | `src/pages/MyFilesPage.jsx`, `src/pages/MyDocumentsPage.jsx`, `src/services/fileService.js` |
+| Admin Moderation | Protected dashboard, moderation queues and member/account actions | `src/pages/AdminPage.jsx`, `src/components/admin/`, `src/services/adminService.js` |
+| Localization | EN/BG/IT UI plus content-translation support | `src/i18n/`, `src/context/`, `supabase/functions/translate-story/`, `supabase/functions/translate-heritage/` |
+| Async Safety | Loading/error states, request cancellation and stale-response protection | `src/pages/MyStoriesPage.jsx`, `src/components/CommentsSection.jsx`, `src/pages/UserDetailsPage.jsx` |
+| Advanced React | Route-level `React.lazy`/`Suspense`, `useOptimistic`, memoized values/callbacks | `src/App.jsx`, `src/components/CommentsSection.jsx` |
+| Quality Checks | Project verification scripts, ESLint and production build checks | `scripts/`, `npm run verify`, `npm run lint`, `npm run build` |
+
+### React, JSX & reusable components
+
+The application is a React SPA. `src/App.jsx` defines the application route tree, while route-level screens live in `src/pages` and reusable feature/UI pieces live in `src/components`.
+
+Examples:
+
+- `src/components/AddStoryModal.jsx` is reused for both Story creation and editing.
+- `src/components/CommentsSection.jsx` is reused across supported content types.
+- `src/components/MediaRating.jsx` provides reusable rating interaction.
+- Shared layout/navigation is separated from feature pages.
+
+### Routing & navigation
+
+Routing is implemented in `src/App.jsx` with React Router.
+
+Examples of dynamic routes:
+
+- `/stories/:storyId`
+- `/heritage/:slug`
+- `/members/:username`
+- `/help/:topic?`
+
+Examples of protected routing:
+
+- `/my-stories`, `/my-files` and `/my-documents` require authentication and a completed profile.
+- `/admin` requires administrator access.
+- Login and Register are guest-only.
+- `/users` and `/users/:userId` remain as backward-compatible legacy routes.
+
+Route-level code splitting is also implemented in `src/App.jsx` with `React.lazy` and `Suspense`.
+
+### Forms, controlled inputs & validation
+
+The project uses controlled React forms and synthetic events for authentication, profile data, Stories, files and community interaction.
+
+Concrete examples:
+
+- `src/pages/LoginPage.jsx` — login form and authentication errors.
+- `src/pages/RegisterPage.jsx` — registration and client-side validation.
+- `src/components/AddStoryModal.jsx` — shared Create/Edit Story form.
+- `src/components/ProfileEditor.jsx` — member profile editing/completion.
+- `src/pages/MyFilesPage.jsx` and `src/pages/MyDocumentsPage.jsx` — file/document upload workflows.
+- `src/components/CommentsSection.jsx` — comment create/edit interaction.
+
+Validation and remote failures are surfaced through UI loading, submitting and error states rather than allowing invalid input or failed requests to crash the application.
+
+### Hooks, lifecycle & shared state
+
+Hooks are used throughout the application for local state, asynchronous effects and reusable behavior.
+
+Examples:
+
+- `useState` — forms, loading/error state, filters and interaction state.
+- `useEffect` — remote data loading, subscriptions and cleanup.
+- `useRef` — request/submission coordination and stale-request protection.
+- `useMemo` — derived values such as reaction state and formatted data.
+- `useCallback` — stable callbacks used by interactive/data-driven components.
+- `useOptimistic` — immediate Like/Dislike feedback in `src/components/CommentsSection.jsx`.
+- custom hooks are kept under `src/hooks/`, including `src/hooks/useAuth.js`.
+
+Lifecycle cleanup can be seen in data-loading components such as `src/pages/MyStoriesPage.jsx` and `src/components/CommentsSection.jsx`, where obsolete requests are prevented from overwriting newer state.
+
+### Context API & authentication
+
+Shared application state is provided through the `src/context` layer.
+
+Authentication uses Supabase Auth and includes:
+
+- Register
+- Login
+- Logout
+- persistent session restoration
+- authentication-state changes
+- password recovery
+- password update
+- role/account-status awareness
+
+`src/hooks/useAuth.js` exposes the shared authentication context to pages, guards and reusable components.
+
+### Story CRUD — main evaluated collection
+
+**Stories** are the main full-CRUD collection.
+
+| Operation | Implementation example |
+| --- | --- |
+| Create | `src/components/AddStoryModal.jsx` → `src/services/storyService.js` |
+| Read | `src/pages/StoriesPage.jsx`, `src/pages/StoryDetailsPage.jsx`, `src/pages/MyStoriesPage.jsx` |
+| Update | `src/components/AddStoryModal.jsx` in edit mode → `src/services/storyService.js` |
+| Delete | `src/components/StoryDeleteModal.jsx` → `src/services/storyService.js` |
+
+Ownership-sensitive UI is combined with backend RLS so edit/delete authorization is not based only on frontend visibility.
+
+### Supabase, services & remote communication
+
+Remote data access is separated from UI components through the service layer in `src/services`.
+
+Examples:
+
+- `src/services/storyService.js` — Story data and CRUD.
+- `src/services/commentService.js` — comments.
+- `src/services/commentReactionService.js` — Like/Dislike reactions.
+- `src/services/fileService.js` — files, media and document metadata/Storage URLs.
+- `src/services/profileService.js` — member/profile data.
+- `src/services/adminService.js` — administration and moderation operations.
+
+Supabase provides PostgreSQL data, Auth, Storage, Row Level Security and Edge Functions.
+
+### Authorization, route guards & RLS
+
+Frontend access rules are implemented with route guards:
+
+- `src/routing/RequireGuest.jsx`
+- `src/routing/RequireAuth.jsx`
+- `src/routing/RequireCompleteProfile.jsx`
+- `src/routing/RequireAdmin.jsx`
+
+Backend authorization is independently enforced through Supabase RLS migrations under `supabase/migrations`.
+
+Additional security documentation is available in [`docs/security-rls.md`](docs/security-rls.md).
+
+### Community interaction
+
+Authenticated members can interact with approved public content through remote API/database operations.
+
+Examples:
+
+- comments — `src/components/CommentsSection.jsx` + `src/services/commentService.js`
+- Like/Dislike comment reactions — `src/services/commentReactionService.js`
+- Story / Heritage / file ratings — reusable rating components and rating services
+- author-aware edit/delete behavior for owned community content
+
+`src/components/CommentsSection.jsx` also demonstrates `useOptimistic` for immediate reaction feedback while the real mutation is being processed.
+
+### Files, media & documents
+
+The project has separate user-facing workflows for general files and document-oriented uploads:
+
+- `src/pages/MyFilesPage.jsx`
+- `src/pages/MyDocumentsPage.jsx`
+- `src/pages/GalleryPage.jsx`
+- `src/pages/DocumentsPage.jsx`
+- `src/services/fileService.js`
+
+Supabase Storage is used for uploaded content, while database metadata controls ownership, visibility, moderation and member-download behavior.
+
+### Administration & moderation
+
+Administrative functionality is protected by `RequireAdmin` and implemented through:
+
+- `src/pages/AdminPage.jsx`
+- `src/components/admin/`
+- `src/services/adminService.js`
+
+The administration area supports Story/file moderation, member/account management and protected preview/administrative operations.
+
+### Localization & translation
+
+The interface supports English, Bulgarian and Italian through `src/i18n` and the language context.
+
+Content-translation workflows are separated from the client and use Supabase Edge Functions:
+
+- `supabase/functions/translate-story/`
+- `supabase/functions/translate-heritage/`
+
+### Async state, cleanup & race protection
+
+Asynchronous flows distinguish loading, success, empty-data and error states. Relevant components use abort controllers, request identities/scopes or cleanup logic so late responses do not replace newer state.
+
+Concrete examples include:
+
+- `src/pages/MyStoriesPage.jsx`
+- `src/components/CommentsSection.jsx`
+- `src/pages/UserDetailsPage.jsx`
+
+### Project verification
+
+The repository contains project-specific verifier scripts under `scripts/` in addition to standard lint/build checks.
+
+```bash
+npm run verify
+npm run lint
+npm run build
+```
+
+These project verifiers are regression/static checks for this codebase; they are not presented as a substitute for formal unit/component testing.
 
 ## Main features
 
