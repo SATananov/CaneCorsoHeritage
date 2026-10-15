@@ -4,10 +4,6 @@ import { readFileSync } from 'node:fs';
 const bell = readFileSync('src/components/NotificationBell.jsx', 'utf8');
 
 assert.ok(
-    !/from ['"]react['"];[\s\S]{0,0}/.test(''),
-);
-
-assert.ok(
     !bell.match(/import\s*\{[^}]*openOrCreatePrivateConversation[^}]*\}\s*from\s*['"]react['"]/s),
     'openOrCreatePrivateConversation must not be imported from react',
 );
