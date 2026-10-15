@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useLanguage } from '../context/languageContext';
 import useAuth from '../hooks/useAuth';
@@ -14,6 +14,13 @@ import {
 import { getMessageTranslation } from '../i18n/messageTranslations';
 import styles from './MessagesSection.module.css';
 
+const EMOJI_OPTIONS = [
+    '😀', '😃', '😄', '😁', '😂', '🤣', '😊', '😍',
+    '😘', '😎', '🤩', '🥳', '😉', '🤗', '🤔', '😅',
+    '😢', '😭', '😡', '🤯', '👍', '👎', '👏', '🙏',
+    '💪', '🤝', '👌', '✌️', '❤️', '💛', '💙', '💚',
+    '🔥', '✨', '🎉', '💯', '🐾', '🐕', '☕', '🍻',
+];
 function profileName(profile, fallback) {
     return profile?.display_name?.trim()
         || (profile?.username ? `@${profile.username}` : fallback);
@@ -61,7 +68,9 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(false);
     const [draft, setDraft] = useState('');
-    const [sending, setSending] = useState(false);
+    const [emojiOpen, setEmojiOpen] = useState(false);
+    const textareaRef = useRef(null);
+    const emojiPickerRef = useRef(null);    const [sending, setSending] = useState(false);
     const [sendError, setSendError] = useState(false);
 
     useEffect(() => {
@@ -199,6 +208,48 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
         };
     }, [conversation?.id, user?.id]);
 
+    useEffect(() => {
+        if (!emojiOpen) {
+            return undefined;
+        }
+
+        function closePicker(event) {
+            if (!emojiPickerRef.current?.contains(event.target)) {
+                setEmojiOpen(false);
+            }
+        }
+
+        function closeOnEscape(event) {
+            if (event.key === 'Escape') {
+                setEmojiOpen(false);
+                textareaRef.current?.focus();
+            }
+        }
+
+        document.addEventListener('pointerdown', closePicker);
+        document.addEventListener('keydown', closeOnEscape);
+
+        return () => {
+            document.removeEventListener('pointerdown', closePicker);
+            document.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [emojiOpen]);
+
+    function insertEmoji(emoji) {
+        const textarea = textareaRef.current;
+        const start = textarea?.selectionStart ?? draft.length;
+        const end = textarea?.selectionEnd ?? draft.length;
+        const next = `${draft.slice(0, start)}${emoji}${draft.slice(end)}`.slice(0, 2000);
+        const nextCaret = Math.min(start + emoji.length, next.length);
+
+        setDraft(next);
+        setSendError(false);
+
+        window.requestAnimationFrame(() => {
+            textareaRef.current?.focus();
+            textareaRef.current?.setSelectionRange(nextCaret, nextCaret);
+        });
+    }
     if (!conversation?.id) {
         return null;
     }
@@ -280,7 +331,40 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
             )}
 
             <form className={styles.composer} onSubmit={handleSubmit}>
+                <div className={styles.emojiPicker} ref={emojiPickerRef}>
+                    <button
+                        aria-expanded={emojiOpen}
+                        aria-label={t('emojiButtonLabel')}
+                        className={styles.emojiButton}
+                        title={t('emojiButtonLabel')}
+                        type="button"
+                        onClick={() => setEmojiOpen((current) => !current)}
+                    >
+                        <span aria-hidden="true">😀</span>
+                    </button>
+
+                    {emojiOpen && (
+                        <div
+                            aria-label={t('emojiPanelLabel')}
+                            className={styles.emojiPanel}
+                            role="group"
+                        >
+                            {EMOJI_OPTIONS.map((emoji) => (
+                                <button
+                                    aria-label={emoji}
+                                    className={styles.emojiOption}
+                                    key={emoji}
+                                    type="button"
+                                    onClick={() => insertEmoji(emoji)}
+                                >
+                                    {emoji}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 <textarea
+                    ref={textareaRef}
                     maxLength={2000}
                     placeholder={t('messagePlaceholder')}
                     rows={3}
