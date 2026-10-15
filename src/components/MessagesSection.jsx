@@ -776,6 +776,7 @@ function MessagesSection({ profileId, isOwnProfile }) {
                         )}
                         {activeConversation && (
                             <MessageThread
+                                key={activeConversation.id}
                                 conversation={activeConversation}
                                 otherProfile={{ id: profileId }}
                             />
@@ -832,6 +833,7 @@ function MessagesSection({ profileId, isOwnProfile }) {
                     <div className={styles.threadPane}>
                         {selectedConversation ? (
                             <MessageThread
+                                key={selectedConversation.id}
                                 conversation={selectedConversation}
                                 otherProfile={selectedConversation.profile}
                             />
