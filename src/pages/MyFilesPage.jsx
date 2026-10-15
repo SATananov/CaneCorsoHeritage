@@ -329,6 +329,10 @@ function MyFilesPage({ mode = 'all' } = {}) {
             return;
         }
 
+        if (typeof window === 'undefined') {
+            return;
+        }
+
         const hash = window.location.hash;
 
         if (!hash.startsWith('#file-')) {

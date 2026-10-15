@@ -9,7 +9,7 @@ const userDetails = read('src/pages/UserDetailsPage.jsx');
 
 assert.match(
     bell,
-    /\/my-profile\?conversation=\$\{encodeURIComponent\(item\.conversation_id\)\}#private-messages/,
+    /\/users\/\$\{encodeURIComponent\(user\.id\)\}\?conversation=\$\{encodeURIComponent\(item\.conversation_id\)\}#private-messages/,
 );
 assert.match(
     bell,
@@ -19,7 +19,7 @@ assert.match(
 assert.match(messages, /useLocation/);
 assert.match(messages, /requestedConversationId/);
 assert.match(messages, /location\.search/);
-assert.match(messages, /location\.hash === '#private-messages'/);
+assert.match(messages, /(?:location|window\.location)\.hash\s*===\s*['"]#private-messages['"]/);
 assert.match(messages, /id="private-messages"/);
 assert.match(
     messages,

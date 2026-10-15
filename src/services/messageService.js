@@ -307,3 +307,61 @@ export async function fetchUnreadMessageNotifications(userId, options = {}) {
             - new Date(first.latest_message.created_at).getTime()
         ));
 }
+export function subscribeToConversationMessages(conversationId, onMessage) {
+    requireId(conversationId, 'Conversation id');
+
+    if (typeof onMessage !== 'function') {
+        throw new Error('Message subscription callback is required.');
+    }
+
+    const channel = supabase
+        .channel(`private-thread:${conversationId}`)
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: `conversation_id=eq.${conversationId}`,
+            },
+            (payload) => {
+                if (payload.new) {
+                    onMessage(payload.new);
+                }
+            },
+        )
+        .subscribe();
+
+    return () => {
+        void supabase.removeChannel(channel);
+    };
+}
+
+export function subscribeToPrivateMessageChanges(userId, onChange) {
+    requireId(userId, 'User id');
+
+    if (typeof onChange !== 'function') {
+        throw new Error('Private message subscription callback is required.');
+    }
+
+    const channel = supabase
+        .channel(`private-message-notifications:${userId}`)
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+            },
+            (payload) => {
+                if (payload.new?.sender_id !== userId) {
+                    onChange(payload.new);
+                }
+            },
+        )
+        .subscribe();
+
+    return () => {
+        void supabase.removeChannel(channel);
+    };
+}

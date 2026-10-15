@@ -7,7 +7,10 @@ import {
     deleteFriendship,
     fetchFriendOverview,
 } from '../services/friendshipService';
-import { fetchUnreadMessageNotifications } from '../services/messageService';
+import {
+    fetchUnreadMessageNotifications,
+    subscribeToPrivateMessageChanges,
+} from '../services/messageService';
 import {
     fetchUnreadCommentNotifications,
     markCommentNotificationRead,
@@ -163,6 +166,10 @@ function NotificationBell() {
         window.addEventListener('cch:engagements-changed', refresh);
         document.addEventListener('visibilitychange', onVisibility);
         const intervalId = window.setInterval(refresh, REFRESH_INTERVAL_MS);
+        const unsubscribeMessages = subscribeToPrivateMessageChanges(
+            user.id,
+            refresh,
+        );
 
         return () => {
             active = false;
@@ -174,8 +181,9 @@ function NotificationBell() {
             window.removeEventListener('cch:engagements-changed', refresh);
             document.removeEventListener('visibilitychange', onVisibility);
             window.clearInterval(intervalId);
+            unsubscribeMessages();
         };
-    }, [canUseNotifications, loadNotifications]);
+    }, [canUseNotifications, loadNotifications, user]);
 
     useEffect(() => {
         if (!open) {
@@ -410,8 +418,16 @@ function NotificationBell() {
                                                     <p>{message}</p>
                                                     <Link
                                                         className={styles.profileLink}
-                                                        to={`/my-profile?conversation=${encodeURIComponent(item.conversation_id)}#private-messages`}
-                                                        onClick={() => setOpen(false)}
+                                                        to={`/users/${encodeURIComponent(user.id)}?conversation=${encodeURIComponent(item.conversation_id)}#private-messages`}
+                                                        onClick={() => {
+                                                            const conversationId = item.conversation_id;
+
+                                                            setMessageNotifications((current) => current.filter(
+                                                                (notification) => notification.conversation_id !== conversationId,
+                                                            ));
+                                                            setOpen(false);
+                                                            window.dispatchEvent(new Event('cch:messages-read'));
+                                                        }}
                                                     >
                                                         {t('openMessages')}
                                                     </Link>

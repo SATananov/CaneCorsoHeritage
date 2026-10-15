@@ -9,6 +9,7 @@ import {
     markConversationRead,
     openOrCreatePrivateConversation,
     sendPrivateMessage,
+    subscribeToConversationMessages,
 } from '../services/messageService';
 import { getMessageTranslation } from '../i18n/messageTranslations';
 import styles from './MessagesSection.module.css';
@@ -43,6 +44,14 @@ function formatMessageTime(value, language) {
     }).format(new Date(value));
 }
 
+
+function appendUniqueMessage(messages, message) {
+    if (!message?.id || messages.some((item) => item.id === message.id)) {
+        return messages;
+    }
+
+    return [...messages, message];
+}
 function MessageThread({ conversation, otherProfile, onMessageSent }) {
     const { language } = useLanguage();
     const { user } = useAuth();
@@ -108,6 +117,46 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
         };
     }, [conversation?.id, user?.id]);
 
+    useEffect(() => {
+        if (
+            !conversation?.id
+            || !user?.id
+            || loadedConversationId !== conversation.id
+        ) {
+            return undefined;
+        }
+
+        let active = true;
+
+        const unsubscribe = subscribeToConversationMessages(
+            conversation.id,
+            async (message) => {
+                if (!active || message?.conversation_id !== conversation.id) {
+                    return;
+                }
+
+                setMessages((current) => appendUniqueMessage(current, message));
+
+                if (message.sender_id !== user.id) {
+                    try {
+                        await markConversationRead(conversation.id, user.id);
+
+                        if (active) {
+                            window.dispatchEvent(new Event('cch:messages-read'));
+                        }
+                    } catch {
+                        // Realtime delivery must remain usable if read-state sync fails.
+                    }
+                }
+            },
+        );
+
+        return () => {
+            active = false;
+            unsubscribe();
+        };
+    }, [conversation?.id, loadedConversationId, user?.id]);
+
     if (!conversation?.id) {
         return null;
     }
@@ -133,7 +182,7 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
                 value,
             );
 
-            setMessages((current) => [...current, saved]);
+            setMessages((current) => appendUniqueMessage(current, saved));
             setLoadedConversationId(conversation.id);
             setDraft('');
             onMessageSent?.(saved);
