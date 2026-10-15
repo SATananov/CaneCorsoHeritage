@@ -1,6 +1,6 @@
 # Cane Corso Heritage
 
-**ReactJS · September 2026**  
+**ReactJS · September 2026**
 **Stefan Tananov**
 
 Cane Corso Heritage is a React single-page application for preserving and sharing Cane Corso history, working tradition, heritage articles and community stories.
@@ -38,7 +38,8 @@ This section is a navigation aid for evaluators. It maps the main React and appl
 | Remote Data | Supabase-backed data access isolated in services | `src/services/`, `src/lib/` |
 | Authorization & RLS | UI ownership checks plus database Row Level Security | `src/routing/`, `supabase/migrations/`, `docs/security-rls.md` |
 | User Interaction | Comments, Like/Dislike reactions and ratings through remote mutations | `src/components/CommentsSection.jsx`, `src/components/MediaRating.jsx`, `src/services/commentService.js`, `src/services/commentReactionService.js` |
-| Files & Storage | Uploads, signed URLs, media/documents and Story attachments | `src/pages/MyFilesPage.jsx`, `src/pages/MyDocumentsPage.jsx`, `src/services/fileService.js` |
+| Friends, Messaging & Notifications | Friend requests, accepted-friend messaging, realtime updates, unread state, private attachments and notification categories | `src/components/FriendshipSection.jsx`, `src/components/MessagesSection.jsx`, `src/components/NotificationBell.jsx`, `src/services/friendshipService.js`, `src/services/messageService.js` |
+| Files & Storage | Uploads, signed URLs, media/documents, Story attachments and private message attachments | `src/pages/MyFilesPage.jsx`, `src/pages/MyDocumentsPage.jsx`, `src/services/fileService.js`, `src/services/messageService.js` |
 | Admin Moderation | Protected dashboard, moderation queues and member/account actions | `src/pages/AdminPage.jsx`, `src/components/admin/`, `src/services/adminService.js` |
 | Localization | EN/BG/IT UI plus content-translation support | `src/i18n/`, `src/context/`, `supabase/functions/translate-story/`, `supabase/functions/translate-heritage/` |
 | Async Safety | Loading/error states, request cancellation and stale-response protection | `src/pages/MyStoriesPage.jsx`, `src/components/CommentsSection.jsx`, `src/pages/UserDetailsPage.jsx` |
@@ -148,6 +149,8 @@ Examples:
 - `src/services/commentReactionService.js` — Like/Dislike reactions.
 - `src/services/fileService.js` — files, media and document metadata/Storage URLs.
 - `src/services/profileService.js` — member/profile data.
+- `src/services/friendshipService.js` — friend requests, accepted friendships and relationship data.
+- `src/services/messageService.js` — private conversations, messages, read state, private attachment URLs and realtime subscriptions.
 - `src/services/adminService.js` — administration and moderation operations.
 
 Supabase provides PostgreSQL data, Auth, Storage, Row Level Security and Edge Functions.
@@ -174,7 +177,12 @@ Examples:
 - comments — `src/components/CommentsSection.jsx` + `src/services/commentService.js`
 - Like/Dislike comment reactions — `src/services/commentReactionService.js`
 - Story / Heritage / file ratings — reusable rating components and rating services
-- author-aware edit/delete behavior for owned community content
+- author-aware edit/delete behavior for owned community content, with administrator moderation paths enforced separately by backend authorization
+- friend requests — send, cancel, accept, decline and remove through `FriendshipSection`
+- private one-to-one messaging between accepted friends through `MessagesSection`
+- realtime private-message delivery, read/unread state and direct conversation links
+- emoji insertion and private image/audio/video/document attachments in conversations
+- `NotificationBell` groups unread activity into Messages, Friend Requests, Comments, and Reactions & Ratings
 
 `src/components/CommentsSection.jsx` also demonstrates `useOptimistic` for immediate reaction feedback while the real mutation is being processed.
 
@@ -188,7 +196,7 @@ The project has separate user-facing workflows for general files and document-or
 - `src/pages/DocumentsPage.jsx`
 - `src/services/fileService.js`
 
-Supabase Storage is used for uploaded content, while database metadata controls ownership, visibility, moderation and member-download behavior.
+Supabase Storage is used for uploaded content. Database metadata controls ownership, visibility, moderation and whether registered members are offered a download action for eligible shared files. This application permission does not attempt to prevent a browser user from saving content that is otherwise legitimately viewable. Private-message attachments use the private `message-attachments` bucket and signed access URLs governed by conversation-participant RLS.
 
 ### Administration & moderation
 
@@ -218,6 +226,8 @@ Concrete examples include:
 - `src/pages/MyStoriesPage.jsx`
 - `src/components/CommentsSection.jsx`
 - `src/pages/UserDetailsPage.jsx`
+- `src/components/MessagesSection.jsx`
+- `src/components/NotificationBell.jsx`
 
 ### Project verification
 
@@ -236,6 +246,7 @@ These project verifiers are regression/static checks for this codebase; they are
 ### Public experience
 
 - Home, Heritage, Stories, Members, About USG and Help pages
+- Public Help guide with Guest vs Member guidance and topic sections for the main Cane Corso Heritage workflows
 - Heritage catalog with dynamic article details
 - Community Stories catalog with dynamic Story details
 - Public member catalog and member profile pages
@@ -253,6 +264,12 @@ These project verifiers are regression/static checks for this codebase; they are
 - Personal profile editing, avatar and contact visibility controls
 - `My Stories` workspace with Create, Read, Update and Delete operations
 - `My Files` workspace for private and community files
+- `My Documents` workspace for document-oriented uploads and management
+- Friend requests: send, cancel, accept, decline and remove
+- Private messaging between accepted friends with realtime delivery and read/unread state
+- Emoji picker and private message attachments for supported image/audio/video/document types
+- Notification Center for Messages, Friend Requests, Comments, and Reactions & Ratings
+- Member-download permission controls for eligible shared files
 - Story attachments stored through Supabase Storage
 - Controlled forms, validation, loading, retry and error states
 
@@ -261,7 +278,9 @@ These project verifiers are regression/static checks for this codebase; they are
 - Story, Heritage and file ratings
 - Comments on supported content
 - Like / dislike reactions on comments
-- Ownership-aware edit and delete actions
+- Ownership-aware edit and delete actions for regular members, with administrator moderation authority handled by protected backend policies
+- Friendships and accepted-friend private messaging
+- Realtime/unread notification flows
 - Community visibility and moderation states
 
 ### Administration
@@ -331,13 +350,14 @@ flowchart TD
 | `/users` | Public | Legacy compatibility route to Members |
 | `/users/:userId` | Public | Legacy UUID profile fallback |
 | `/about` | Public | About USG |
-| `/help/:topic?` | Public | Help topics |
+| `/help/:topic?` | Public | Help topics and Guest vs Member guidance |
 | `/login` | Guest | Login |
 | `/register` | Guest | Registration |
 | `/forgot-password` | Public | Password recovery |
 | `/update-password` | Recovery session | Set new password |
 | `/my-stories` | Authenticated + complete profile | Personal Story workspace |
 | `/my-files` | Authenticated + complete profile | Personal file workspace |
+| `/my-documents` | Authenticated + complete profile | Personal document workspace |
 | `/admin` | Admin | Moderation and administration |
 | `/gallery` | Public | Community media gallery |
 | `/documents` | Public | Community documents catalog |
@@ -356,11 +376,11 @@ Supabase provides authentication, database, storage, RLS-protected data access a
 
 ### 1. Project Overview
 
-**Application name:** Cane Corso Heritage  
-**Author:** Stefan Tananov  
-**Category / topic:** Heritage and community content platform  
+**Application name:** Cane Corso Heritage
+**Author:** Stefan Tananov
+**Category / topic:** Heritage and community web application
 
-Cane Corso Heritage is a React single-page application for preserving and sharing Cane Corso history, working tradition, heritage articles and community stories. Guests can explore public educational and community content, while authenticated members can create and manage their own Stories and files and interact with public content. Supabase provides the hosted backend, authentication, PostgreSQL database, Storage and Row Level Security.
+Cane Corso Heritage is a React single-page application for preserving and sharing Cane Corso history, working tradition, heritage articles and community stories. Guests can explore public educational and community content and the public Help guide, while authenticated members can create and manage their own Stories/files/documents, use friendships and private messaging, receive notifications and interact with public content. Supabase provides the hosted backend, authentication, PostgreSQL database, Storage, Realtime and Row Level Security.
 
 ### 2. User Access & Permissions
 
@@ -390,11 +410,16 @@ A signed-in user can access all public pages and, after completing the required 
 
 - **My Stories** (`/my-stories`) — create, read, edit and delete owned Stories
 - **My Files** (`/my-files`) — upload and manage personal/community files
+- **My Documents** (`/my-documents`) — upload and manage document-oriented content
 - Profile editing and account-related functionality
+- Friend requests and accepted-friend management
+- Private one-to-one messaging with realtime delivery, unread state, emoji and supported private attachments
+- Notification Center activity for messages, friend requests, comments, reactions and ratings
 - Ratings on supported public content
 - Comments and comment reactions
+- Member-download permission controls for eligible shared files
 
-Ownership is enforced for author-only operations. A regular authenticated user cannot access the admin route.
+Ownership is enforced for member-owned operations, while administrator moderation authority is separately enforced by protected backend policies. A regular authenticated user cannot access the admin route.
 
 #### Administrator
 
@@ -465,7 +490,8 @@ Supabase provides:
 - PostgreSQL database
 - Authentication and persistent sessions
 - Row Level Security (RLS)
-- Storage for Story attachments and user files
+- Storage for Story attachments, user files and private message attachments
+- Realtime Postgres Changes for private-message updates
 - Edge Functions used by translation-related features
 - Remote API/SDK communication for application data
 
@@ -553,8 +579,9 @@ The UI uses external CSS and CSS Modules. Styling is separated from React logic 
 
 1. A visitor opens the deployed application and browses Stories, Heritage, Members or other public content. Member profiles open with readable URLs such as `/members/<username>`.
 2. The visitor registers or logs in through Supabase Auth.
-3. After completing the required profile, the member opens **My Stories** and creates a new Story.
-4. The Story can later be viewed, edited or deleted by its owner, while eligible public content can receive ratings, comments and reactions from authenticated members.
+3. After completing the required profile, the member can use **My Stories**, **My Files** and **My Documents**, manage friendships and open private conversations with accepted friends.
+4. Stories can later be viewed, edited or deleted by their owner, while eligible public content can receive ratings, comments and reactions from authenticated members.
+5. Private conversations can receive realtime messages, unread indicators and supported private attachments; the Notification Center also surfaces related activity.
 
 An administrator can instead enter the protected administration area to review moderation queues and member/account actions.
 
@@ -588,9 +615,10 @@ Two dedicated demo accounts are available so evaluators can inspect the authenti
 Recommended evaluation flow:
 
 - Open `/my-stories` to test authenticated Story CRUD operations.
-- Open `/my-files` to inspect the personal file workspace and uploads.
+- Open `/my-files` and `/my-documents` to inspect personal file/document workspaces and uploads.
 - Open public Story, Heritage or supported file content to test ratings, comments and reactions.
-- Open the member/profile area to inspect authenticated profile functionality.
+- Open the member/profile area to inspect profile functionality, friend requests and private messaging.
+- Use the notification bell to inspect unread Messages, Friend Requests, Comments, and Reactions & Ratings.
 
 ### Admin demo
 
@@ -614,7 +642,7 @@ Authentication is provided by Supabase Auth. The application restores the curren
 
 React route guards control navigation and user experience, but backend authorization is enforced by Supabase Row Level Security (RLS).
 
-RLS was verified directly against the connected Supabase database on **2026-10-08**. All 15 application tables in the `public` schema reported `rowsecurity = true`, and the active policies were inspected through `pg_policies`.
+A direct RLS audit was performed against the connected Supabase database on **2026-10-08**. At that checkpoint, all 15 application tables then present in the `public` schema reported `rowsecurity = true`, and their active policies were inspected through `pg_policies`. Social/messaging tables and later security migrations were added after that checkpoint and are tracked separately in the repository migration history; the 2026-10-08 count is intentionally historical rather than a claim about the current table count.
 
 Detailed evidence and the read-only verification SQL are documented in [`docs/security-rls.md`](docs/security-rls.md).
 
@@ -626,7 +654,10 @@ Supabase is used for:
 - PostgreSQL application data
 - Row Level Security and ownership rules
 - Story, profile, comment, reaction, rating and moderation data
+- Friendships, private conversations/messages, read state and notification data
 - File and Story-attachment Storage
+- Private `message-attachments` Storage with signed participant access
+- Realtime private-message updates
 - Remote/server-side operations used by the application
 
 Local configuration is supplied through `.env.local`:
