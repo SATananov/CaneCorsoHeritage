@@ -17,7 +17,7 @@ assert.match(
 
 assert.match(
     bell,
-    /item\.conversation_id !== conversationId/,
+    /(?:item|notification)\.conversation_id\s*!==\s*conversationId/,
     'Unread message state should clear the opened conversation only.',
 );
 

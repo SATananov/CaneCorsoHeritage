@@ -157,6 +157,48 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
         };
     }, [conversation?.id, loadedConversationId, user?.id]);
 
+    useEffect(() => {
+        if (!conversation?.id || !user?.id) {
+            return undefined;
+        }
+
+        let active = true;
+
+        async function handleRealtimeMessage(event) {
+            const message = event.detail;
+
+            if (
+                !active
+                || !message
+                || message.conversation_id !== conversation.id
+            ) {
+                return;
+            }
+
+            setMessages((current) => appendUniqueMessage(current, message));
+            setLoadedConversationId(conversation.id);
+
+            if (message.sender_id !== user.id) {
+                try {
+                    await markConversationRead(conversation.id, user.id);
+
+                    if (active) {
+                        window.dispatchEvent(new Event('cch:messages-read'));
+                    }
+                } catch {
+                    // Keep the live thread usable if read-state synchronization fails.
+                }
+            }
+        }
+
+        window.addEventListener('cch:realtime-message', handleRealtimeMessage);
+
+        return () => {
+            active = false;
+            window.removeEventListener('cch:realtime-message', handleRealtimeMessage);
+        };
+    }, [conversation?.id, user?.id]);
+
     if (!conversation?.id) {
         return null;
     }

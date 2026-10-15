@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProfileEditor from '../components/ProfileEditor';
@@ -254,7 +254,7 @@ function UserDetailsPage() {
     const isOwnProfile = Boolean(user?.id && profile?.id === user.id);
 
     useEffect(() => {
-        if (!profile || window.location.hash !== '#friendship-section') {
+        if (!profile || typeof window === 'undefined' || window.location.hash !== '#friendship-section') {
             return;
         }
 
@@ -494,3 +494,4 @@ function UserDetailsPage() {
 }
 
 export default UserDetailsPage;
+

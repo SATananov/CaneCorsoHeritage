@@ -168,7 +168,16 @@ function NotificationBell() {
         const intervalId = window.setInterval(refresh, REFRESH_INTERVAL_MS);
         const unsubscribeMessages = subscribeToPrivateMessageChanges(
             user.id,
-            refresh,
+            (message) => {
+                refresh();
+
+                if (message) {
+                    window.dispatchEvent(new CustomEvent(
+                        'cch:realtime-message',
+                        { detail: message },
+                    ));
+                }
+            },
         );
 
         return () => {

@@ -35,7 +35,7 @@ assert.match(myFilesSource, /deleteCleanupLoadWarning/, 'My Files preserves clea
 const myFilesHandlers = between(
     myFilesSource,
     '    async function visibilityHandler(file) {',
-    '\n    return (',
+    '\n    useEffect(() => {',
     'My Files mutation handlers',
 );
 

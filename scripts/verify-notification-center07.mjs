@@ -19,11 +19,11 @@ assert.match(
 assert.match(messages, /useLocation/);
 assert.match(messages, /requestedConversationId/);
 assert.match(messages, /location\.search/);
-assert.match(messages, /(?:location|window\.location)\.hash\s*===\s*['"]#private-messages['"]/);
+assert.match(messages, /(?:location|window\.location)\.hash\s*(?:===|!==)\s*['"]#private-messages['"]/);
 assert.match(messages, /id="private-messages"/);
 assert.match(
     messages,
-    /result\.some\(\(item\) => item\.id === requestedConversationId\)/,
+    /result\.some\(\s*\(item\)\s*=>\s*item\.id\s*===\s*requestedConversationId\s*,?\s*\)/,
 );
 
 assert.match(userDetails, /id="friendship-section"/);
