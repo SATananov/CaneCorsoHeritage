@@ -51,6 +51,7 @@ function harness() {
         console: { warn: (...args) => warnings.push(args) },
         useParams: () => ({ userId }),
         useNavigate: () => () => {},
+        useLocation: () => ({ search: '', hash: '' }),
         useAuth: () => ({
             user: viewerId ? { id: viewerId } : null,
             roleLoading: false,
