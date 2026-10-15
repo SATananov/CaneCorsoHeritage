@@ -12,7 +12,7 @@ const ACCOUNT_STATUSES = new Set([
     'inactive',
 ]);
 
-const STORY_COLUMNS = 'id,title,author_id,status,visibility,moderation_status,moderated_at,moderated_by,created_at';
+const STORY_COLUMNS = 'id,title,author_id,editorial_source,status,visibility,moderation_status,moderated_at,moderated_by,created_at';
 const FILE_COLUMNS = 'id,user_id,story_id,file_name,storage_path,mime_type,file_size,visibility,moderation_status,moderated_at,moderated_by,created_at';
 export async function addFileSignedUrls(files) {
     return Promise.all(

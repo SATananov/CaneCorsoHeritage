@@ -43,14 +43,17 @@ function AdminStoriesSection({
 
                                 <td>
                                     {memberNameById.get(story.author_id) ?? (
-                                        <span className={styles.unlinkedMember}>
-                                            {t('noLinkedProfile')}
-                                        </span>
+                                        story.editorial_source ? (
+                                            <strong>{story.editorial_source}</strong>
+                                        ) : (
+                                            <span className={styles.unlinkedMember}>
+                                                {t('noLinkedProfile')}
+                                            </span>
+                                        )
                                     )}
                                 </td>
 
                                 <td>{statusLabel(story.visibility)}</td>
-
                                 <td>
                                     <span
                                         className={`${styles.moderationStatus} ${styles[`status_${story.moderation_status || 'approved'}`]}`}
@@ -58,7 +61,6 @@ function AdminStoriesSection({
                                         {statusLabel(story.moderation_status || 'approved')}
                                     </span>
                                 </td>
-
                                 <td>{dateLabel(story.created_at)}</td>
                                 <td>{renderStoryActions(story)}</td>
                             </tr>
