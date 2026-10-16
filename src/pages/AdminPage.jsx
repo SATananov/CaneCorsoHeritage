@@ -106,8 +106,6 @@ function AdminDashboard({ user }) {
             try {
                 const nextData = await fetchAdminDashboard({ signal: controller.signal });
                 if (!isCurrent()) return false;
-
-                // Preserve the dashboard publication contract: queues and counts
                 // become available atomically as soon as the admin fetch completes.
                 setData(nextData);
 

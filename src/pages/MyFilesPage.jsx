@@ -222,7 +222,6 @@ function MyFilesPage({ mode = 'all' } = {}) {
                     allowMemberDownload,
                     contentCategory: mode === 'documents' ? 'document' : null,
                 });
-                // The service resolves only after both storage and metadata succeed.
                 batch.completed.add(file);
             }
             uploadsComplete = true;

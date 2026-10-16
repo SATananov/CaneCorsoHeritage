@@ -21,7 +21,7 @@ assert.ok(translations.includes("guideTitle: 'How to use Cane Corso Heritage.'")
 assert.ok(translations.includes("guideTitle: 'Как се използва Cane Corso Heritage.'"), 'Bulgarian guide translations exist');
 assert.ok(translations.includes("guideTitle: 'Come usare Cane Corso Heritage.'"), 'Italian guide translations exist');
 
-assert.ok(css.includes('/* HELP GUIDE 01 */'), 'help guide styles exist');
+assert.ok(css.includes('.help-guide {'), 'help guide styles exist');
 assert.ok(css.includes('.help-guide-item'), 'accordion styles exist');
 assert.ok(css.includes('.help-access-grid'), 'guest/member access styles exist');
 

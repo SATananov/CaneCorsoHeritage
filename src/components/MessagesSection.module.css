@@ -287,7 +287,6 @@
         max-width: 88%;
     }
 }
-/* MESSAGE EMOJI PICKER 01 */
 .emojiPicker {
     position: relative;
     align-self: end;
@@ -525,7 +524,6 @@
         font-size: 1.9rem;
     }
 }
-/* PRIVATE MESSAGE ATTACHMENTS 01 */
 .attachmentPicker {
     align-self: end;
 }

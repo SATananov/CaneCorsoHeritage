@@ -3818,8 +3818,6 @@ body {
         border-radius: 999px;
     }
 }
-
-/* Final desktop hero alignment polish */
 @media (min-width: 921px) {
     .hero-copy-panel .hero-actions {
         position: relative;
@@ -3835,8 +3833,6 @@ body {
         padding-inline: 20px;
     }
 }
-
-/* HELP GUIDE 01 */
 .help-guide {
     width: min(1180px, 100%);
     margin: clamp(54px, 7vw, 88px) auto 0;
