@@ -44,7 +44,7 @@ This section is a navigation aid for evaluators. It maps the main React and appl
 | Localization | EN/BG/IT UI plus content-translation support | `src/i18n/`, `src/context/`, `supabase/functions/translate-story/`, `supabase/functions/translate-heritage/` |
 | Async Safety | Loading/error states, request cancellation and stale-response protection | `src/pages/MyStoriesPage.jsx`, `src/components/CommentsSection.jsx`, `src/pages/UserDetailsPage.jsx` |
 | Advanced React | Route-level `React.lazy`/`Suspense`, `useOptimistic`, memoized values/callbacks | `src/App.jsx`, `src/components/CommentsSection.jsx` |
-| Quality Checks | Project verification scripts, ESLint and production build checks | `scripts/`, `npm run verify`, `npm run lint`, `npm run build` |
+| Testing & Quality | Vitest unit/component tests, React Testing Library, project verifier scripts, ESLint and production build checks | `src/**/*.test.*`, `src/test/`, `scripts/`, `npm run test:run`, `npm run verify`, `npm run lint`, `npm run build` |
 
 ### React, JSX & reusable components
 
@@ -229,17 +229,47 @@ Concrete examples include:
 - `src/components/MessagesSection.jsx`
 - `src/components/NotificationBell.jsx`
 
-### Project verification
+### Automated testing
 
-The repository contains project-specific verifier scripts under `scripts/` in addition to standard lint/build checks.
+The project includes formal automated testing with Vitest and React Testing Library.
+
+Current coverage includes:
+
+- pure unit tests for reusable application logic
+- localized page-title routing logic
+- React component rendering
+- user interaction with `@testing-library/user-event`
+- accessibility-oriented assertions with `@testing-library/jest-dom`
+
+Run the tests in watch mode with:
 
 ```bash
+npm run test
+```
+
+Run the complete test suite once with:
+
+```bash
+npm run test:run
+```
+
+Current automated test suite:
+
+- 4 test files
+- 18 passing tests
+
+### Project verification
+
+The repository also contains project-specific verifier scripts under `scripts/` in addition to the formal Vitest test suite and standard lint/build checks.
+
+```bash
+npm run test:run
 npm run verify
 npm run lint
 npm run build
 ```
 
-These project verifiers are regression/static checks for this codebase; they are not presented as a substitute for formal unit/component testing.
+The verifier scripts provide additional regression and static checks specific to this codebase and complement the formal unit/component tests.
 
 ## Main features
 
@@ -678,9 +708,10 @@ npm install
 npm run dev
 ```
 
-Production and quality checks:
+Testing and quality checks:
 
 ```bash
+npm run test:run
 npm run verify
 npm run lint
 npm run build
@@ -697,6 +728,9 @@ npm run preview
 - React 19
 - React Router
 - Vite
+- Vitest
+- React Testing Library
+- jsdom
 - Supabase JavaScript client
 - Supabase Auth
 - PostgreSQL + Row Level Security

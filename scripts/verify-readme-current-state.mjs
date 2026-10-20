@@ -13,7 +13,10 @@ const required = [
     'Realtime Postgres Changes for private-message updates',
     'At that checkpoint, all 15 application tables then present',
     'the 2026-10-08 count is intentionally historical',
-    'they are not presented as a substitute for formal unit/component testing',
+    'The project includes formal automated testing with Vitest and React Testing Library.',
+    '4 test files',
+    '18 passing tests',
+    'complement the formal unit/component tests',
 ];
 
 for (const text of required) {
@@ -36,4 +39,4 @@ assert.doesNotMatch(
     'old category wording must be replaced',
 );
 
-console.log('PASS: README documents the verified current application state without overclaiming tests, RLS history or downloads.');
+console.log('PASS: README documents the verified current application state, formal Vitest coverage, RLS history and download boundaries.');
