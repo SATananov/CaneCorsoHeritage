@@ -221,22 +221,17 @@ export async function moderateStory(storyId, moderationStatus) {
         throw new Error('Unsupported Story moderation status.');
     }
 
-    const admin = await getCurrentAdmin();
-    const { count, error } = await supabase
-        .from('stories')
-        .update({
-            moderation_status: moderationStatus,
-            moderated_at: new Date().toISOString(),
-            moderated_by: admin.id,
-            updated_at: new Date().toISOString(),
-        }, { count: 'exact' })
-        .eq('id', storyId);
+    const { data, error } = await supabase.rpc('admin_moderate_story', {
+        target_story_id: storyId,
+        target_moderation_status: moderationStatus,
+    });
 
     if (error) {
         throw new Error(error.message || 'Unable to moderate this Story.');
     }
 
-    if (count !== 1) {
+    const affectedRows = Number(Array.isArray(data) ? data[0] : data);
+    if (affectedRows !== 1) {
         throw new Error('Story moderation did not affect exactly one row.');
     }
 }
@@ -314,52 +309,6 @@ export async function adminDeleteFile(file) {
     const { error: storageError } = await supabase.storage
         .from('user-files')
         .remove([file.storage_path]);
-
-    return {
-        deleted: true,
-        cleanupPending: Boolean(storageError),
-        cleanupError: storageError?.message || null,
-    };
-}
-
-export async function adminDeleteStory(storyId) {
-    const { data: files, error: filesError } = await supabase
-        .from('user_files')
-        .select('storage_path')
-        .eq('story_id', storyId);
-
-    if (filesError) {
-        throw new Error(filesError.message || 'Unable to prepare Story files for deletion.');
-    }
-
-    const storagePaths = (files ?? [])
-        .map((file) => file.storage_path)
-        .filter(Boolean);
-
-    const { count, error } = await supabase
-        .from('stories')
-        .delete({ count: 'exact' })
-        .eq('id', storyId);
-
-    if (error) {
-        throw new Error(error.message || 'Unable to delete this Story.');
-    }
-
-    if (count !== 1) {
-        throw new Error('Story deletion did not affect exactly one row.');
-    }
-
-    if (storagePaths.length === 0) {
-        return {
-            deleted: true,
-            cleanupPending: false,
-            cleanupError: null,
-        };
-    }
-
-    const { error: storageError } = await supabase.storage
-        .from('user-files')
-        .remove(storagePaths);
 
     return {
         deleted: true,

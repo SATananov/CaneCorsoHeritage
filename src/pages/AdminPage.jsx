@@ -13,7 +13,6 @@ import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import {
     adminDeleteFile,
-    adminDeleteStory,
     fetchAdminDashboard,
     fetchAdminMemberDetails,
     moderateFile,
@@ -351,19 +350,6 @@ function AdminDashboard({ user }) {
                     </button>
                 )}
 
-                <button
-                    className={styles.deleteButton}
-                    type="button"
-                    disabled={actionsDisabled}
-                    onClick={() => confirmAndRun(
-                        format('deleteStoryConfirm', { name: story.title || t('untitled') }),
-                        `${keyPrefix}-delete`,
-                        t('storyDeleted'),
-                        () => adminDeleteStory(story.id),
-                    )}
-                >
-                    {t('delete')}
-                </button>
             </div>
         );
     }
