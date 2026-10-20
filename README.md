@@ -43,7 +43,7 @@ This section is a navigation aid for evaluators. It maps the main React and appl
 | Admin Moderation | Protected dashboard, moderation queues and member/account actions | `src/pages/AdminPage.jsx`, `src/components/admin/`, `src/services/adminService.js` |
 | Localization | EN/BG/IT UI plus content-translation support | `src/i18n/`, `src/context/`, `supabase/functions/translate-story/`, `supabase/functions/translate-heritage/` |
 | Async Safety | Loading/error states, request cancellation and stale-response protection | `src/pages/MyStoriesPage.jsx`, `src/components/CommentsSection.jsx`, `src/pages/UserDetailsPage.jsx` |
-| Advanced React | Route-level `React.lazy`/`Suspense`, `useOptimistic`, memoized values/callbacks | `src/App.jsx`, `src/components/CommentsSection.jsx` |
+| Advanced React | Route-level `React.lazy`/`Suspense`, `useOptimistic`, `useMemo` and `useCallback` | `src/App.jsx`, `src/components/CommentsSection.jsx`, `src/components/HeritagePreviewSection.jsx` |
 | Testing & Quality | Vitest unit/component tests, React Testing Library, project verifier scripts, ESLint and production build checks | `src/**/*.test.*`, `src/test/`, `scripts/`, `npm run test:run`, `npm run verify`, `npm run lint`, `npm run build` |
 
 ### React, JSX & reusable components
@@ -231,36 +231,33 @@ Concrete examples include:
 
 ### Automated testing
 
-The project includes formal automated testing with Vitest and React Testing Library.
+The project includes formal automated testing with **Vitest**, **React Testing Library**, **jsdom**, **jest-dom** and **user-event**.
 
-Current coverage includes:
+The current unit/component suite covers:
 
-- pure unit tests for reusable application logic
+- pure application logic
 - localized page-title routing logic
 - React component rendering
-- user interaction with `@testing-library/user-event`
-- accessibility-oriented assertions with `@testing-library/jest-dom`
+- user interaction
+- accessibility-oriented assertions
 
-Run the tests in watch mode with:
+Run the test suite in watch mode:
 
 ```bash
 npm run test
 ```
 
-Run the complete test suite once with:
+Run the complete unit/component suite once:
 
 ```bash
 npm run test:run
 ```
 
-Current automated test suite:
-
-- 4 test files
-- 18 passing tests
+At this checkpoint the suite contains **4 test files and 18 passing tests**.
 
 ### Project verification
 
-The repository also contains project-specific verifier scripts under `scripts/` in addition to the formal Vitest test suite and standard lint/build checks.
+The repository also contains project-specific verifier scripts under `scripts/`. These regression/static/runtime checks complement the formal Vitest unit/component suite.
 
 ```bash
 npm run test:run
@@ -268,8 +265,6 @@ npm run verify
 npm run lint
 npm run build
 ```
-
-The verifier scripts provide additional regression and static checks specific to this codebase and complement the formal unit/component tests.
 
 ## Main features
 
@@ -398,7 +393,7 @@ The production version of the project is deployed and publicly accessible at:
 
 https://cane-corso-heritage.netlify.app
 
-The deployed frontend is built from the `master` branch using `npm run build` and publishes the Vite `dist` output.
+The live frontend is hosted on Netlify. The repository production build command is `npm run build`, which produces the Vite `dist` output.
 
 Supabase provides authentication, database, storage, RLS-protected data access and server-side project services.
 
@@ -586,7 +581,6 @@ The project uses React Hooks throughout the application, including:
 - `useCallback` for stable callback references in interactive and data-driven components
 - `useOptimistic` for immediate Like/Dislike feedback while comment reaction mutations are pending
 - `React.lazy` and `Suspense` for route-level lazy loading and smaller initial page bundles
-- React DevTools Profiler was used to review render behavior before introducing additional memoization
 - `useRef` for request/submission coordination and stable mutable references
 - custom Hooks such as `useAuth`, `useStoryDetails` and `useStoryTranslation`
 
@@ -728,14 +722,14 @@ npm run preview
 - React 19
 - React Router
 - Vite
-- Vitest
-- React Testing Library
-- jsdom
 - Supabase JavaScript client
 - Supabase Auth
 - PostgreSQL + Row Level Security
 - Supabase Storage
 - CSS / CSS Modules
+- Vitest
+- React Testing Library
+- jsdom
 - ESLint
 
 ## Project documentation

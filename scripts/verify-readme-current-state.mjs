@@ -13,10 +13,10 @@ const required = [
     'Realtime Postgres Changes for private-message updates',
     'At that checkpoint, all 15 application tables then present',
     'the 2026-10-08 count is intentionally historical',
-    'The project includes formal automated testing with Vitest and React Testing Library.',
-    '4 test files',
-    '18 passing tests',
-    'complement the formal unit/component tests',
+    'Vitest unit/component tests, React Testing Library',
+    '4 test files and 18 passing tests',
+    '`useOptimistic`, `useMemo` and `useCallback`',
+    'These regression/static/runtime checks complement the formal Vitest unit/component suite.',
 ];
 
 for (const text of required) {
@@ -35,8 +35,26 @@ assert.ok(
 
 assert.doesNotMatch(
     readme,
+    /they are not presented as a substitute for formal unit\/component testing/,
+    'README must not claim formal unit/component testing is absent after Vitest was added',
+);
+
+assert.doesNotMatch(
+    readme,
+    /React DevTools Profiler was used/,
+    'README must not claim an unverifiable manual Profiler step',
+);
+
+assert.doesNotMatch(
+    readme,
+    /The deployed frontend is built from the `master` branch/,
+    'README must not assert a Netlify branch setting that is not repository-verifiable',
+);
+
+assert.doesNotMatch(
+    readme,
     /\*\*Category \/ topic:\*\* Heritage and community content platform/,
     'old category wording must be replaced',
 );
 
-console.log('PASS: README documents the verified current application state, formal Vitest coverage, RLS history and download boundaries.');
+console.log('PASS: README matches the verified project state, formal test setup and repository-supported claims.');
