@@ -558,6 +558,7 @@ export const translations = {
         footer: {
             about: 'About USG',
             help: 'Help',
+            rightsReserved: 'All rights reserved USG',
         },
     },
 
@@ -1118,6 +1119,7 @@ export const translations = {
         footer: {
             about: 'За USG',
             help: 'Помощ',
+            rightsReserved: 'Всички права запазени USG',
         },
     },
 
@@ -1678,6 +1680,7 @@ export const translations = {
         footer: {
             about: 'Su USG',
             help: 'Aiuto',
+            rightsReserved: 'Tutti i diritti riservati USG',
         },
     },
 };

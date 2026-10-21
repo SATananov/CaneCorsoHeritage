@@ -635,6 +635,13 @@
     white-space: nowrap;
 }
 
+.footer-rights {
+    display: block;
+    margin-top: 4px;
+    color: rgba(248, 245, 239, 0.56);
+    font-size: 0.72rem;
+}
+
 .footer-legal strong {
     color: rgba(212, 175, 55, 0.86);
     font-weight: 800;

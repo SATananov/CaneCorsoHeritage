@@ -8,7 +8,7 @@ export const applicationUi = {
         },
         helpPage: {
             topic: 'Help topic', notFound: 'Help topic not found', chooseTopic: 'Choose Explore, Read or Share below to open a supported help topic.',
-            exploreTitle: 'Explore the project', exploreText: 'Use the main navigation and the dedicated routes for Stories, Heritage and About USG.',
+            exploreTitle: 'Explore the content', exploreText: 'Use the main navigation to discover Stories, Gallery, Documents, Heritage and About USG.',
             readTitle: 'Open full details', readText: 'Story and Heritage details have their own URLs, so they can be opened directly and shared.',
             shareTitle: 'Share a story', shareText: 'Create a Story from your private member area and choose whether it stays private or is shared with the Community.',
         },
@@ -66,7 +66,7 @@ export const applicationUi = {
         },
         helpPage: {
             topic: 'Тема от помощта', notFound: 'Темата от помощта не е намерена', chooseTopic: 'Избери Разглеждане, Четене или Споделяне по-долу, за да отвориш поддържана тема.',
-            exploreTitle: 'Разгледай проекта', exploreText: 'Използвай главната навигация и отделните страници за Истории, Наследство и За USG.',
+            exploreTitle: 'Разгледай съдържанието', exploreText: 'Използвай главната навигация, за да откриеш Истории, Галерия, Документи, Наследство и За USG.',
             readTitle: 'Отвори пълните детайли', readText: 'Историите и материалите от Наследство имат собствени адреси, така че могат да се отварят директно и да се споделят.',
             shareTitle: 'Сподели история', shareText: 'Създай История от личната си зона и избери дали да остане лична или да бъде споделена с Общността.',
         },
@@ -124,7 +124,7 @@ export const applicationUi = {
         },
         helpPage: {
             topic: 'Argomento di aiuto', notFound: 'Argomento di aiuto non trovato', chooseTopic: 'Scegli Esplora, Leggi o Condividi qui sotto per aprire un argomento supportato.',
-            exploreTitle: 'Esplora il progetto', exploreText: 'Usa la navigazione principale e le pagine dedicate a Storie, Heritage e Su USG.',
+            exploreTitle: 'Esplora i contenuti', exploreText: 'Usa la navigazione principale per scoprire Storie, Galleria, Documenti, Heritage e Su USG.',
             readTitle: 'Apri i dettagli completi', readText: 'Le Storie e i contenuti Heritage hanno URL propri, quindi possono essere aperti direttamente e condivisi.',
             shareTitle: 'Condividi una storia', shareText: 'Crea una Storia dalla tua area privata e scegli se mantenerla privata o condividerla con la Comunità.',
         },

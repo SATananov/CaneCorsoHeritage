@@ -28,9 +28,12 @@ function Footer() {
                 </nav>
 
                 <p className="footer-legal">
-                    © 2026 <strong>USG</strong> · Unico Suo Genere
-                    <sup className="footer-trademark" aria-label={ts('trademark')}>&trade;</sup>
-                    <span aria-hidden="true"> · </span>Cane Corso Heritage
+                    <span>
+                        © 2026 <strong>USG</strong> · Unico Suo Genere
+                        <sup className="footer-trademark" aria-label={ts('trademark')}>&trade;</sup>
+                        <span aria-hidden="true"> · </span>Cane Corso Heritage
+                    </span>
+                    <span className="footer-rights">{t('rightsReserved')}</span>
                 </p>
             </div>
         </footer>
