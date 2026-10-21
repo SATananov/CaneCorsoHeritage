@@ -19,7 +19,7 @@ const keyExpression = page.match(/key=\{(JSON\.stringify\([^\n]+)\}/)?.[1];
 assert.ok(keyExpression);
 const getKey = runInNewContext(`({ user, isAdmin, accountStatus }) => ${keyExpression}`);
 const serviceSource = `${service.slice(service.indexOf('const MODERATION_STATUSES')).replaceAll('export async function', 'async function')}
-({ fetchAdminDashboard, moderateStory, moderateFile, adminDeleteStory,
+({ fetchAdminDashboard, moderateStory, moderateFile,
     adminDeleteFile, setMemberAccountStatus, fetchAdminMemberDetails });`;
 
 function deferred() {
@@ -99,7 +99,23 @@ function harness() {
         from: query,
         auth: { getUser: async () => ({ data: { user: auth.user } }) },
         storage: { from: () => ({ remove: async (paths) => { calls.removals.push(...paths); return { error: null }; } }) },
-        rpc: async () => {
+        rpc: async (name, args = {}) => {
+            if (name === 'admin_moderate_story') {
+                calls.writes.push({ mode: 'rpc', name, args });
+                const outcome = outcomes.mutation.length ? await outcomes.mutation.shift() : null;
+                if (outcome instanceof Error) return { error: outcome };
+
+                const row = db.stories.find((story) => (
+                    story.id === args.target_story_id
+                    && story.visibility === 'community'
+                ));
+
+                if (!row) return { data: 0, error: null };
+
+                row.moderation_status = args.target_moderation_status;
+                return { data: 1, error: null };
+            }
+
             const result = outcomes.details.length ? await outcomes.details.shift() : { display_name: 'Member' };
             if (result instanceof Error) return { error: result };
             return { data: result, error: null };
@@ -224,24 +240,32 @@ await test('pending pagination handles server row caps and batches beyond 500', 
 });
 
 for (const kind of ['story', 'file']) {
-    for (const action of ['approved', 'rejected', 'delete']) {
+    const actions = kind === 'story'
+        ? ['approved', 'rejected']
+        : ['approved', 'rejected', 'delete'];
+
+    for (const action of actions) {
         await test(`${kind} ${action} refreshes queue and counts together`, async (h) => {
             await ready(h);
             const before = h.render().data;
             const fn = kind === 'story'
-                ? () => action === 'delete' ? h.services.adminDeleteStory('story-A') : h.services.moderateStory('story-A', action)
-                : () => action === 'delete' ? h.services.adminDeleteFile(h.db.user_files[0]) : h.services.moderateFile('file-A', action);
+                ? () => h.services.moderateStory('story-A', action)
+                : () => action === 'delete'
+                    ? h.services.adminDeleteFile(h.db.user_files[0])
+                    : h.services.moderateFile('file-A', action);
             await h.action(fn);
             const view = h.render(); coherent(view.data);
             assert.notEqual(view.data, before);
             assert.equal(view.data.counts.pending, 3);
-            assert.equal(view.data.counts[kind === 'story' ? 'stories' : 'files'], before.counts[kind === 'story' ? 'stories' : 'files'] - (action === 'delete' ? 1 : 0));
+            assert.equal(
+                view.data.counts[kind === 'story' ? 'stories' : 'files'],
+                before.counts[kind === 'story' ? 'stories' : 'files'] - (kind === 'file' && action === 'delete' ? 1 : 0),
+            );
             assert.equal(view.error, ''); assert.equal(view.message, 'success');
             assert.equal(view.busyKey, ''); assert.equal(view.loading, false);
         });
     }
 }
-
 await test('failed mutation preserves prior queues/counts and shows the current error', async (h) => {
     await ready(h); const before = h.render().data;
     h.outcomes.mutation.push(new Error('Denied'));

@@ -241,12 +241,32 @@ async function verifyRuntimeSemantics() {
     assert.deepEqual(storyEvents, ['story-delete', 'storage-remove']);
 }
 const adminPath = 'src/services/adminService.js';
-assertSingleRowCount(adminPath, 'moderateStory', 'Story moderation did not affect exactly one row.');
+const adminServiceSource = read(adminPath);
+const storyModeration = functionBody(adminServiceSource, 'moderateStory');
+
+assert.match(
+    storyModeration,
+    /\.rpc\('admin_moderate_story',\s*\{/,
+    'Story moderation must use the dedicated RPC boundary',
+);
+assert.match(
+    storyModeration,
+    /affectedRows\s*!==\s*1/,
+    'Story moderation must reject non-single-row RPC outcomes',
+);
+assert.ok(
+    storyModeration.includes('Story moderation did not affect exactly one row.'),
+    'Story moderation must expose the expected service error semantics',
+);
+
 assertSingleRowCount(adminPath, 'moderateFile', 'File moderation did not affect exactly one row.');
 assertSingleRowCount(adminPath, 'setMemberAccountStatus', 'Member account update did not affect exactly one row.');
 assertSingleRowCount(adminPath, 'adminDeleteFile', 'File deletion did not affect exactly one row.');
-assertSingleRowCount(adminPath, 'adminDeleteStory', 'Story deletion did not affect exactly one row.');
-
+assert.doesNotMatch(
+    adminServiceSource,
+    /adminDeleteStory/,
+    'Admin service must not restore the removed Story hard-delete path',
+);
 assertSingleRowCount('src/services/ratingService.js', 'saveStoryRating', 'Your rating no longer exists. Refresh and try again.');
 assertSingleRowCount('src/services/fileRatingService.js', 'saveFileRating', 'Your rating no longer exists. Refresh and try again.');
 assertSingleRowCount('src/services/heritageRatingService.js', 'saveHeritageRating', 'Your Heritage rating no longer exists. Refresh and try again.');

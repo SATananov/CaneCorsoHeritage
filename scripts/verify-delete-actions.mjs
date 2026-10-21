@@ -59,68 +59,6 @@ function createDeleteSupabase({ metadataResult, storageResult = { error: null },
     };
 }
 
-function createAdminStorySupabase({
-    storyResult,
-    filesResult = { data: [{ storage_path: 'path/file.webp' }], error: null },
-    storageResult = { error: null },
-}) {
-    const calls = [];
-
-    return {
-        calls,
-        from(table) {
-            calls.push(`db:${table}`);
-
-            if (table === 'user_files') {
-                return {
-                    select(column) {
-                        assert.equal(column, 'storage_path');
-                        calls.push('files:select');
-                        return {
-                            eq(actualColumn, value) {
-                                assert.equal(actualColumn, 'story_id');
-                                assert.equal(value, 'story-1');
-                                calls.push('files:eq');
-                                return Promise.resolve(filesResult);
-                            },
-                        };
-                    },
-                };
-            }
-
-            assert.equal(table, 'stories');
-
-            return {
-                delete(options) {
-                    assert.deepEqual(options, { count: 'exact' });
-                    calls.push('story:delete');
-                    return {
-                        eq(column, value) {
-                            assert.equal(column, 'id');
-                            assert.equal(value, 'story-1');
-                            calls.push('story:eq');
-                            return Promise.resolve(storyResult);
-                        },
-                    };
-                },
-            };
-        },
-        storage: {
-            from(bucket) {
-                assert.equal(bucket, 'user-files');
-                calls.push(`storage:${bucket}`);
-                return {
-                    async remove(paths) {
-                        assert.deepEqual(paths, ['path/file.webp']);
-                        calls.push('storage:remove');
-                        return storageResult;
-                    },
-                };
-            },
-        },
-    };
-}
-
 function createProfileSupabase({ metadataResult, storageResult = { error: null } }) {
     const calls = [];
     return {
@@ -245,65 +183,6 @@ async function verifyAdminFileDelete() {
     });
 }
 
-async function verifyAdminStoryDelete() {
-    const dbFailureSupabase = createAdminStorySupabase({
-        storyResult: { count: 0, error: null },
-    });
-
-    const dbFailure = loadService('src/services/adminService.js', ['adminDeleteStory'], {
-        supabase: dbFailureSupabase,
-    });
-
-    await assert.rejects(
-        () => dbFailure.adminDeleteStory('story-1'),
-        /Story deletion did not affect exactly one row\./,
-    );
-
-    assert.doesNotMatch(
-        dbFailureSupabase.calls.join('|'),
-        /storage:/,
-        'Admin Story storage cleanup must not run when Story deletion fails',
-    );
-
-    const successSupabase = createAdminStorySupabase({
-        storyResult: { count: 1, error: null },
-    });
-
-    const success = loadService('src/services/adminService.js', ['adminDeleteStory'], {
-        supabase: successSupabase,
-    });
-
-    const successResult = await success.adminDeleteStory('story-1');
-
-    assert.deepEqual(successResult, {
-        deleted: true,
-        cleanupPending: false,
-        cleanupError: null,
-    });
-
-    assert.ok(
-        successSupabase.calls.indexOf('story:eq')
-        < successSupabase.calls.indexOf('storage:remove'),
-    );
-
-    const cleanupFailureSupabase = createAdminStorySupabase({
-        storyResult: { count: 1, error: null },
-        storageResult: { error: { message: 'story cleanup failed' } },
-    });
-
-    const cleanupFailure = loadService('src/services/adminService.js', ['adminDeleteStory'], {
-        supabase: cleanupFailureSupabase,
-    });
-
-    const cleanupResult = await cleanupFailure.adminDeleteStory('story-1');
-
-    assert.deepEqual(cleanupResult, {
-        deleted: true,
-        cleanupPending: true,
-        cleanupError: 'story cleanup failed',
-    });
-}
-
 async function verifyAvatarRemoval() {
     const dbFailureSupabase = createProfileSupabase({
         metadataResult: { count: 0, error: null },
@@ -387,9 +266,15 @@ assert.ok(
     'Profile UI refreshes committed avatar removal and surfaces cleanup warning',
 );
 
+const adminServiceSource = read('src/services/adminService.js');
+assert.doesNotMatch(
+    adminServiceSource,
+    /adminDeleteStory/,
+    'Admin Story hard-delete must remain absent from the moderation model',
+);
+
 await verifyUserFileDelete();
 await verifyAdminFileDelete();
-await verifyAdminStoryDelete();
 await verifyAvatarRemoval();
 
 console.log('PASS: delete actions');
