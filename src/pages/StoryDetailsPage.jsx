@@ -15,6 +15,7 @@ function StoryDetailsPage() {
     const { language } = useLanguage();
     const t = (key) => getTranslation(language, 'storyDetails', key);
     const tm = (key) => getTranslation(language, 'memberProfile', key);
+    const ts = (key) => getTranslation(language, 'publicStories', key);
     const { storyId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -34,7 +35,27 @@ function StoryDetailsPage() {
         setShowOriginal,
     } = useStoryTranslation({ story, language, user });
 
+    const displayEyebrow = (currentStory) => {
+        if (currentStory?.editorial_source) {
+            const editorialEyebrows = {
+                Origins: ts('fallbackOrigins'),
+                Loyalty: ts('fallbackLoyalty'),
+                Legacy: ts('fallbackLegacy'),
+            };
+
+            return editorialEyebrows[currentStory.eyebrow] ?? currentStory.eyebrow;
+        }
+
+        return currentStory?.eyebrow === 'Community'
+            ? tm('communityEyebrow')
+            : currentStory?.eyebrow === 'My Own'
+                ? tm('privateEyebrow')
+                : currentStory?.eyebrow;
+    };
+
     const isCommunityStory = story?.visibility === 'community';
+    const isEditorialStory = Boolean(story?.editorial_source);
+    const showCommunityInteractions = isCommunityStory && !isEditorialStory;
     const isOwnStory = Boolean(
         user?.id
         && story?.author_id
@@ -93,14 +114,10 @@ function StoryDetailsPage() {
                         <StoryHeader
                             story={visibleStory}
                             storyByLabel={t('storyBy')}
-                            eyebrowLabel={story.eyebrow === 'Community'
-                                ? tm('communityEyebrow')
-                                : story.eyebrow === 'My Own'
-                                    ? tm('privateEyebrow')
-                                    : story.eyebrow}
+                            eyebrowLabel={displayEyebrow(story)}
                         />
 
-                        {isCommunityStory && (
+                        {showCommunityInteractions && (
                             <StoryRating
                                 storyId={storyId}
                                 user={user}
@@ -119,7 +136,7 @@ function StoryDetailsPage() {
                             t={t}
                         />
 
-                        {isCommunityStory && (
+                        {showCommunityInteractions && (
                             <CommentsSection
                                 targetType="story"
                                 targetId={storyId}

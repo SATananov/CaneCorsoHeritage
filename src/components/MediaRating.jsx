@@ -38,6 +38,13 @@ function MediaRatingForTarget({ fileId, ownerId, user }) {
     const scopeRef = useRef(null);
     const isOwnFile = Boolean(user?.id && ownerId && user.id === ownerId);
 
+    const averageFillFor = (value) => {
+        if (ratingInfo.count <= 0) return 0;
+
+        const fill = ratingInfo.average - (value - 1);
+        return Math.max(0, Math.min(1, fill));
+    };
+
     useEffect(() => {
         const controller = new AbortController();
         const scope = { active: true, busy: false, ready: false, info: null };
@@ -130,23 +137,35 @@ function MediaRatingForTarget({ fileId, ownerId, user }) {
             </div>
 
             <div className={styles.stars} aria-label={t('label')}>
-                {ratingValues.map((value) => (
-                    <button
-                        className={
-                            value <= ratingInfo.userRating
-                                ? `${styles.star} ${styles.starActive}`
-                                : styles.star
-                        }
-                        key={value}
-                        type="button"
-                        aria-label={format('rateOutOf', { value })}
-                        aria-pressed={ratingInfo.userRating === value}
-                        disabled={!user || saving || loading || isOwnFile}
-                        onClick={() => ratingHandler(value)}
-                    >
-                        ★
-                    </button>
-                ))}
+                {ratingValues.map((value) => {
+                    const averageFill = averageFillFor(value);
+
+                    return (
+                        <button
+                            className={
+                                averageFill > 0
+                                    ? `${styles.star} ${styles.starAverage}`
+                                    : styles.star
+                            }
+                            key={value}
+                            type="button"
+                            aria-label={format('rateOutOf', { value })}
+                            aria-pressed={ratingInfo.userRating === value}
+                            disabled={!user || saving || loading || isOwnFile}
+                            onClick={() => ratingHandler(value)}
+                        >
+                            <span
+                                className={styles.starGlyph}
+                                style={{
+                                    '--rating-star-fill': `${Math.round(averageFill * 100)}%`,
+                                }}
+                                aria-hidden="true"
+                            >
+                                ★
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
 
             {isOwnFile ? (

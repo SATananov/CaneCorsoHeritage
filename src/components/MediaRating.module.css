@@ -47,12 +47,42 @@
     cursor: pointer;
 }
 
+.starAverage {
+    border-color: rgba(212, 175, 55, 0.42);
+    background: rgba(212, 175, 55, 0.055);
+}
+
+.starGlyph {
+    display: inline-block;
+    color: transparent;
+    background:
+        linear-gradient(
+            90deg,
+            #d4af37 0,
+            #d4af37 var(--rating-star-fill),
+            rgba(248, 245, 239, 0.28) var(--rating-star-fill),
+            rgba(248, 245, 239, 0.28) 100%
+        );
+    background-clip: text;
+    -webkit-background-clip: text;
+}
+
 .star:hover:not(:disabled),
-.star:focus-visible:not(:disabled),
-.starActive {
+.star:focus-visible:not(:disabled) {
     border-color: rgba(212, 175, 55, 0.58);
     background: rgba(212, 175, 55, 0.1);
-    color: #d4af37;
+}
+
+.star:hover:not(:disabled) .starGlyph,
+.star:focus-visible:not(:disabled) .starGlyph {
+    background:
+        linear-gradient(
+            90deg,
+            #d4af37 0,
+            #d4af37 100%
+        );
+    background-clip: text;
+    -webkit-background-clip: text;
 }
 
 .star:disabled {

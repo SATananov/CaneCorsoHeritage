@@ -27,11 +27,23 @@ function StoriesPreviewSection() {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortMode, setSortMode] = useState(SORT_OPTIONS.NEWEST);
 
-    const displayEyebrow = (story) => story.eyebrow === 'Community'
-        ? tm('communityEyebrow')
-        : story.eyebrow === 'My Own'
-            ? tm('privateEyebrow')
-            : story.eyebrow;
+    const displayEyebrow = (story) => {
+        if (story.editorial_source) {
+            const editorialEyebrows = {
+                Origins: t('fallbackOrigins'),
+                Loyalty: t('fallbackLoyalty'),
+                Legacy: t('fallbackLegacy'),
+            };
+
+            return editorialEyebrows[story.eyebrow] ?? story.eyebrow;
+        }
+
+        return story.eyebrow === 'Community'
+            ? tm('communityEyebrow')
+            : story.eyebrow === 'My Own'
+                ? tm('privateEyebrow')
+                : story.eyebrow;
+    };
 
     useEffect(() => {
         const controller = new AbortController();
@@ -122,6 +134,9 @@ function StoriesPreviewSection() {
         });
     }, [searchTerm, sortMode, stories]);
 
+    const communityStories = visibleStories.filter((story) => !story.editorial_source);
+    const editorialStories = visibleStories.filter((story) => Boolean(story.editorial_source));
+
     return (
         <section className="visitor-section" aria-labelledby="stories-feature-title">
             <div className="site-container">
@@ -191,28 +206,59 @@ function StoriesPreviewSection() {
                 ) : visibleStories.length === 0 ? (
                     <p className="story-catalog-state">{searchTerm.trim() ? t('catalogNoResults') : t('catalogEmpty')}</p>
                 ) : (
-                    <div className="story-preview-grid">
-                        {visibleStories.map((story) => (
-                            <div className="story-catalog-card" key={story.id ?? story._id}>
-                                <PreviewCard
-                                    eyebrow={displayEyebrow(story)}
-                                    title={story.title}
-                                    description={story.description}
-                                    details={story.details}
-                                    onDetails={() => navigate(`/stories/${story.id ?? story._id}`)}
-                                />
+                    <div className="story-catalog-sections">
+                        {communityStories.length > 0 && (
+                            <div className="story-preview-grid">
+                                {communityStories.map((story) => (
+                                    <div className="story-catalog-card" key={story.id ?? story._id}>
+                                        <PreviewCard
+                                            eyebrow={displayEyebrow(story)}
+                                            title={story.title}
+                                            description={story.description}
+                                            details={story.details}
+                                            onDetails={() => navigate(`/stories/${story.id ?? story._id}`)}
+                                        />
 
-                                <div className="story-catalog-metrics" aria-label={t('metricsLabel')}>
-                                    <span>
-                                        ★ {story.averageRating == null ? '—' : Number(story.averageRating).toFixed(1)}
-                                        {' '}({story.ratingCount == null ? '—' : story.ratingCount})
-                                    </span>
-                                    <span>
-                                        {t('commentsMetric')}: {story.commentCount == null ? '—' : story.commentCount}
-                                    </span>
-                                </div>
+                                        <div className="story-catalog-metrics" aria-label={t('metricsLabel')}>
+                                            <span>
+                                                ★ {story.averageRating == null ? '—' : Number(story.averageRating).toFixed(1)}
+                                                {' '}({story.ratingCount == null ? '—' : story.ratingCount})
+                                            </span>
+                                            <span>
+                                                {t('commentsMetric')}: {story.commentCount == null ? '—' : story.commentCount}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        )}
+
+                        {editorialStories.length > 0 && (
+                            <section className="story-editorial-section" aria-labelledby="story-editorial-title">
+                                <div className="visitor-section-heading visitor-section-heading-compact story-editorial-heading">
+                                    <p className="section-kicker">{t('editorialKicker')}</p>
+                                    <h2 id="story-editorial-title">{t('editorialTitle')}</h2>
+                                    <p>{t('editorialIntro')}</p>
+                                </div>
+
+                                <div className="story-preview-grid story-editorial-grid">
+                                    {editorialStories.map((story) => (
+                                        <div
+                                            className="story-catalog-card story-editorial-card"
+                                            key={story.id ?? story._id}
+                                        >
+                                            <PreviewCard
+                                                eyebrow={displayEyebrow(story)}
+                                                title={story.title}
+                                                description={story.description}
+                                                details={story.details}
+                                                onDetails={() => navigate(`/stories/${story.id ?? story._id}`)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
                     </div>
                 )}
             </div>

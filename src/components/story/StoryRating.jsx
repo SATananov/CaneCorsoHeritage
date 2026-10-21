@@ -35,6 +35,13 @@ function StoryRatingForTarget({ storyId, user, isOwnStory }) {
     const scopeRef = useRef(null);
     const canRate = Boolean(user && !isOwnStory);
 
+    const averageFillFor = (value) => {
+        if (ratingInfo.count <= 0) return 0;
+
+        const fill = ratingInfo.average - (value - 1);
+        return Math.max(0, Math.min(1, fill));
+    };
+
     useEffect(() => {
         const controller = new AbortController();
         const scope = { active: true, busy: false, ready: false, info: null };
@@ -161,23 +168,35 @@ function StoryRatingForTarget({ storyId, user, isOwnStory }) {
                 className={styles.ratingStars}
                 aria-label={t('ratingLabel')}
             >
-                {ratingValues.map((value) => (
-                    <button
-                        className={
-                            value <= ratingInfo.userRating
-                                ? `${styles.ratingStar} ${styles.ratingStarActive}`
-                                : styles.ratingStar
-                        }
-                        key={value}
-                        type="button"
-                        aria-label={format('rateOutOf', { value })}
-                        aria-pressed={ratingInfo.userRating === value}
-                        disabled={!canRate || saving || loading}
-                        onClick={() => ratingHandler(value)}
-                    >
-                        ★
-                    </button>
-                ))}
+                {ratingValues.map((value) => {
+                    const averageFill = averageFillFor(value);
+
+                    return (
+                        <button
+                            className={
+                                averageFill > 0
+                                    ? `${styles.ratingStar} ${styles.ratingStarAverage}`
+                                    : styles.ratingStar
+                            }
+                            key={value}
+                            type="button"
+                            aria-label={format('rateOutOf', { value })}
+                            aria-pressed={ratingInfo.userRating === value}
+                            disabled={!canRate || saving || loading}
+                            onClick={() => ratingHandler(value)}
+                        >
+                            <span
+                                className={styles.ratingStarGlyph}
+                                style={{
+                                    '--rating-star-fill': `${Math.round(averageFill * 100)}%`,
+                                }}
+                                aria-hidden="true"
+                            >
+                                ★
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
 
             {isOwnStory ? (

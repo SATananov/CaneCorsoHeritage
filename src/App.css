@@ -4000,3 +4000,55 @@ body {
         padding: 0 18px 20px;
     }
 }
+
+
+/* Stories catalog: keep editorial provenance visually distinct from member Stories. */
+.story-catalog-sections {
+    width: 100%;
+}
+
+.story-editorial-section {
+    width: 100%;
+    max-width: 1180px;
+    margin: clamp(42px, 5vw, 64px) auto 0;
+    padding-top: clamp(30px, 4vw, 46px);
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.story-editorial-heading {
+    margin-bottom: clamp(20px, 2.4vw, 28px);
+}
+
+.story-editorial-heading .section-kicker {
+    margin-bottom: 8px;
+}
+
+.story-editorial-heading > p:last-child {
+    max-width: 680px;
+    margin-inline: auto;
+}
+
+.story-editorial-card {
+    border-color: rgba(212, 175, 55, 0.18);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(22, 20, 16, 0.88),
+            rgba(12, 12, 14, 0.96)
+        );
+}
+
+.story-editorial-card .story-preview-card {
+    min-height: 205px;
+}
+
+@media (max-width: 680px) {
+    .story-editorial-section {
+        margin-top: 34px;
+        padding-top: 28px;
+    }
+
+    .story-editorial-card .story-preview-card {
+        min-height: 0;
+    }
+}

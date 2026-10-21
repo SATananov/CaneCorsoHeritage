@@ -320,12 +320,42 @@
     cursor: pointer;
 }
 
+.ratingStarAverage {
+    border-color: rgba(212, 175, 55, 0.42);
+    background: rgba(212, 175, 55, 0.055);
+}
+
+.ratingStarGlyph {
+    display: inline-block;
+    color: transparent;
+    background:
+        linear-gradient(
+            90deg,
+            #d4af37 0,
+            #d4af37 var(--rating-star-fill),
+            rgba(248, 245, 239, 0.28) var(--rating-star-fill),
+            rgba(248, 245, 239, 0.28) 100%
+        );
+    background-clip: text;
+    -webkit-background-clip: text;
+}
+
 .ratingStar:hover:not(:disabled),
-.ratingStar:focus-visible:not(:disabled),
-.ratingStarActive {
+.ratingStar:focus-visible:not(:disabled) {
     border-color: rgba(212, 175, 55, 0.62);
     background: rgba(212, 175, 55, 0.1);
-    color: #d4af37;
+}
+
+.ratingStar:hover:not(:disabled) .ratingStarGlyph,
+.ratingStar:focus-visible:not(:disabled) .ratingStarGlyph {
+    background:
+        linear-gradient(
+            90deg,
+            #d4af37 0,
+            #d4af37 100%
+        );
+    background-clip: text;
+    -webkit-background-clip: text;
 }
 
 .ratingStar:disabled {
