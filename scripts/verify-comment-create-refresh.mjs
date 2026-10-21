@@ -177,7 +177,10 @@ for (const stage of ['profiles', 'reactions']) {
         h.render();
         await h.settle();
         assert.equal(h.render().loading, false);
-        assert.equal(h.render().error, '');
+        assert.equal(
+            h.render().error,
+            stage === 'reactions' ? 'reactionLoadError' : '',
+        );
         assert.equal(h.render().comments.length, 1);
         assert.equal(h.render().comments[0].id, 'existing');
         if (stage === 'profiles') {
@@ -196,7 +199,7 @@ await check('initial comments stay visible when both optional reads fail', async
     h.render();
     await h.settle();
     assert.equal(h.render().loading, false);
-    assert.equal(h.render().error, '');
+    assert.equal(h.render().error, 'reactionLoadError');
     assert.equal(h.render().comments.length, 1);
     assert.equal(Object.keys(h.render().profilesById).length, 0);
     assert.equal(h.render().reactions.length, 0);
@@ -247,13 +250,16 @@ await check('successful create survives primary refresh failure and repeated sub
 });
 
 for (const stage of ['profiles', 'reactions']) {
-    await check(`successful create survives optional ${stage} refresh failure without a load error`, async () => {
+    await check(`successful create survives optional ${stage} refresh failure with the expected error state`, async () => {
         const h = await ready();
         h.draft('Persisted');
         h.outcomes[stage].push(new Error('Optional read failed'));
         await h.submit();
         expectSaved(h);
-        assert.equal(h.render().error, '');
+        assert.equal(
+            h.render().error,
+            stage === 'reactions' ? 'reactionLoadError' : '',
+        );
         assert.equal(h.render().comments[0].id, h.database[0].id);
         if (stage === 'profiles') {
             assert.equal(Object.keys(h.render().profilesById).length, 0);

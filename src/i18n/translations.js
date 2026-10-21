@@ -517,6 +517,7 @@ export const translations = {
             dislike: 'Dislike',
             signInToReact: 'Sign in to react to comments.',
             reactionError: 'Unable to update your reaction.',
+            reactionLoadError: 'Comments loaded, but reactions could not be loaded.',
         },
         globalUi: {
             accountOptions: 'Account options',
@@ -1073,6 +1074,7 @@ export const translations = {
             dislike: 'Не харесвам',
             signInToReact: 'Влезте в профила си, за да реагирате на коментари.',
             reactionError: 'Реакцията не може да бъде обновена.',
+            reactionLoadError: 'Коментарите са заредени, но реакциите не можаха да бъдат заредени.',
         },
         globalUi: {
             accountOptions: 'Опции за акаунта',
@@ -1629,6 +1631,7 @@ export const translations = {
             dislike: 'Non mi piace',
             signInToReact: 'Accedi per reagire ai commenti.',
             reactionError: 'Impossibile aggiornare la reazione.',
+            reactionLoadError: 'I commenti sono stati caricati, ma non è stato possibile caricare le reazioni.',
         },
         globalUi: {
             accountOptions: 'Opzioni account',

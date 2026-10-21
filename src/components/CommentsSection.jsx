@@ -79,6 +79,7 @@ async function fetchCommentSecondaryData(comments, options) {
     return {
         profiles: profilesResult.status === 'fulfilled' ? profilesResult.value : [],
         reactions: reactionsResult.status === 'fulfilled' ? reactionsResult.value : [],
+        reactionLoadFailed: reactionsResult.status === 'rejected',
     };
 }
 
@@ -159,7 +160,11 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
                     { signal: controller.signal },
                 );
 
-                const { profiles, reactions: nextReactions } = await fetchCommentSecondaryData(
+                const {
+                    profiles,
+                    reactions: nextReactions,
+                    reactionLoadFailed,
+                } = await fetchCommentSecondaryData(
                     nextComments,
                     { signal: controller.signal },
                 );
@@ -175,6 +180,9 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
                         profiles.map((profile) => [profile.id, profile]),
                     ),
                 );
+                if (reactionLoadFailed) {
+                    setError(getTranslation(language, 'comments', 'reactionLoadError'));
+                }
             } catch (loadError) {
                 if (loadError.name !== 'AbortError' && isCurrent()) {
                     setError(getTranslation(language, 'comments', 'loadError'));
@@ -203,7 +211,11 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
 
         try {
             const nextComments = await fetchComments(targetType, targetId);
-            const { profiles, reactions: nextReactions } = await fetchCommentSecondaryData(
+            const {
+                profiles,
+                reactions: nextReactions,
+                reactionLoadFailed,
+            } = await fetchCommentSecondaryData(
                 nextComments,
             );
 
@@ -215,7 +227,7 @@ function CommentsForTarget({ targetType, targetId, user, isActive }) {
                     profiles.map((profile) => [profile.id, profile]),
                 ),
             );
-            setError('');
+            setError(reactionLoadFailed ? t('reactionLoadError') : '');
             return true;
         } catch (loadError) {
             if (isCurrent()) throw loadError;
