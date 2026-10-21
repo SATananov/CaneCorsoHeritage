@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router';
+import { Link, NavLink, useNavigate } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
@@ -172,6 +172,12 @@ function AuthActions(props) {
                 >
                     {t('myDocuments')}
                 </NavLink>
+                <Link
+                    className="login-button"
+                    to={`${profilePath}#private-messages`}
+                >
+                    {t('myChats')}
+                </Link>
                 {isAdmin && (
                     <NavLink
                         className={({ isActive }) => `login-button admin-nav-link${isActive ? ' auth-route-active' : ''}`}

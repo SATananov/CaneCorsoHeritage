@@ -703,9 +703,20 @@ function MessagesSection({ profileId, isOwnProfile }) {
         }
 
         function focusPrivateMessages() {
-            document.getElementById('private-messages')?.scrollIntoView({
+            const target = document.getElementById('private-messages');
+
+            if (!target) {
+                return;
+            }
+
+            const stickyHeader = document.querySelector('.site-header');
+            const headerHeight = stickyHeader?.getBoundingClientRect().height ?? 0;
+            const targetTop = target.getBoundingClientRect().top + window.scrollY;
+            const top = Math.max(0, targetTop - headerHeight - 20);
+
+            window.scrollTo({
+                top,
                 behavior: 'auto',
-                block: 'start',
             });
         }
 
