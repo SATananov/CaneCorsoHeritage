@@ -127,6 +127,17 @@ function AuthPreparationSection({ mode = 'login' }) {
             } else if (message === 'Email not confirmed') {
                 setErrorMessage(t('emailNotConfirmed'));
             } else if (
+                error?.code === 'user_already_exists'
+                || error?.code === 'email_exists'
+                || message.toLowerCase().includes('already registered')
+            ) {
+                setSuccessMessage(t('confirmEmail'));
+                setFormData((current) => ({
+                    ...current,
+                    password: '',
+                    confirmPassword: '',
+                }));
+            } else if (
                 message === 'Username already in use.'
                 || message.toLowerCase().includes('username')
             ) {
