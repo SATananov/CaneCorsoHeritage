@@ -20,3 +20,23 @@ export function getDuplicateUploadMessage(language, incoming, existing) {
         .replace('{incoming}', incoming || '')
         .replace('{existing}', existing || incoming || '')}`;
 }
+
+
+const duplicateUploadCancelledCopy = {
+    en: {
+        title: 'Upload cancelled',
+        message: 'The file was not uploaded because an identical file already exists.',
+    },
+    bg: {
+        title: 'Качването е отменено',
+        message: 'Файлът не беше качен, защото вече съществува идентичен файл.',
+    },
+    it: {
+        title: 'Caricamento annullato',
+        message: 'Il file non è stato caricato perché esiste già un file identico.',
+    },
+};
+
+export function getDuplicateUploadCancelledCopy(language) {
+    return duplicateUploadCancelledCopy[language] ?? duplicateUploadCancelledCopy.en;
+}

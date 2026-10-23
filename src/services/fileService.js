@@ -157,14 +157,19 @@ async function saveUserFileFingerprint(fileId, contentHash) {
     return !error;
 }
 
-async function findDuplicateUserFile(userId, contentHash, fileSize) {
-    const { data: directMatch, error: directError } = await supabase
+async function findDuplicateUserFile(userId, contentHash, fileSize, excludeFileId = null) {
+    let directQuery = supabase
         .from('user_files')
         .select('id,file_name,visibility,moderation_status,storage_path,file_size,content_hash')
         .eq('user_id', userId)
         .eq('content_hash', contentHash)
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+
+    if (excludeFileId) {
+        directQuery = directQuery.neq('id', excludeFileId);
+    }
+
+    const { data: directMatch, error: directError } = await directQuery.maybeSingle();
 
     if (directError) {
         throw new Error(directError.message || 'Unable to check for duplicate files.');
@@ -174,13 +179,19 @@ async function findDuplicateUserFile(userId, contentHash, fileSize) {
         return directMatch;
     }
 
-    const { data: legacyFiles, error: legacyError } = await supabase
+    let legacyQuery = supabase
         .from('user_files')
         .select('id,file_name,visibility,moderation_status,storage_path,file_size,content_hash')
         .eq('user_id', userId)
         .eq('file_size', fileSize)
         .is('content_hash', null)
         .limit(25);
+
+    if (excludeFileId) {
+        legacyQuery = legacyQuery.neq('id', excludeFileId);
+    }
+
+    const { data: legacyFiles, error: legacyError } = await legacyQuery;
 
     if (legacyError) {
         throw new Error(legacyError.message || 'Unable to check older files for duplicates.');
@@ -313,6 +324,180 @@ export async function fetchMyFiles(userId) {
     }
 
     return addSignedUrls(data ?? []);
+}
+
+export async function editOwnedUserFile(
+    file,
+    {
+        fileName,
+        visibility,
+        allowMemberDownload,
+        replacementFile = null,
+        allowDuplicate = false,
+    } = {},
+) {
+    if (!file?.id) {
+        throw new Error('A file is required.');
+    }
+
+    const user = await getCurrentUser();
+    const { data: current, error: currentError } = await supabase
+        .from('user_files')
+        .select('*')
+        .eq('id', file.id)
+        .eq('user_id', user.id)
+        .single();
+
+    if (currentError || !current) {
+        throw new Error(currentError?.message || 'Unable to load the owned file.');
+    }
+
+    const nextName = String(fileName ?? current.file_name ?? '').trim();
+
+    if (!nextName) {
+        throw new Error('File name is required.');
+    }
+
+    const nextVisibility = current.story_id
+        ? current.visibility
+        : visibility === 'community'
+            ? 'community'
+            : 'private';
+
+    let nextStoragePath = current.storage_path;
+    let nextMimeType = current.mime_type;
+    let nextFileSize = current.file_size;
+    let nextContentHash = current.content_hash ?? null;
+    let uploadedReplacementPath = null;
+    let replacementSignedUrl = null;
+
+    if (replacementFile) {
+        nextMimeType = validateFile(replacementFile);
+        nextFileSize = replacementFile.size;
+        nextContentHash = typeof replacementFile.arrayBuffer === 'function'
+            && globalThis.crypto?.subtle
+            ? await createFileFingerprint(replacementFile)
+            : null;
+
+        if (nextContentHash && !allowDuplicate) {
+            const duplicate = await findDuplicateUserFile(
+                user.id,
+                nextContentHash,
+                replacementFile.size,
+                current.id,
+            );
+
+            if (duplicate) {
+                throw duplicateUploadError(replacementFile, duplicate, nextContentHash);
+            }
+        }
+
+        const categoryFolder = current.storage_path?.includes('/documents/')
+            ? 'documents/'
+            : '';
+
+        uploadedReplacementPath = `${user.id}/${categoryFolder}${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName(replacementFile.name)}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('user-files')
+            .upload(uploadedReplacementPath, replacementFile, {
+                contentType: nextMimeType,
+                upsert: false,
+            });
+
+        if (uploadError) {
+            throw new Error(uploadError.message || 'Unable to upload replacement file.');
+        }
+
+        const { data: signedData, error: signedError } = await supabase.storage
+            .from('user-files')
+            .createSignedUrl(uploadedReplacementPath, 3600);
+
+        if (signedError || !signedData?.signedUrl) {
+            const { error: cleanupError } = await supabase.storage
+                .from('user-files')
+                .remove([uploadedReplacementPath]);
+
+            const message = signedError?.message
+                || 'Unable to create a secure link for the replacement file.';
+
+            if (cleanupError) {
+                throw new Error(
+                    `${message} The uploaded replacement could not be cleaned up: ${cleanupError.message || 'unknown storage cleanup error'}.`,
+                );
+            }
+
+            throw new Error(message);
+        }
+
+        replacementSignedUrl = signedData.signedUrl;
+        nextStoragePath = uploadedReplacementPath;
+    }
+
+    const visibilityChanged = nextVisibility !== current.visibility;
+    const moderationStatus = replacementFile || visibilityChanged
+        ? nextVisibility === 'community' ? 'pending' : 'approved'
+        : current.moderation_status;
+
+    const patch = {
+        file_name: nextName,
+        storage_path: nextStoragePath,
+        mime_type: nextMimeType,
+        file_size: nextFileSize,
+        visibility: nextVisibility,
+        allow_member_download: Boolean(allowMemberDownload),
+        moderation_status: moderationStatus,
+        moderated_at: replacementFile || visibilityChanged ? null : current.moderated_at,
+        moderated_by: replacementFile || visibilityChanged ? null : current.moderated_by,
+        updated_at: new Date().toISOString(),
+        content_hash: nextContentHash,
+    };
+
+    const { data: updated, error: updateError } = await supabase
+        .from('user_files')
+        .update(patch)
+        .eq('id', current.id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+    if (updateError || !updated) {
+        if (uploadedReplacementPath) {
+            const { error: cleanupError } = await supabase.storage
+                .from('user-files')
+                .remove([uploadedReplacementPath]);
+
+            if (cleanupError) {
+                throw new Error(
+                    `${updateError?.message || 'Unable to update the file.'} The uploaded replacement could not be cleaned up: ${cleanupError.message || 'unknown storage cleanup error'}.`,
+                );
+            }
+        }
+
+        throw new Error(updateError?.message || 'Unable to update the file.');
+    }
+
+    let cleanupPending = false;
+
+    if (
+        replacementFile
+        && current.storage_path
+        && current.storage_path !== nextStoragePath
+    ) {
+        const { error: cleanupError } = await supabase.storage
+            .from('user-files')
+            .remove([current.storage_path]);
+
+        cleanupPending = Boolean(cleanupError);
+    }
+
+    return {
+        ...updated,
+        url: replacementFile
+            ? replacementSignedUrl
+            : file.url ?? null,
+        cleanupPending,
+    };
 }
 
 export async function fetchStoryFiles(storyId) {
@@ -587,4 +772,3 @@ export async function deleteUserFile(file) {
         cleanupError: storageError?.message || null,
     };
 }
-

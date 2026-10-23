@@ -10,6 +10,7 @@ import { getTranslation } from '../i18n/translations';
 import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
 import MediaRating from '../components/MediaRating';
 import CommentsSection from '../components/CommentsSection';
+import OwnerFileEditModal from '../components/OwnerFileEditModal';
 import { fetchCommunityFilesByUser } from '../services/fileService';
 import {
     fetchOwnPrivateProfileDetails,
@@ -79,6 +80,7 @@ function UserDetailsPage() {
     const [profile, setProfile] = useState(null);
     const [stories, setStories] = useState([]);
     const [sharedFiles, setSharedFiles] = useState([]);
+    const [editFile, setEditFile] = useState(null);
     const [publicContact, setPublicContact] = useState(null);
     const [privateDetails, setPrivateDetails] = useState(null);
     const [privateDetailsLoaded, setPrivateDetailsLoaded] = useState(false);
@@ -483,6 +485,16 @@ function UserDetailsPage() {
                                                 </div>
                                             )}
 
+                                            {file.user_id === user?.id && (
+                                                <button
+                                                    className={styles.editFileButton}
+                                                    type="button"
+                                                    onClick={() => setEditFile(file)}
+                                                >
+                                                    EDIT
+                                                </button>
+                                            )}
+
                                             <div>
                                                 <strong>{file.file_name}</strong>
                                                 {file.url && (
@@ -512,9 +524,24 @@ function UserDetailsPage() {
                     </>
                 )}
             </div>
+            {editFile && (
+                <OwnerFileEditModal
+                    file={editFile}
+                    onClose={() => setEditFile(null)}
+                    onSaved={(updated) => {
+                        setSharedFiles((current) => (
+                            updated.visibility === 'community'
+                            && updated.moderation_status === 'approved'
+                                ? current.map((item) => (
+                                    item.id === updated.id ? { ...item, ...updated } : item
+                                ))
+                                : current.filter((item) => item.id !== updated.id)
+                        ));
+                    }}
+                />
+            )}
         </main>
     );
 }
 
 export default UserDetailsPage;
-

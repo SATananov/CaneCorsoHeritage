@@ -5,9 +5,11 @@ import CatalogEmptyState from '../components/CatalogEmptyState';
 import CatalogLoadMore from '../components/CatalogLoadMore';
 import CatalogResultSummary from '../components/CatalogResultSummary';
 import CommentsSection from '../components/CommentsSection';
+import OwnerFileEditModal from '../components/OwnerFileEditModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
 import { useLanguage } from '../context/languageContext';
+import useAuth from '../hooks/useAuth';
 import { getTranslation } from '../i18n/translations';
 import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
 import {
@@ -93,6 +95,7 @@ function formatFileSize(size) {
 }
 
 function DocumentsPage() {
+    const { user } = useAuth();
     const { language } = useLanguage();
     const t = useCallback(
         (key) => getTranslation(language, 'documents', key),
@@ -105,6 +108,7 @@ function DocumentsPage() {
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [editFile, setEditFile] = useState(null);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -317,6 +321,16 @@ function DocumentsPage() {
                                                 {t('openFile')}
                                             </a>
                                         )}
+
+                                        {file.user_id === user?.id && (
+                                            <button
+                                                className={styles.editFileButton}
+                                                type="button"
+                                                onClick={() => setEditFile(file)}
+                                            >
+                                                EDIT
+                                            </button>
+                                        )}
                                     </div>
 
 
@@ -347,6 +361,22 @@ function DocumentsPage() {
                     />
                 )}
             </div>
+            {editFile && (
+                <OwnerFileEditModal
+                    file={editFile}
+                    onClose={() => setEditFile(null)}
+                    onSaved={(updated) => {
+                        setFiles((current) => (
+                            updated.visibility === 'community'
+                            && updated.moderation_status === 'approved'
+                                ? current.map((item) => (
+                                    item.id === updated.id ? { ...item, ...updated } : item
+                                ))
+                                : current.filter((item) => item.id !== updated.id)
+                        ));
+                    }}
+                />
+            )}
         </main>
     );
 }

@@ -566,3 +566,14 @@
     backdrop-filter: blur(8px);
     pointer-events: none;
 }
+
+.editFileButton {
+    margin: 10px 12px 0;
+    border: 1px solid rgba(212, 175, 55, 0.38);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #d4af37;
+    padding: 8px 13px;
+    font-weight: 800;
+    cursor: pointer;
+}

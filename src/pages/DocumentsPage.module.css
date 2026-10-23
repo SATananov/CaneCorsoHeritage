@@ -271,3 +271,13 @@
         font-size: 0.58rem;
     }
 }
+
+.editFileButton {
+    border: 1px solid rgba(212, 175, 55, 0.38);
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #d4af37;
+    padding: 9px 14px;
+    font-weight: 800;
+    cursor: pointer;
+}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CommentsSection from '../components/CommentsSection';
+import OwnerFileEditModal from '../components/OwnerFileEditModal';
 import { useLanguage } from '../context/languageContext';
 import useAuth from '../hooks/useAuth';
 import useToast from '../hooks/useToast';
@@ -85,6 +86,7 @@ function MyFilesPage({ mode = 'all' } = {}) {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [zoomedImage, setZoomedImage] = useState(null);
+    const [editFile, setEditFile] = useState(null);
     const uploadingRef = useRef(false);
     const fileLoadRequestRef = useRef(0);
     const mountedRef = useRef(false);
@@ -556,6 +558,7 @@ function MyFilesPage({ mode = 'all' } = {}) {
                                             <span>{t('memberDownload')}</span>
                                         </label>
                                         {file.story_id && <span className={styles.storyVisibility}>{t('followsStory')}</span>}
+                                        <button className={styles.editButton} type="button" onClick={() => setEditFile(file)}>{language === 'bg' ? 'РЕДАКЦИЯ' : language === 'it' ? 'MODIFICA' : 'EDIT'}</button>
                                         <button className={styles.deleteButton} type="button" onClick={() => deleteHandler(file)}>{t('delete')}</button>
                                     </div>
                                 </div>
@@ -569,6 +572,18 @@ function MyFilesPage({ mode = 'all' } = {}) {
                     </section>
                 )}
             </div>
+
+            {editFile && (
+                <OwnerFileEditModal
+                    file={editFile}
+                    onClose={() => setEditFile(null)}
+                    onSaved={(updated) => {
+                        setFiles((current) => current.map((item) => (
+                            item.id === updated.id ? { ...item, ...updated } : item
+                        )));
+                    }}
+                />
+            )}
 
             {zoomedImage && (
                 <div className={styles.lightbox} role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setZoomedImage(null); }}>

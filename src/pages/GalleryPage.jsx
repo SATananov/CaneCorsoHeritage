@@ -5,6 +5,7 @@ import CatalogEmptyState from '../components/CatalogEmptyState';
 import CatalogLoadMore from '../components/CatalogLoadMore';
 import CatalogResultSummary from '../components/CatalogResultSummary';
 import CommentsSection from '../components/CommentsSection';
+import OwnerFileEditModal from '../components/OwnerFileEditModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
 import { useLanguage } from '../context/languageContext';
@@ -117,6 +118,7 @@ function GalleryPage() {
     const [files, setFiles] = useState([]);
     const [downloadingFileId, setDownloadingFileId] = useState(null);
     const [downloadErrorFileId, setDownloadErrorFileId] = useState(null);
+    const [editFile, setEditFile] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
 
     const requestedFilter = searchParams.get('type');
@@ -529,6 +531,16 @@ useEffect(() => {
                                                 </button>
                                             )}
 
+                                            {file.user_id === user?.id && (
+                                                <button
+                                                    className={styles.editFileButton}
+                                                    type="button"
+                                                    onClick={() => setEditFile(file)}
+                                                >
+                                                    EDIT
+                                                </button>
+                                            )}
+
                                             {downloadErrorFileId === file.id && (
                                                 <span className={styles.downloadError}>
                                                     {tf('downloadError')}
@@ -564,6 +576,23 @@ useEffect(() => {
                     />
                 )}
             </div>
+
+            {editFile && (
+                <OwnerFileEditModal
+                    file={editFile}
+                    onClose={() => setEditFile(null)}
+                    onSaved={(updated) => {
+                        setFiles((current) => (
+                            updated.visibility === 'community'
+                            && updated.moderation_status === 'approved'
+                                ? current.map((item) => (
+                                    item.id === updated.id ? { ...item, ...updated } : item
+                                ))
+                                : current.filter((item) => item.id !== updated.id)
+                        ));
+                    }}
+                />
+            )}
 
             {preview && (
                 <div
