@@ -183,7 +183,6 @@ function AuthPreparationSection({ mode = 'login' }) {
                     <div className={`${styles.authGrid} ${styles.authGridSingle}`}>
                         <article className={styles.authCard}>
                             <div className={styles.cardHeading}>
-                                <span>{isLogin ? '01' : '02'}</span>
                                 <div>
                                     <p>{isLogin ? t('returningMember') : t('newMember')}</p>
                                     <h3>{isLogin ? t('login') : t('register')}</h3>

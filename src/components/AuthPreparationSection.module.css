@@ -114,19 +114,6 @@
     margin-bottom: 24px;
 }
 
-.cardHeading > span {
-    display: grid;
-    width: 34px;
-    height: 34px;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid rgba(212, 175, 55, 0.38);
-    border-radius: 50%;
-    color: var(--usg-gold);
-    font-size: 0.62rem;
-    font-weight: 800;
-}
-
 .cardHeading p {
     margin: 1px 0 4px;
     color: var(--usg-muted-soft);
