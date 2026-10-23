@@ -12,6 +12,7 @@ import { useLanguage } from '../context/languageContext';
 import useAuth from '../hooks/useAuth';
 import { getTranslation } from '../i18n/translations';
 import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
+import { getOwnerFileEditUi } from '../i18n/ownerFileEditUi';
 import {
     enrichCommunityMediaWithMetrics,
     fetchCommunityMediaFiles,
@@ -328,8 +329,8 @@ function DocumentsPage() {
                                                 type="button"
                                                 onClick={() => setEditFile(file)}
                                             >
-                                                EDIT
-                                            </button>
+                                                    {getOwnerFileEditUi(language).edit}
+                                                </button>
                                         )}
                                     </div>
 

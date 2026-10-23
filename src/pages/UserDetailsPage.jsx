@@ -8,6 +8,7 @@ import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
 import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
+import { getOwnerFileEditUi } from '../i18n/ownerFileEditUi';
 import MediaRating from '../components/MediaRating';
 import CommentsSection from '../components/CommentsSection';
 import OwnerFileEditModal from '../components/OwnerFileEditModal';
@@ -491,7 +492,7 @@ function UserDetailsPage() {
                                                     type="button"
                                                     onClick={() => setEditFile(file)}
                                                 >
-                                                    EDIT
+                                                    {getOwnerFileEditUi(language).edit}
                                                 </button>
                                             )}
 

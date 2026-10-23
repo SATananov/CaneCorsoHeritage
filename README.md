@@ -34,7 +34,7 @@ This section is a navigation aid for evaluators. It maps the main React and appl
 | Routing | React Router with nested, dynamic, protected and legacy-compatible routes | `src/App.jsx` |
 | Route Guards | Guest, authenticated, completed-profile and admin access boundaries | `src/routing/RequireGuest.jsx`, `src/routing/RequireAuth.jsx`, `src/routing/RequireCompleteProfile.jsx`, `src/routing/RequireAdmin.jsx` |
 | Forms & Validation | Controlled forms, synthetic events, validation, submitting/error states | `src/pages/LoginPage.jsx`, `src/pages/RegisterPage.jsx`, `src/components/AddStoryModal.jsx`, `src/components/ProfileEditor.jsx` |
-| Custom Toast Feedback | In-house USG toast system for success, error, info and asynchronous loading feedback, with EN/BG/IT localization and accessibility support | `src/components/ToastProvider.jsx`, `src/hooks/useToast.js`, `src/i18n/toastTranslations.js` |
+| Custom Toast Feedback | In-house USG toast system for success, error, info and asynchronous loading feedback, with EN/BG/IT localization and accessibility support | `src/context/ToastProvider.jsx`, `src/hooks/useToast.js`, `src/i18n/toastTranslations.js` |
 | React Hooks | State, effects, refs, memoization, callbacks and optimistic UI | `src/pages/MyStoriesPage.jsx`, `src/components/CommentsSection.jsx`, `src/hooks/` |
 | Context API | Shared authentication/session and language state | `src/context/`, `src/hooks/useAuth.js` |
 | Authentication | Supabase Auth with session restoration, login/register/logout and recovery | `src/context/`, `src/pages/LoginPage.jsx`, `src/pages/RegisterPage.jsx`, `src/pages/ForgotPasswordPage.jsx`, `src/pages/UpdatePasswordPage.jsx` |
@@ -215,7 +215,7 @@ The project has separate user-facing workflows for general files and document-or
 - `src/pages/DocumentsPage.jsx`
 - `src/services/fileService.js`
 
-Supabase Storage is used for uploaded content. Database metadata controls ownership, visibility, moderation and whether registered members are offered a download action for eligible shared files. File owners can edit supported uploads through a centralized owner-only flow: rename the displayed filename, replace the stored content, change visibility and manage member-download permission. Replacing content preserves the existing `user_files.id`, so comments, ratings and deep links remain attached to the same record. Replacement files are checked with the existing SHA-256 duplicate protection while excluding the current record from self-matching. Replacing approved Community content returns it to `pending` moderation before it becomes public again. This application permission does not attempt to prevent a browser user from saving content that is otherwise legitimately viewable. Private-message attachments use the private `message-attachments` bucket and signed access URLs governed by conversation-participant RLS.
+Supabase Storage is used for uploaded content. Database metadata controls ownership, visibility, moderation and whether registered members are offered a download action for eligible shared files. File owners can edit supported uploads through a centralized owner-only flow: rename the displayed filename, replace the stored content, change visibility and manage member-download permission. Replacing content preserves the existing `user_files.id`, so comments, ratings and deep links remain attached to the same record. Replacement files are checked with the existing SHA-256 duplicate warning while excluding the current record from self-matching; the owner can explicitly confirm an intentional duplicate. Replacing approved Community content returns it to `pending` moderation before it becomes public again. This application permission does not attempt to prevent a browser user from saving content that is otherwise legitimately viewable. Private-message attachments use the private `message-attachments` bucket and signed access URLs governed by conversation-participant RLS.
 
 ### Administration & moderation
 
@@ -285,7 +285,7 @@ npm run lint
 npm run build
 ```
 
-At the final pre-submission checkpoint, the project passes **25 unit/component tests across 6 test files** and **all 95 project verifier scripts**, together with ESLint and the production build.
+At the final pre-submission checkpoint, the project passes **25 unit/component tests across 6 test files** and **all 96 project verifier scripts**, together with ESLint and the production build.
 
 ## Main features
 

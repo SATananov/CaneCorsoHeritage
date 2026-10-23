@@ -116,6 +116,22 @@ function harness() {
                 return { data: 1, error: null };
             }
 
+            if (name === 'admin_moderate_file') {
+                calls.writes.push({ mode: 'rpc', name, args });
+                const outcome = outcomes.mutation.length ? await outcomes.mutation.shift() : null;
+                if (outcome instanceof Error) return { error: outcome };
+
+                const row = db.user_files.find((file) => (
+                    file.id === args.target_file_id
+                    && file.visibility === 'community'
+                ));
+
+                if (!row) return { data: 0, error: null };
+
+                row.moderation_status = args.target_moderation_status;
+                return { data: 1, error: null };
+            }
+
             const result = outcomes.details.length ? await outcomes.details.shift() : { display_name: 'Member' };
             if (result instanceof Error) return { error: result };
             return { data: result, error: null };

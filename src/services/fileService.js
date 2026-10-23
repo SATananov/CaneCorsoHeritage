@@ -364,6 +364,45 @@ export async function editOwnedUserFile(
             ? 'community'
             : 'private';
 
+    const visibilityChanged = nextVisibility !== current.visibility;
+
+    if (!replacementFile && !visibilityChanged) {
+        const { data: affected, error: metadataError } = await supabase.rpc(
+            'owner_update_user_file_metadata',
+            {
+                target_file_id: current.id,
+                target_file_name: nextName,
+                target_allow_member_download: Boolean(allowMemberDownload),
+            },
+        );
+
+        if (metadataError) {
+            throw new Error(metadataError.message || 'Unable to update file metadata.');
+        }
+
+        const affectedRows = Number(Array.isArray(affected) ? affected[0] : affected);
+        if (affectedRows !== 1) {
+            throw new Error('Owner file metadata update did not affect exactly one row.');
+        }
+
+        const { data: refreshed, error: refreshError } = await supabase
+            .from('user_files')
+            .select('*')
+            .eq('id', current.id)
+            .eq('user_id', user.id)
+            .single();
+
+        if (refreshError || !refreshed) {
+            throw new Error(refreshError?.message || 'Unable to reload the updated file.');
+        }
+
+        return {
+            ...refreshed,
+            url: file.url ?? null,
+            cleanupPending: false,
+        };
+    }
+
     let nextStoragePath = current.storage_path;
     let nextMimeType = current.mime_type;
     let nextFileSize = current.file_size;
@@ -434,7 +473,6 @@ export async function editOwnedUserFile(
         nextStoragePath = uploadedReplacementPath;
     }
 
-    const visibilityChanged = nextVisibility !== current.visibility;
     const moderationStatus = replacementFile || visibilityChanged
         ? nextVisibility === 'community' ? 'pending' : 'approved'
         : current.moderation_status;
@@ -461,20 +499,39 @@ export async function editOwnedUserFile(
         .select()
         .single();
 
+    let committed = updated;
+
     if (updateError || !updated) {
-        if (uploadedReplacementPath) {
+        if (!uploadedReplacementPath) {
+            throw new Error(updateError?.message || 'Unable to update the file.');
+        }
+
+        const { data: reconciled, error: reconciliationError } = await supabase
+            .from('user_files')
+            .select('*')
+            .eq('id', current.id)
+            .eq('user_id', user.id)
+            .single();
+
+        if (!reconciliationError && reconciled?.storage_path === uploadedReplacementPath) {
+            committed = reconciled;
+        } else if (!reconciliationError && reconciled) {
             const { error: cleanupError } = await supabase.storage
                 .from('user-files')
                 .remove([uploadedReplacementPath]);
 
             if (cleanupError) {
                 throw new Error(
-                    `${updateError?.message || 'Unable to update the file.'} The uploaded replacement could not be cleaned up: ${cleanupError.message || 'unknown storage cleanup error'}.`,
+                    `${updateError?.message || 'Unable to update the file.'} The uncommitted replacement could not be cleaned up: ${cleanupError.message || 'unknown storage cleanup error'}.`,
                 );
             }
-        }
 
-        throw new Error(updateError?.message || 'Unable to update the file.');
+            throw new Error(updateError?.message || 'Unable to update the file.');
+        } else {
+            throw new Error(
+                'Unable to confirm whether the replacement was committed. The new storage object was kept for safety.',
+            );
+        }
     }
 
     let cleanupPending = false;
@@ -492,7 +549,7 @@ export async function editOwnedUserFile(
     }
 
     return {
-        ...updated,
+        ...committed,
         url: replacementFile
             ? replacementSignedUrl
             : file.url ?? null,

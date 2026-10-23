@@ -259,7 +259,22 @@ assert.ok(
     'Story moderation must expose the expected service error semantics',
 );
 
-assertSingleRowCount(adminPath, 'moderateFile', 'File moderation did not affect exactly one row.');
+const fileModeration = functionBody(adminServiceSource, 'moderateFile');
+
+assert.match(
+    fileModeration,
+    /\.rpc\('admin_moderate_file',\s*\{/,
+    'File moderation must use the dedicated RPC boundary',
+);
+assert.match(
+    fileModeration,
+    /affectedRows\s*!==\s*1/,
+    'File moderation must reject non-single-row RPC outcomes',
+);
+assert.ok(
+    fileModeration.includes('File moderation did not affect exactly one row.'),
+    'File moderation must expose the expected service error semantics',
+);
 assertSingleRowCount(adminPath, 'setMemberAccountStatus', 'Member account update did not affect exactly one row.');
 assertSingleRowCount(adminPath, 'adminDeleteFile', 'File deletion did not affect exactly one row.');
 assert.doesNotMatch(

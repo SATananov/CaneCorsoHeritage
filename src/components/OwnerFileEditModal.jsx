@@ -72,6 +72,11 @@ function OwnerFileEditModal({ file, onClose, onSaved }) {
             }
 
             onSaved?.(updated);
+
+            if (updated?.cleanupPending) {
+                globalThis.alert?.(ui.cleanupWarning);
+            }
+
             onClose?.();
         } catch {
             setError(ui.saveError);

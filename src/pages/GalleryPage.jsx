@@ -12,6 +12,7 @@ import { useLanguage } from '../context/languageContext';
 import useAuth from '../hooks/useAuth';
 import { getTranslation } from '../i18n/translations';
 import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
+import { getOwnerFileEditUi } from '../i18n/ownerFileEditUi';
 import {
     createMemberDownloadUrl,
     enrichCommunityMediaWithMetrics,
@@ -537,7 +538,7 @@ useEffect(() => {
                                                     type="button"
                                                     onClick={() => setEditFile(file)}
                                                 >
-                                                    EDIT
+                                                    {getOwnerFileEditUi(language).edit}
                                                 </button>
                                             )}
 

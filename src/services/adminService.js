@@ -241,22 +241,17 @@ export async function moderateFile(fileId, moderationStatus) {
         throw new Error('Unsupported file moderation status.');
     }
 
-    const admin = await getCurrentAdmin();
-    const { count, error } = await supabase
-        .from('user_files')
-        .update({
-            moderation_status: moderationStatus,
-            moderated_at: new Date().toISOString(),
-            moderated_by: admin.id,
-            updated_at: new Date().toISOString(),
-        }, { count: 'exact' })
-        .eq('id', fileId);
+    const { data, error } = await supabase.rpc('admin_moderate_file', {
+        target_file_id: fileId,
+        target_moderation_status: moderationStatus,
+    });
 
     if (error) {
         throw new Error(error.message || 'Unable to moderate this file.');
     }
 
-    if (count !== 1) {
+    const affectedRows = Number(Array.isArray(data) ? data[0] : data);
+    if (affectedRows !== 1) {
         throw new Error('File moderation did not affect exactly one row.');
     }
 }
