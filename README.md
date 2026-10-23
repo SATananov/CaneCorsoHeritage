@@ -1,7 +1,10 @@
 # Cane Corso Heritage
 
-**ReactJS · September 2026**
+**Regular Exam Course Project for [ReactJS](https://react.dev/) at [SoftUni](https://softuni.bg/) · [ReactJS — September 2026](https://softuni.bg/trainings/5151/reactjs-september-2026)**
+
 **Stefan Tananov**
+
+This repository was developed for the **Regular Exam** in the [ReactJS — September 2026](https://softuni.bg/trainings/5151/reactjs-september-2026) course at [SoftUni](https://softuni.bg/). To learn more about the technology itself, visit the official [ReactJS / React](https://react.dev/) documentation.
 
 Cane Corso Heritage is a React single-page application for preserving and sharing Cane Corso history, working tradition, heritage articles and community stories.
 
@@ -31,6 +34,7 @@ This section is a navigation aid for evaluators. It maps the main React and appl
 | Routing | React Router with nested, dynamic, protected and legacy-compatible routes | `src/App.jsx` |
 | Route Guards | Guest, authenticated, completed-profile and admin access boundaries | `src/routing/RequireGuest.jsx`, `src/routing/RequireAuth.jsx`, `src/routing/RequireCompleteProfile.jsx`, `src/routing/RequireAdmin.jsx` |
 | Forms & Validation | Controlled forms, synthetic events, validation, submitting/error states | `src/pages/LoginPage.jsx`, `src/pages/RegisterPage.jsx`, `src/components/AddStoryModal.jsx`, `src/components/ProfileEditor.jsx` |
+| Custom Toast Feedback | In-house USG toast system for success, error, info and asynchronous loading feedback, with EN/BG/IT localization and accessibility support | `src/components/ToastProvider.jsx`, `src/hooks/useToast.js`, `src/i18n/toastTranslations.js` |
 | React Hooks | State, effects, refs, memoization, callbacks and optimistic UI | `src/pages/MyStoriesPage.jsx`, `src/components/CommentsSection.jsx`, `src/hooks/` |
 | Context API | Shared authentication/session and language state | `src/context/`, `src/hooks/useAuth.js` |
 | Authentication | Supabase Auth with session restoration, login/register/logout and recovery | `src/context/`, `src/pages/LoginPage.jsx`, `src/pages/RegisterPage.jsx`, `src/pages/ForgotPasswordPage.jsx`, `src/pages/UpdatePasswordPage.jsx` |
@@ -91,6 +95,20 @@ Concrete examples:
 - `src/components/CommentsSection.jsx` — comment create/edit interaction.
 
 Validation and remote failures are surfaced through UI loading, submitting and error states rather than allowing invalid input or failed requests to crash the application.
+
+### Custom USG toast feedback
+
+The application includes a custom toast notification system implemented inside the project rather than through a third-party toast library.
+
+It supports:
+
+- success, error, info and loading feedback
+- delayed loading feedback for asynchronous actions
+- transformation of an existing loading toast into success or error state
+- dismissible notifications and accessibility-oriented behavior
+- centralized EN/BG/IT localization
+
+The toast workflow is used in asynchronous user actions such as Story creation/attachment handling and file uploads.
 
 ### Hooks, lifecycle & shared state
 
@@ -253,7 +271,7 @@ Run the complete unit/component suite once:
 npm run test:run
 ```
 
-At this checkpoint the suite contains **4 test files and 18 passing tests**.
+At this checkpoint the suite contains **6 test files and 25 passing tests**.
 
 ### Project verification
 
@@ -265,6 +283,8 @@ npm run verify
 npm run lint
 npm run build
 ```
+
+At the final pre-submission checkpoint, the project passes **25 unit/component tests across 6 test files** and **all 95 project verifier scripts**, together with ESLint and the production build.
 
 ## Main features
 
@@ -286,7 +306,7 @@ npm run build
 - Password recovery and password update flow
 - Guest, authenticated, completed-profile and admin route guards
 - Required profile completion before private member workspaces
-- Personal profile editing, avatar and contact visibility controls
+- Personal profile editing, uploaded or preset Cane Corso avatars, and contact visibility controls
 - `My Stories` workspace with Create, Read, Update and Delete operations
 - `My Files` workspace for private and community files
 - `My Documents` workspace for document-oriented uploads and management
@@ -297,6 +317,7 @@ npm run build
 - Member-download permission controls for eligible shared files
 - Story attachments stored through Supabase Storage
 - Controlled forms, validation, loading, retry and error states
+- Custom USG toast feedback for success, error, info and asynchronous loading states
 
 ### Community interaction
 
