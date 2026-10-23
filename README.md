@@ -44,6 +44,7 @@ This section is a navigation aid for evaluators. It maps the main React and appl
 | User Interaction | Comments, Like/Dislike reactions and ratings through remote mutations | `src/components/CommentsSection.jsx`, `src/components/MediaRating.jsx`, `src/services/commentService.js`, `src/services/commentReactionService.js` |
 | Friends, Messaging & Notifications | Friend requests, accepted-friend messaging, realtime updates, unread state, private attachments and notification categories | `src/components/FriendshipSection.jsx`, `src/components/MessagesSection.jsx`, `src/components/NotificationBell.jsx`, `src/services/friendshipService.js`, `src/services/messageService.js` |
 | Files & Storage | Uploads, signed URLs, media/documents, Story attachments and private message attachments | `src/pages/MyFilesPage.jsx`, `src/pages/MyDocumentsPage.jsx`, `src/services/fileService.js`, `src/services/messageService.js` |
+| Owner File Editing | Owners can rename or replace their files while preserving the same file record, comments and ratings; replacement content is duplicate-checked and Community replacements return to moderation | `src/components/OwnerFileEditModal.jsx`, `src/services/fileService.js`, `src/pages/MyFilesPage.jsx`, `src/pages/GalleryPage.jsx`, `src/pages/DocumentsPage.jsx`, `src/pages/UserDetailsPage.jsx` |
 | Admin Moderation | Protected dashboard, moderation queues and member/account actions | `src/pages/AdminPage.jsx`, `src/components/admin/`, `src/services/adminService.js` |
 | Localization | EN/BG/IT UI plus content-translation support | `src/i18n/`, `src/context/`, `supabase/functions/translate-story/`, `supabase/functions/translate-heritage/` |
 | Async Safety | Loading/error states, request cancellation and stale-response protection | `src/pages/MyStoriesPage.jsx`, `src/components/CommentsSection.jsx`, `src/pages/UserDetailsPage.jsx` |
@@ -214,7 +215,7 @@ The project has separate user-facing workflows for general files and document-or
 - `src/pages/DocumentsPage.jsx`
 - `src/services/fileService.js`
 
-Supabase Storage is used for uploaded content. Database metadata controls ownership, visibility, moderation and whether registered members are offered a download action for eligible shared files. This application permission does not attempt to prevent a browser user from saving content that is otherwise legitimately viewable. Private-message attachments use the private `message-attachments` bucket and signed access URLs governed by conversation-participant RLS.
+Supabase Storage is used for uploaded content. Database metadata controls ownership, visibility, moderation and whether registered members are offered a download action for eligible shared files. File owners can edit supported uploads through a centralized owner-only flow: rename the displayed filename, replace the stored content, change visibility and manage member-download permission. Replacing content preserves the existing `user_files.id`, so comments, ratings and deep links remain attached to the same record. Replacement files are checked with the existing SHA-256 duplicate protection while excluding the current record from self-matching. Replacing approved Community content returns it to `pending` moderation before it becomes public again. This application permission does not attempt to prevent a browser user from saving content that is otherwise legitimately viewable. Private-message attachments use the private `message-attachments` bucket and signed access URLs governed by conversation-participant RLS.
 
 ### Administration & moderation
 
@@ -310,6 +311,9 @@ At the final pre-submission checkpoint, the project passes **25 unit/component t
 - `My Stories` workspace with Create, Read, Update and Delete operations
 - `My Files` workspace for private and community files
 - `My Documents` workspace for document-oriented uploads and management
+- Owner-only file editing across personal and eligible public file views, including rename, content replacement, visibility and member-download controls
+- File replacement preserves the existing record identity and returns replaced Community content to pending moderation
+- SHA-256 duplicate protection also applies to file replacement without falsely matching the file against itself
 - Friend requests: send, cancel, accept, decline and remove
 - Private messaging between accepted friends with realtime delivery and read/unread state
 - Emoji picker and private message attachments for supported image/audio/video/document types
