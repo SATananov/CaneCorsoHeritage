@@ -6,6 +6,7 @@ import {
 import { createStory, updateStory } from '../services/storyService';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
+import useToast from '../hooks/useToast';
 import {
     getStoryCompletionRefreshError,
     getStoryPartialSaveError,
@@ -53,6 +54,7 @@ function storyDataMatches(left, right) {
 function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
     const { language } = useLanguage();
     const t = (key) => getTranslation(language, 'storyForm', key);
+    const toast = useToast();
     const [formData, setFormData] = useState(() => getInitialForm(story, language));
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -119,6 +121,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
             return;
         }
 
+        const toastId = toast.start('storySave');
         submittingRef.current = true;
         setIsSubmitting(true);
 
@@ -132,6 +135,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                         ? await updateStory(existingStory._id, storyData)
                         : await createStory(storyData);
                 } catch {
+                    toast.reject(toastId, 'storySave');
                     setError(t('saveError'));
                     return;
                 }
@@ -174,6 +178,7 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                     setUploadedFiles(uploadedFilesRef.current);
                 }
             } catch {
+                toast.reject(toastId, 'storyPartial');
                 setError(getStoryPartialSaveError(language));
                 return;
             }
@@ -181,10 +186,12 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
             try {
                 await onSaved(savedStory);
             } catch {
+                toast.reject(toastId, 'storyRefresh');
                 setError(getStoryCompletionRefreshError(language));
                 return;
             }
 
+            toast.resolve(toastId, 'storySave');
             onClose();
         } finally {
             submittingRef.current = false;

@@ -5,14 +5,17 @@ import './index.css';
 import App from './App.jsx';
 import AuthProvider from './context/AuthProvider.jsx';
 import LanguageProvider from './context/LanguageProvider.jsx';
+import ToastProvider from './context/ToastProvider.jsx';
 
 createRoot(document.getElementById('root')).render(
     <BrowserRouter>
         <StrictMode>
             <LanguageProvider>
-                <AuthProvider>
-                    <App />
-                </AuthProvider>
+                <ToastProvider>
+                    <AuthProvider>
+                        <App />
+                    </AuthProvider>
+                </ToastProvider>
             </LanguageProvider>
         </StrictMode>
     </BrowserRouter>,

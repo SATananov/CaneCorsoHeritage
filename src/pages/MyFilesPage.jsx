@@ -3,6 +3,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import CommentsSection from '../components/CommentsSection';
 import { useLanguage } from '../context/languageContext';
 import useAuth from '../hooks/useAuth';
+import useToast from '../hooks/useToast';
 import { getTranslation } from '../i18n/translations';
 import {
     deleteUserFile,
@@ -58,6 +59,7 @@ function isDocumentFile(file) {
 function MyFilesPage({ mode = 'all' } = {}) {
     const { user } = useAuth();
     const { language } = useLanguage();
+    const toast = useToast();
     const translationSection = mode === 'documents' ? 'myDocuments' : 'myFiles';
     const t = useCallback((key) => {
         const value = getTranslation(language, translationSection, key);
@@ -121,6 +123,8 @@ function MyFilesPage({ mode = 'all' } = {}) {
             setLoading(true);
         }
 
+        const loadToastId = toast.start('filesLoad', { delay: 900 });
+
         async function loadFiles() {
             try {
                 const data = await fetchMyFiles(requestUserId);
@@ -131,6 +135,9 @@ function MyFilesPage({ mode = 'all' } = {}) {
                     && requestId === fileLoadRequestRef.current
                 ) {
                     setFiles(data);
+                    toast.dismiss(loadToastId);
+                } else {
+                    toast.dismiss(loadToastId);
                 }
             } catch {
                 if (
@@ -139,7 +146,10 @@ function MyFilesPage({ mode = 'all' } = {}) {
                     && currentUserIdRef.current === requestUserId
                     && requestId === fileLoadRequestRef.current
                 ) {
+                    toast.reject(loadToastId, 'filesLoad');
                     setError(t('loadError'));
+                } else {
+                    toast.dismiss(loadToastId);
                 }
             } finally {
                 if (
@@ -154,8 +164,11 @@ function MyFilesPage({ mode = 'all' } = {}) {
         }
 
         loadFiles();
-        return () => { active = false; };
-    }, [t, user.id]);
+        return () => {
+            active = false;
+            toast.dismiss(loadToastId);
+        };
+    }, [t, toast, user.id]);
 
     useEffect(() => {
         if (!zoomedImage) return undefined;
@@ -209,6 +222,7 @@ function MyFilesPage({ mode = 'all' } = {}) {
         }
         const batch = uploadBatchRef.current;
         let uploadsComplete = false;
+        const uploadToastId = toast.start('filesUpload');
         uploadingRef.current = true;
         try {
             setUploading(true);
@@ -230,8 +244,10 @@ function MyFilesPage({ mode = 'all' } = {}) {
             setAllowMemberDownload(false);
             form.reset();
             uploadBatchRef.current = { userId: user.id, completed: new WeakSet() };
+            toast.resolve(uploadToastId, 'filesUpload');
         } catch {
             // Keep completion tracking when a list refresh fails, too.
+            toast.reject(uploadToastId, uploadsComplete ? 'filesLoad' : 'filesUpload');
             setError(t(uploadsComplete ? 'loadError' : 'uploadError'));
         } finally {
             uploadingRef.current = false;
