@@ -33,6 +33,12 @@ function harness({ editing = false } = {}) {
             return result;
         };
     }
+    const toast = {
+        start: () => 'verify-toast',
+        reject: () => {},
+        resolve: () => {},
+        dismiss: () => {},
+    };
     const props = {
         authorName: 'Author',
         story: editing ? {
@@ -48,6 +54,7 @@ function harness({ editing = false } = {}) {
         getTranslation: (_language, _section, key) => key,
         getStoryPartialSaveError: () => 'partialSaveError',
         getStoryCompletionRefreshError: () => 'completionRefreshError',
+        useToast: () => toast,
         useState(initial) {
             const index = cursor++;
             if (!slots[index]) {

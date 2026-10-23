@@ -378,8 +378,6 @@
         grid-template-columns: repeat(8, minmax(0, 1fr));
     }
 }
-/* EMOJI PICKER VISUAL 03
-   Keep the circles compact; make the emoji glyph itself visually large. */
 .emojiButton {
     width: 52px;
     min-width: 52px;
@@ -430,8 +428,6 @@
         font-size: 2rem;
     }
 }
-/* EMOJI PICKER VISUAL 04
-   Balanced spacing, no horizontal scrollbar, and a properly centered trigger. */
 .emojiPanel {
     box-sizing: border-box;
     width: 392px;

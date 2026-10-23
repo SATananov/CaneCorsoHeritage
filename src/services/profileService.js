@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { isUsgAvatarPath } from '../data/usgAvatarPresets';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -309,6 +310,47 @@ export async function uploadProfileAvatar(
     }
 }
 
+export async function saveProfilePresetAvatar(userId, presetPath, previousAvatarPath) {
+    if (!isUsgAvatarPath(presetPath)) {
+        throw new Error('Unknown USG avatar preset.');
+    }
+
+    const { count, error } = await supabase
+        .from('profiles')
+        .update({
+            avatar_path: null,
+            avatar_url: presetPath,
+            updated_at: new Date().toISOString(),
+        }, { count: 'exact' })
+        .eq('id', userId);
+
+    if (error) {
+        throw new Error(error.message || 'Unable to save USG avatar.');
+    }
+
+    if (count !== 1) {
+        throw new Error('USG avatar selection did not update the profile row.');
+    }
+
+    if (!previousAvatarPath) {
+        return {
+            saved: true,
+            cleanupPending: false,
+            cleanupError: null,
+        };
+    }
+
+    const { error: cleanupError } = await supabase.storage
+        .from('avatars')
+        .remove([previousAvatarPath]);
+
+    return {
+        saved: true,
+        cleanupPending: Boolean(cleanupError),
+        cleanupError: cleanupError?.message || null,
+    };
+}
+
 export async function removeProfileAvatar(userId, avatarPath) {
     const { count, error } = await supabase
         .from('profiles')
@@ -350,7 +392,7 @@ export function getProfileAvatarUrl(profile) {
     const directUrl = profile?.avatar_url?.trim();
 
     if (directUrl) {
-        if (/^https?:\/\//i.test(directUrl)) {
+        if (/^https?:\/\//i.test(directUrl) || directUrl.startsWith('/avatars/')) {
             return directUrl;
         }
 

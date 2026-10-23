@@ -94,6 +94,11 @@ function harness({ editing = false } = {}) {
         getTranslation: (_language, _section, key) => key,
         getStoryPartialSaveError: () => 'partialSaveError',
         getStoryCompletionRefreshError: () => 'completionRefreshError',
+        useToast: () => ({
+            start: () => 'verify-toast',
+            reject: () => {},
+            resolve: () => {},
+        }),
         useState(initial) {
             const index = cursor++;
             hooks[index] ??= { value: typeof initial === 'function' ? initial() : initial };

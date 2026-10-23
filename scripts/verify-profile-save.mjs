@@ -9,7 +9,7 @@ const pageFile = readFileSync(new URL('src/pages/UserDetailsPage.jsx', root), 'u
 const translationsFile = readFileSync(new URL('src/i18n/translations.js', root), 'utf8');
 
 const logicStart = editorFile.indexOf('const USERNAME_PATTERN');
-const logicEnd = editorFile.indexOf('    // Translate load failures', logicStart);
+const logicEnd = editorFile.indexOf('    if (!editorOpen)', logicStart);
 assert.ok(logicStart >= 0 && logicEnd > logicStart, 'ProfileEditor logic must be locatable before JSX');
 
 const editorSource = `${editorFile.slice(logicStart, logicEnd)}
@@ -45,6 +45,11 @@ function mount(source, dependencies, props) {
         ...dependencies,
         useCallback(callback) {
             return callback;
+        },
+        useRef(initial) {
+            const index = cursor++;
+            hooks[index] ??= { current: initial };
+            return hooks[index];
         },
         useState(initial) {
             const index = cursor++;
@@ -121,6 +126,7 @@ async function createHarness(failingStage = null) {
         saveOwnPrivateProfileDetails: write('private'),
         saveProfilePublicContact: write('contact'),
         uploadProfileAvatar: write('avatar'),
+        saveProfilePresetAvatar: write('presetAvatar'),
         removeProfileAvatar: write('remove'),
         notifyProfileRefresh: (userId) => notifications.push(userId),
     }, {

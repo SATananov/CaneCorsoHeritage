@@ -75,6 +75,11 @@ function mount(source, dependencies, props = {}) {
                 }
             }];
         },
+        useRef(initial) {
+            const index = cursor++;
+            hooks[index] ??= { current: initial };
+            return hooks[index];
+        },
         useMemo: memo,
         useCallback: (callback, deps) => memo(() => callback, deps),
         useEffect(callback, deps) {
@@ -179,6 +184,7 @@ function harness() {
         fetchOwnPrivateProfileDetails: read('editor'),
         updateOwnProfile: write('public'), saveOwnPrivateProfileDetails: write('private'),
         saveProfilePublicContact: write('contact'), uploadProfileAvatar: write('avatar'),
+        saveProfilePresetAvatar: write('presetAvatar'),
         removeProfileAvatar: write('remove'),
     }, { profile: { id: 'A', username: 'member.a' }, onSaved: () => { saved++; } });
     const render = () => { notice.render(); header.render(); editor.render(); };

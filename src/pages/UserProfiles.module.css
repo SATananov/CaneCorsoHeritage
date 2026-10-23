@@ -427,3 +427,13 @@
     color: #e3c766;
     font-size: 0.78rem;
 }
+.profileAvatar img {
+    object-position: 50% 42%;
+}
+.profileAvatar {
+    align-self: center;
+}
+.profileAvatar img[src*="/avatars/usg-cropped-"] {
+    transform: translate(-5%, 4%) scale(1.1);
+    transform-origin: center;
+}

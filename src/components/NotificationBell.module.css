@@ -456,7 +456,6 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
-/* FRIEND MESSAGE UNREAD BADGES 01 */
 .messageFriendActions {
     display: inline-flex;
     flex: 0 0 auto;

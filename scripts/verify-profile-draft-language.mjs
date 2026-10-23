@@ -77,6 +77,13 @@ function createHarness() {
             }
             return [hooks[index].value, hooks[index].setter];
         },
+        useRef(initial) {
+            const index = hookIndex++;
+            if (!hooks[index]) {
+                hooks[index] = { current: initial };
+            }
+            return hooks[index];
+        },
         useCallback(callback, dependencies) {
             const index = hookIndex++;
             if (!sameDependencies(hooks[index]?.dependencies, dependencies)) {
@@ -105,6 +112,7 @@ function createHarness() {
         saveOwnPrivateProfileDetails: async (...args) => { saves.push(['private', ...args]); },
         saveProfilePublicContact: async (...args) => { saves.push(['contact', ...args]); },
         uploadProfileAvatar: async (...args) => { saves.push(['avatar', ...args]); },
+        saveProfilePresetAvatar: async (...args) => { saves.push(['presetAvatar', ...args]); },
         removeProfileAvatar: async (...args) => { saves.push(['removeAvatar', ...args]); },
     });
 

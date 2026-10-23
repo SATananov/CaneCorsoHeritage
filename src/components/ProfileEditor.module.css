@@ -197,3 +197,136 @@
     background: #0b0c0d;
     color: #f2f2ef;
 }
+
+.avatarLibrary {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 18px;
+    background:
+        linear-gradient(135deg, rgba(212, 175, 55, 0.045), transparent 45%),
+        rgba(17, 17, 24, 0.58);
+}
+
+.avatarLibraryHeading {
+    display: grid;
+    gap: 5px;
+}
+
+.avatarLibraryHeading strong {
+    color: #f8f5ef;
+    font-size: 15px;
+}
+
+.avatarLibraryHeading span {
+    color: #bdb5a8;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.avatarGroup {
+    display: grid;
+    gap: 10px;
+}
+
+.avatarGroupTitle {
+    margin: 0;
+    color: #d4af37;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.avatarGrid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(82px, 1fr));
+    gap: 12px;
+}
+
+.avatarChoice {
+    position: relative;
+    display: grid;
+    gap: 7px;
+    justify-items: center;
+    padding: 7px 7px 9px;
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 15px;
+    background: rgba(9, 9, 13, 0.72);
+    color: #d0cabf;
+    cursor: pointer;
+    transition:
+        transform 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        background 150ms ease;
+}
+
+.avatarChoice:hover,
+.avatarChoice:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(212, 175, 55, 0.58);
+    outline: none;
+}
+
+.avatarChoiceSelected {
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.085);
+    box-shadow:
+        0 0 0 2px rgba(212, 175, 55, 0.12),
+        0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.avatarImage {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+}
+
+.avatarChoiceSelected .avatarImage {
+    border-color: rgba(212, 175, 55, 0.72);
+}
+
+.avatarChoice span {
+    max-width: 100%;
+    font-size: 11px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.avatarSelectedBadge {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    display: grid;
+    place-items: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #d4af37;
+    color: #0e0e10;
+    font-size: 12px;
+    font-weight: 900;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
+}
+
+@media (max-width: 900px) {
+    .avatarGrid {
+        grid-template-columns: repeat(3, minmax(82px, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .avatarLibrary {
+        padding: 14px;
+    }
+
+    .avatarGrid {
+        grid-template-columns: repeat(2, minmax(90px, 1fr));
+    }
+}

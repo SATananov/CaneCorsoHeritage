@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
+import { getAvatarTranslation } from '../i18n/avatarTranslations';
+import { USG_AVATAR_PRESETS } from '../data/usgAvatarPresets';
 import {
     PROFILE_COUNTRIES,
     getProfileCities,
@@ -12,6 +14,7 @@ import {
     saveProfilePublicContact,
     updateOwnProfile,
     uploadProfileAvatar,
+    saveProfilePresetAvatar,
 } from '../services/profileService';
 import styles from './ProfileEditor.module.css';
 import { notifyProfileRefresh } from '../services/profileRefresh';
@@ -33,6 +36,10 @@ function ProfileEditor({
     );
     const ts = useCallback(
         (key) => getTranslation(language, 'systemUi', key),
+        [language],
+    );
+    const ta = useCallback(
+        (key) => getAvatarTranslation(language, key),
         [language],
     );
     const [open, setOpen] = useState(false);
@@ -59,13 +66,14 @@ function ProfileEditor({
     const [privateDetailsLoading, setPrivateDetailsLoading] = useState(true);
     const [publicEmail, setPublicEmail] = useState(contact?.email || currentEmail || '');
     const [showEmail, setShowEmail] = useState(Boolean(contact?.show_email));
+    const currentPresetPath = profile.avatar_url?.startsWith('/avatars/') ? profile.avatar_url : '';
     const [avatarFile, setAvatarFile] = useState(null);
+    const [selectedPreset, setSelectedPreset] = useState(currentPresetPath);
+    const avatarInputRef = useRef(null);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
-
-
-    useEffect(() => {
+useEffect(() => {
         const controller = new AbortController();
 
         async function loadPrivateDetails() {
@@ -173,6 +181,12 @@ function ProfileEditor({
                     avatarFile,
                     profile.avatar_path,
                 );
+            } else if (selectedPreset && selectedPreset !== currentPresetPath) {
+                await saveProfilePresetAvatar(
+                    profile.id,
+                    selectedPreset,
+                    profile.avatar_path,
+                );
             }
 
             notifyProfileRefresh(profile.id);
@@ -207,6 +221,10 @@ function ProfileEditor({
             const result = await removeProfileAvatar(profile.id, profile.avatar_path);
             notifyProfileRefresh(profile.id);
             setAvatarFile(null);
+            setSelectedPreset('');
+            if (avatarInputRef.current) {
+                avatarInputRef.current.value = '';
+            }
             setMessage(
                 result?.cleanupPending
                     ? t('avatarRemovedCleanupPending')
@@ -220,7 +238,6 @@ function ProfileEditor({
         }
     }
 
-    // Translate load failures at render time without reloading editable data.
     const errorMessage = error === 'loadPrivateError' ? t('loadPrivateError') : error;
     const editorOpen = requiredCompletion || open;
 
@@ -384,15 +401,76 @@ function ProfileEditor({
                 <label>
                     <span>{t('avatar')}</span>
                     <input
+                        ref={avatarInputRef}
                         type="file"
                         name="avatar"
                         accept="image/*"
                         onChange={(event) => {
-                            setAvatarFile(event.target.files?.[0] ?? null);
+                            const nextFile = event.target.files?.[0] ?? null;
+                            setAvatarFile(nextFile);
+                            if (nextFile) {
+                                setSelectedPreset('');
+                            }
                         }}
                     />
                     <small>{t('avatarNote')}</small>
                 </label>
+
+                <section className={styles.avatarLibrary} aria-labelledby="usg-avatar-library-title">
+                    <div className={styles.avatarLibraryHeading}>
+                        <strong id="usg-avatar-library-title">{ta('libraryTitle')}</strong>
+                        <span>{ta('libraryHint')}</span>
+                    </div>
+
+                    {['natural', 'cropped'].map((group) => (
+                        <div className={styles.avatarGroup} key={group}>
+                            <p className={styles.avatarGroupTitle}>
+                                {ta(group === 'natural' ? 'naturalGroup' : 'croppedGroup')}
+                            </p>
+
+                            <div className={styles.avatarGrid}>
+                                {USG_AVATAR_PRESETS
+                                    .filter((avatar) => avatar.group === group)
+                                    .map((avatar) => {
+                                        const isSelected = selectedPreset === avatar.path;
+
+                                        return (
+                                            <button
+                                                className={[styles.avatarChoice, isSelected ? styles.avatarChoiceSelected : ''].filter(Boolean).join(' ')}
+                                                type="button"
+                                                key={avatar.id}
+                                                aria-pressed={isSelected}
+                                                title={ta(avatar.labelKey)}
+                                                onClick={() => {
+                                                    setSelectedPreset(avatar.path);
+                                                    setAvatarFile(null);
+
+                                                    if (avatarInputRef.current) {
+                                                        avatarInputRef.current.value = '';
+                                                    }
+                                                }}
+                                            >
+                                                <img
+                                                    className={styles.avatarImage}
+                                                    src={avatar.path}
+                                                    alt={ta(avatar.labelKey)}
+                                                />
+                                                <span>{ta(avatar.labelKey)}</span>
+                                                {isSelected && (
+                                                    <span
+                                                        className={styles.avatarSelectedBadge}
+                                                        aria-label={ta('selected')}
+                                                    >
+                                                        ✓
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+                    ))}
+                </section>
 
                 <label>
                     <span>{t('publicEmail')}</span>
@@ -430,7 +508,7 @@ function ProfileEditor({
                 )}
 
                 <div className={`${styles.actions} ${styles.fullWidth}`}>
-                    {profile.avatar_path && (
+                    {(profile.avatar_path || profile.avatar_url) && (
                         <button
                             className={styles.secondaryButton}
                             type="button"

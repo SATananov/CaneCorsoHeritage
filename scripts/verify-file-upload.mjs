@@ -38,6 +38,12 @@ function harness() {
     const records = [];
     const removals = [];
     const calls = { fetch: [], visibility: [], delete: [] };
+    const toast = {
+        start: () => 'verify-toast',
+        dismiss: () => {},
+        reject: () => {},
+        resolve: () => {},
+    };
     const outcomes = { storage: new Map(), metadata: new Map(), fetch: [] };
     async function result(queue) {
         const value = await queue?.shift();
@@ -87,6 +93,7 @@ function harness() {
         useAuth: () => ({ user }),
         useLanguage: () => ({ language: 'en' }),
         getTranslation: (_language, _section, key) => key,
+        useToast: () => toast,
         useState(initial) {
             const index = cursor++;
             const slot = hooks[index] ??= { value: typeof initial === 'function' ? initial() : initial };
