@@ -9,6 +9,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import MediaRating from '../components/MediaRating';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
+import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
 import {
     enrichCommunityMediaWithMetrics,
     fetchCommunityMediaFiles,
@@ -256,6 +257,9 @@ function DocumentsPage() {
                         {pagedFiles.map((file) => (
                             <article className={styles.card} key={file.id}>
                                 <div className={styles.documentPreview}>
+                                    <span className={styles.mediaBadge}>
+                                        {getMediaTypeLabel(language, 'document')}
+                                    </span>
                                     {isImageDocument(file) ? (
                                         <a
                                             className={styles.imageDocumentLink}

@@ -6,6 +6,7 @@ import {
 import { createStory, updateStory } from '../services/storyService';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
+import { getDuplicateUploadMessage } from '../i18n/duplicateUploadUi';
 import useToast from '../hooks/useToast';
 import {
     getStoryCompletionRefreshError,
@@ -165,10 +166,55 @@ function AddStoryModal({ story = null, authorName, onClose, onSaved }) {
                         upload.file === file && upload.storyId === savedStory._id
                     ))) continue;
 
-                    await uploadUserFiles([file], {
-                        storyId: savedStory._id,
-                        visibility: storyData.visibility,
-                    });
+                    try {
+
+                        await uploadUserFiles([file], {
+
+                            storyId: savedStory._id,
+
+                            visibility: storyData.visibility,
+
+                        });
+
+                    } catch (uploadError) {
+
+                        if (uploadError?.code !== 'DUPLICATE_FILE') {
+
+                            throw uploadError;
+
+                        }
+
+                        const uploadAgain = globalThis.confirm?.(
+
+                            getDuplicateUploadMessage(
+
+                                language,
+
+                                file.name,
+
+                                uploadError.duplicate?.file_name,
+
+                            ),
+
+                        ) === true;
+
+                        if (!uploadAgain) {
+
+                            continue;
+
+                        }
+
+                        await uploadUserFiles([file], {
+
+                            storyId: savedStory._id,
+
+                            visibility: storyData.visibility,
+
+                            allowDuplicate: true,
+
+                        });
+
+                    }
 
                     // Record only after both storage and metadata have succeeded.
                     uploadedFilesRef.current = [

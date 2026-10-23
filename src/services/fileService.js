@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { createFileFingerprint } from '../utils/fileFingerprint';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -125,6 +126,95 @@ async function addSignedUrls(files) {
     );
 }
 
+async function fingerprintStoredUserFile(file) {
+    const { data, error } = await supabase.storage
+        .from('user-files')
+        .createSignedUrl(file.storage_path, 60);
+
+    if (error || !data?.signedUrl) {
+        return null;
+    }
+
+    try {
+        const response = await fetch(data.signedUrl);
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return createFileFingerprint(await response.blob());
+    } catch {
+        return null;
+    }
+}
+
+async function saveUserFileFingerprint(fileId, contentHash) {
+    const { error } = await supabase
+        .from('user_files')
+        .update({ content_hash: contentHash })
+        .eq('id', fileId);
+
+    return !error;
+}
+
+async function findDuplicateUserFile(userId, contentHash, fileSize) {
+    const { data: directMatch, error: directError } = await supabase
+        .from('user_files')
+        .select('id,file_name,visibility,moderation_status,storage_path,file_size,content_hash')
+        .eq('user_id', userId)
+        .eq('content_hash', contentHash)
+        .limit(1)
+        .maybeSingle();
+
+    if (directError) {
+        throw new Error(directError.message || 'Unable to check for duplicate files.');
+    }
+
+    if (directMatch) {
+        return directMatch;
+    }
+
+    const { data: legacyFiles, error: legacyError } = await supabase
+        .from('user_files')
+        .select('id,file_name,visibility,moderation_status,storage_path,file_size,content_hash')
+        .eq('user_id', userId)
+        .eq('file_size', fileSize)
+        .is('content_hash', null)
+        .limit(25);
+
+    if (legacyError) {
+        throw new Error(legacyError.message || 'Unable to check older files for duplicates.');
+    }
+
+    for (const legacyFile of legacyFiles ?? []) {
+        const legacyHash = await fingerprintStoredUserFile(legacyFile);
+
+        if (!legacyHash) {
+            continue;
+        }
+
+        await saveUserFileFingerprint(legacyFile.id, legacyHash);
+
+        if (legacyHash === contentHash) {
+            return {
+                ...legacyFile,
+                content_hash: legacyHash,
+            };
+        }
+    }
+
+    return null;
+}
+
+function duplicateUploadError(file, duplicate, contentHash) {
+    const error = new Error('Duplicate file detected.');
+    error.code = 'DUPLICATE_FILE';
+    error.file = file;
+    error.duplicate = duplicate;
+    error.contentHash = contentHash;
+    return error;
+}
+
 export async function uploadUserFiles(
     files,
     {
@@ -132,6 +222,7 @@ export async function uploadUserFiles(
         visibility = 'private',
         allowMemberDownload = false,
         contentCategory = null,
+        allowDuplicate = false,
     } = {},
 ) {
     if (!files?.length) {
@@ -143,6 +234,19 @@ export async function uploadUserFiles(
 
     for (const file of files) {
         const mimeType = validateFile(file);
+        const contentHash = typeof file.arrayBuffer === 'function'
+            && globalThis.crypto?.subtle
+            ? await createFileFingerprint(file)
+            : null;
+
+        if (contentHash && !allowDuplicate) {
+            const duplicate = await findDuplicateUserFile(user.id, contentHash, file.size);
+
+            if (duplicate) {
+                throw duplicateUploadError(file, duplicate, contentHash);
+            }
+        }
+
         const categoryFolder = contentCategory === 'document' ? 'documents/' : '';
         const storagePath = `${user.id}/${categoryFolder}${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName(file.name)}`;
 
@@ -171,6 +275,7 @@ export async function uploadUserFiles(
                 moderation_status: visibility === 'community' ? 'pending' : 'approved',
                 moderated_at: null,
                 moderated_by: null,
+                ...(contentHash ? { content_hash: contentHash } : {}),
             })
             .select()
             .single();

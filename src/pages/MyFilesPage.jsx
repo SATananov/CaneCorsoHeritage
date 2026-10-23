@@ -6,6 +6,11 @@ import useAuth from '../hooks/useAuth';
 import useToast from '../hooks/useToast';
 import { getTranslation } from '../i18n/translations';
 import {
+    getDuplicateUploadCancelledCopy,
+    getDuplicateUploadMessage,
+} from '../i18n/duplicateUploadUi';
+import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
+import {
     deleteUserFile,
     fetchMyFiles,
     updateUserFileVisibility,
@@ -211,43 +216,105 @@ function MyFilesPage({ mode = 'all' } = {}) {
 
     async function uploadHandler(event) {
         event.preventDefault();
-        if (uploadingRef.current) return;
+
+        if (uploadingRef.current) {
+            return;
+        }
+
         const form = event.currentTarget;
+
         if (selectedFiles.length === 0) {
             setError(t('chooseError'));
             return;
         }
+
         if (uploadBatchRef.current.userId !== user.id) {
-            uploadBatchRef.current = { userId: user.id, completed: new WeakSet() };
+            uploadBatchRef.current = {
+                userId: user.id,
+                completed: new WeakSet(),
+            };
         }
+
         const batch = uploadBatchRef.current;
         let uploadsComplete = false;
-        const uploadToastId = toast.start('filesUpload');
+        let uploadToastId = toast.start('filesUpload');
+
         uploadingRef.current = true;
+        setUploading(true);
+        setError('');
+
         try {
-            setUploading(true);
-            setError('');
-            // File references survive retries. A newly selected File is a new
-            // upload, even if its name/size match a previous selection.
             for (const file of selectedFiles) {
-                if (batch.completed.has(file)) continue;
-                await uploadUserFiles([file], {
-                    visibility,
-                    allowMemberDownload,
-                    contentCategory: mode === 'documents' ? 'document' : null,
-                });
+                if (batch.completed.has(file)) {
+                    continue;
+                }
+
+                try {
+                    await uploadUserFiles([file], {
+                        visibility,
+                        allowMemberDownload,
+                        contentCategory: mode === 'documents' ? 'document' : null,
+                    });
+                } catch (uploadError) {
+                    if (uploadError?.code !== 'DUPLICATE_FILE') {
+                        throw uploadError;
+                    }
+
+                    toast.dismiss(uploadToastId);
+
+                    const uploadAgain = globalThis.confirm?.(
+                        getDuplicateUploadMessage(
+                            language,
+                            file.name,
+                            uploadError.duplicate?.file_name,
+                        ),
+                    ) === true;
+
+                    if (!uploadAgain) {
+                        const cancelledCopy = getDuplicateUploadCancelledCopy(language);
+
+                        setSelectedFiles([]);
+                        setAllowMemberDownload(false);
+                        form.reset();
+                        uploadBatchRef.current = {
+                            userId: user.id,
+                            completed: new WeakSet(),
+                        };
+
+                        toast.info('duplicateUploadCancelled', cancelledCopy);
+                        return;
+                    }
+
+                    uploadToastId = toast.start('filesUpload');
+
+                    await uploadUserFiles([file], {
+                        visibility,
+                        allowMemberDownload,
+                        contentCategory: mode === 'documents' ? 'document' : null,
+                        allowDuplicate: true,
+                    });
+                }
+
                 batch.completed.add(file);
             }
+
             uploadsComplete = true;
             await refreshFiles();
+
             setSelectedFiles([]);
             setAllowMemberDownload(false);
             form.reset();
-            uploadBatchRef.current = { userId: user.id, completed: new WeakSet() };
+            uploadBatchRef.current = {
+                userId: user.id,
+                completed: new WeakSet(),
+            };
+
             toast.resolve(uploadToastId, 'filesUpload');
         } catch {
-            // Keep completion tracking when a list refresh fails, too.
-            toast.reject(uploadToastId, uploadsComplete ? 'filesLoad' : 'filesUpload');
+            toast.reject(
+                uploadToastId,
+                uploadsComplete ? 'filesLoad' : 'filesUpload',
+            );
             setError(t(uploadsComplete ? 'loadError' : 'uploadError'));
         } finally {
             uploadingRef.current = false;
@@ -441,6 +508,20 @@ function MyFilesPage({ mode = 'all' } = {}) {
                     <section className={styles.grid} aria-label={t('filesLabel')}>
                         {visibleFiles.map((file) => (
                             <article className={styles.card} id={`file-${file.id}`} key={file.id}>
+                                <span className={styles.mediaBadge}>
+                                    {getMediaTypeLabel(
+                                        language,
+                                        file.mime_type?.startsWith('image/')
+                                            ? 'image'
+                                            : file.mime_type?.startsWith('video/')
+                                                ? 'video'
+                                                : file.mime_type?.startsWith('audio/')
+                                                    ? 'audio'
+                                                    : isStoryTextFile(file)
+                                                        ? 'story'
+                                                        : 'document',
+                                    )}
+                                </span>
                                 {file.mime_type?.startsWith('image/') && file.url ? (
                                     <button className={styles.previewButton} type="button" onClick={() => setZoomedImage(file)} aria-label={format('zoomFile', { name: file.file_name })}>
                                         <img className={styles.preview} src={file.url} alt={file.file_name} />
@@ -448,11 +529,11 @@ function MyFilesPage({ mode = 'all' } = {}) {
                                     </button>
                                 ) : file.mime_type?.startsWith('audio/') && file.url ? (
                                     <div className={styles.audioPreview}>
-                                        <span>AUDIO</span>
+                                        <span>{getMediaTypeLabel(language, 'audio')}</span>
                                         <audio controls preload="metadata" src={file.url}>{t('audioUnsupported')}</audio>
                                     </div>
                                 ) : (
-                                    <div className={styles.fileType}>{getFileTypeLabel(file)}</div>
+                                    <div className={file.mime_type?.startsWith('video/') ? `${styles.fileType} ${styles.videoType}` : styles.fileType}>{getFileTypeLabel(file)}</div>
                                 )}
 
                                 <div className={styles.cardBody}>

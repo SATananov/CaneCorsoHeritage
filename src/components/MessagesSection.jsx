@@ -14,6 +14,7 @@ import {
     subscribeToConversationMessages,
 } from '../services/messageService';
 import { getMessageTranslation } from '../i18n/messageTranslations';
+import { getDuplicateUploadMessage } from '../i18n/duplicateUploadUi';
 import styles from './MessagesSection.module.css';
 
 const EMOJI_OPTIONS = [
@@ -52,7 +53,6 @@ function formatMessageTime(value, language) {
         minute: '2-digit',
     }).format(new Date(value));
 }
-
 
 function appendUniqueMessage(messages, message) {
     if (!message?.id || messages.some((item) => item.id === message.id)) {
@@ -414,18 +414,81 @@ function MessageThread({ conversation, otherProfile, onMessageSent }) {
         setSendError(false);
 
         try {
-            const saved = selectedFile
-                ? await sendPrivateMessageAttachment(
+            let saved;
+
+            if (selectedFile) {
+
+                try {
+
+                    saved = await sendPrivateMessageAttachment(
+
+                        conversation.id,
+
+                        user.id,
+
+                        selectedFile,
+
+                        value,
+
+                    );
+
+                } catch (uploadError) {
+
+                    if (uploadError?.code !== 'DUPLICATE_FILE') {
+
+                        throw uploadError;
+
+                    }
+
+                    const uploadAgain = globalThis.confirm?.(
+
+                        getDuplicateUploadMessage(
+
+                            language,
+
+                            selectedFile.name,
+
+                            uploadError.duplicate?.attachment_name,
+
+                        ),
+
+                    ) === true;
+
+                    if (!uploadAgain) {
+
+                        return;
+
+                    }
+
+                    saved = await sendPrivateMessageAttachment(
+
+                        conversation.id,
+
+                        user.id,
+
+                        selectedFile,
+
+                        value,
+
+                        { allowDuplicate: true },
+
+                    );
+
+                }
+
+            } else {
+
+                saved = await sendPrivateMessage(
+
                     conversation.id,
+
                     user.id,
-                    selectedFile,
+
                     value,
-                )
-                : await sendPrivateMessage(
-                    conversation.id,
-                    user.id,
-                    value,
+
                 );
+
+            }
 
             setMessages((current) => appendUniqueMessage(current, saved));
             setLoadedConversationId(conversation.id);

@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProfileEditor from '../components/ProfileEditor';
@@ -7,6 +7,7 @@ import MessagesSection from '../components/MessagesSection';
 import useAuth from '../hooks/useAuth';
 import { useLanguage } from '../context/languageContext';
 import { getTranslation } from '../i18n/translations';
+import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
 import MediaRating from '../components/MediaRating';
 import CommentsSection from '../components/CommentsSection';
 import { fetchCommunityFilesByUser } from '../services/fileService';
@@ -453,17 +454,31 @@ function UserDetailsPage() {
                                 <div className={styles.fileGrid}>
                                     {sharedFiles.map((file) => (
                                         <article className={styles.fileCard} key={file.id}>
+                                            <span className={styles.mediaBadge}>
+                                                {getMediaTypeLabel(
+                                                    language,
+                                                    file.mime_type?.startsWith('image/')
+                                                        ? 'image'
+                                                        : file.mime_type?.startsWith('video/')
+                                                            ? 'video'
+                                                            : file.mime_type?.startsWith('audio/')
+                                                                ? 'audio'
+                                                                : file.story_id
+                                                                    ? 'story'
+                                                                    : 'document',
+                                                )}
+                                            </span>
                                             {file.mime_type?.startsWith('image/') && file.url ? (
                                                 <img src={file.url} alt="" />
                                             ) : file.mime_type?.startsWith('audio/') && file.url ? (
                                                 <div className={styles.sharedAudio}>
-                                                    <span>AUDIO</span>
+                                                    <span>{getMediaTypeLabel(language, 'audio')}</span>
                                                     <audio controls preload="metadata" src={file.url}>
                                                         {t('audioUnsupported')}
                                                     </audio>
                                                 </div>
                                             ) : (
-                                                <div className={styles.fileType}>
+                                                <div className={file.mime_type?.startsWith('video/') ? `${styles.fileType} ${styles.videoType}` : styles.fileType}>
                                                     {getSharedFileLabel(file)}
                                                 </div>
                                             )}

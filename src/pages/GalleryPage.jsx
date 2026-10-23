@@ -10,6 +10,7 @@ import MediaRating from '../components/MediaRating';
 import { useLanguage } from '../context/languageContext';
 import useAuth from '../hooks/useAuth';
 import { getTranslation } from '../i18n/translations';
+import { getMediaTypeLabel } from '../i18n/mediaTypeLabels';
 import {
     createMemberDownloadUrl,
     enrichCommunityMediaWithMetrics,
@@ -415,6 +416,20 @@ useEffect(() => {
                             return (
                                 <article className={styles.card} key={file.id}>
                                     <div className={styles.mediaFrame}>
+                                        <span className={styles.mediaBadge}>
+                                            {getMediaTypeLabel(
+                                                language,
+                                                mediaType === MEDIA_FILTERS.IMAGES
+                                                    ? 'image'
+                                                    : mediaType === MEDIA_FILTERS.VIDEO
+                                                        ? 'video'
+                                                        : mediaType === MEDIA_FILTERS.AUDIO
+                                                            ? 'audio'
+                                                            : mediaType === MEDIA_FILTERS.STORIES
+                                                                ? 'story'
+                                                                : 'document',
+                                            )}
+                                        </span>
                                         {(mediaType === MEDIA_FILTERS.IMAGES || isImageDocument(file)) && file.url ? (
                                             <button
                                                 className={styles.previewButton}
@@ -430,7 +445,7 @@ useEffect(() => {
                                             </button>
                                         ) : mediaType === MEDIA_FILTERS.AUDIO && file.url ? (
                                             <div className={styles.audioPreview}>
-                                                <span className={styles.mediaTypeLabel}>AUDIO</span>
+                                                <span className={styles.mediaTypeLabel}>{getMediaTypeLabel(language, 'audio')}</span>
                                                 <audio controls preload="metadata" src={file.url}>
                                                     {t('audioUnsupported')}
                                                 </audio>
@@ -447,7 +462,7 @@ useEffect(() => {
                                         ) : (
                                             <div className={styles.documentPreview}>
                                                 <span>{mediaType === MEDIA_FILTERS.STORIES
-                                                    ? t('storyTypeLabel')
+                                                    ? getMediaTypeLabel(language, 'story')
                                                     : getDocumentLabel(file)}</span>
                                             </div>
                                         )}

@@ -1,7 +1,8 @@
 import { supabase } from '../lib/supabaseClient';
+import { createFileFingerprint } from '../utils/fileFingerprint';
 
 const CONVERSATION_COLUMNS = 'id,user_one_id,user_two_id,created_by,created_at';
-const MESSAGE_COLUMNS = 'id,conversation_id,sender_id,body,created_at, attachment_path, attachment_name, attachment_mime_type, attachment_size';
+const MESSAGE_COLUMNS = 'id,conversation_id,sender_id,body,created_at, attachment_path, attachment_name, attachment_mime_type, attachment_size, attachment_hash';
 const PROFILE_COLUMNS = 'id,username,display_name';
 const READ_COLUMNS = 'conversation_id,user_id,last_read_at';
 
@@ -234,11 +235,102 @@ function displayAttachmentName(name) {
     return value || 'attachment';
 }
 
+async function fingerprintStoredMessageAttachment(message) {
+    const { data, error } = await supabase.storage
+        .from(MESSAGE_ATTACHMENT_BUCKET)
+        .createSignedUrl(message.attachment_path, 60);
+
+    if (error || !data?.signedUrl) {
+        return null;
+    }
+
+    try {
+        const response = await fetch(data.signedUrl);
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return createFileFingerprint(await response.blob());
+    } catch {
+        return null;
+    }
+}
+
+async function saveMessageAttachmentFingerprint(messageId, attachmentHash) {
+    const { error } = await supabase
+        .from('messages')
+        .update({ attachment_hash: attachmentHash })
+        .eq('id', messageId);
+
+    return !error;
+}
+
+async function findDuplicateMessageAttachment(senderId, attachmentHash, attachmentSize) {
+    const { data: directMatch, error: directError } = await supabase
+        .from('messages')
+        .select('id,conversation_id,attachment_name,attachment_path,attachment_size,attachment_hash,created_at')
+        .eq('sender_id', senderId)
+        .eq('attachment_hash', attachmentHash)
+        .limit(1)
+        .maybeSingle();
+
+    if (directError) {
+        throw directError;
+    }
+
+    if (directMatch) {
+        return directMatch;
+    }
+
+    const { data: legacyMessages, error: legacyError } = await supabase
+        .from('messages')
+        .select('id,conversation_id,attachment_name,attachment_path,attachment_size,attachment_hash,created_at')
+        .eq('sender_id', senderId)
+        .eq('attachment_size', attachmentSize)
+        .not('attachment_path', 'is', null)
+        .is('attachment_hash', null)
+        .limit(25);
+
+    if (legacyError) {
+        throw legacyError;
+    }
+
+    for (const legacyMessage of legacyMessages ?? []) {
+        const legacyHash = await fingerprintStoredMessageAttachment(legacyMessage);
+
+        if (!legacyHash) {
+            continue;
+        }
+
+        await saveMessageAttachmentFingerprint(legacyMessage.id, legacyHash);
+
+        if (legacyHash === attachmentHash) {
+            return {
+                ...legacyMessage,
+                attachment_hash: legacyHash,
+            };
+        }
+    }
+
+    return null;
+}
+
+function duplicateAttachmentError(file, duplicate, attachmentHash) {
+    const error = new Error('Duplicate attachment detected.');
+    error.code = 'DUPLICATE_FILE';
+    error.file = file;
+    error.duplicate = duplicate;
+    error.contentHash = attachmentHash;
+    return error;
+}
+
 export async function sendPrivateMessageAttachment(
     conversationId,
     senderId,
     file,
     caption = '',
+    options = {},
 ) {
     requireId(conversationId, 'Conversation id');
     requireId(senderId, 'Sender id');
@@ -256,6 +348,19 @@ export async function sendPrivateMessageAttachment(
     }
 
     const displayName = displayAttachmentName(file.name);
+    const attachmentHash = typeof file.arrayBuffer === 'function'
+        && globalThis.crypto?.subtle
+        ? await createFileFingerprint(file)
+        : null;
+
+    if (attachmentHash && !options.allowDuplicate) {
+        const duplicate = await findDuplicateMessageAttachment(senderId, attachmentHash, file.size);
+
+        if (duplicate) {
+            throw duplicateAttachmentError(file, duplicate, attachmentHash);
+        }
+    }
+
     const message = caption?.trim() || displayName;
     const mimeType = normalizedAttachmentType(file);
     const extension = attachmentExtension(file.name);
@@ -291,6 +396,7 @@ export async function sendPrivateMessageAttachment(
             attachment_name: displayName,
             attachment_mime_type: mimeType,
             attachment_size: file.size,
+            ...(attachmentHash ? { attachment_hash: attachmentHash } : {}),
         })
         .select(MESSAGE_COLUMNS)
         .single();

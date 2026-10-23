@@ -14,7 +14,7 @@ const required = [
     'At that checkpoint, all 15 application tables then present',
     'the 2026-10-08 count is intentionally historical',
     'Vitest unit/component tests, React Testing Library',
-    '4 test files and 18 passing tests',
+    '6 test files and 25 passing tests',
     '`useOptimistic`, `useMemo` and `useCallback`',
     'These regression/static/runtime checks complement the formal Vitest unit/component suite.',
 ];
