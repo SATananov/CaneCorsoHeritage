@@ -577,3 +577,286 @@
     font-weight: 800;
     cursor: pointer;
 }
+
+
+/* Members catalog search, view toggle and pagination */
+
+.titleRow {
+    display: grid;
+    grid-template-columns: minmax(56px, 1fr) auto minmax(56px, 1fr);
+    align-items: center;
+    gap: 18px;
+}
+
+.titleRow h1 {
+    grid-column: 2;
+}
+
+.viewToggle {
+    display: inline-flex;
+    grid-column: 3;
+    justify-self: end;
+    gap: 6px;
+    padding: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 999px;
+    background: rgba(248, 245, 239, 0.025);
+}
+
+.viewButton,
+.viewButtonActive {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(248, 245, 239, 0.58);
+    cursor: pointer;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.viewButton:hover,
+.viewButton:focus-visible {
+    color: #e3c766;
+}
+
+.viewButtonActive {
+    border-color: rgba(212, 175, 55, 0.48);
+    background: rgba(212, 175, 55, 0.12);
+    color: #e3c766;
+}
+
+.viewButton svg,
+.viewButtonActive svg,
+.searchField svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.catalogToolbar {
+    display: flex;
+    justify-content: center;
+    margin: -12px 0 28px;
+}
+
+.searchField {
+    position: relative;
+    width: min(560px, 100%);
+    color: rgba(248, 245, 239, 0.48);
+}
+
+.searchField > svg {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.searchField input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 18px 0 46px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 999px;
+    outline: none;
+    background: rgba(248, 245, 239, 0.03);
+    color: #f8f5ef;
+    font: inherit;
+    font-size: 0.84rem;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.searchField input::placeholder {
+    color: rgba(248, 245, 239, 0.38);
+}
+
+.searchField input:focus {
+    border-color: rgba(212, 175, 55, 0.62);
+    background: rgba(248, 245, 239, 0.045);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.07);
+}
+
+.memberList {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.memberCardList {
+    min-height: 0;
+    align-items: center;
+    padding: 18px 22px;
+}
+
+.memberCardList .avatar {
+    width: 58px;
+    height: 58px;
+    font-size: 1.45rem;
+}
+
+.memberCardList .memberCopy {
+    display: grid;
+    grid-template-columns: minmax(170px, 0.8fr) minmax(0, 1.4fr) auto;
+    grid-template-areas:
+        "label bio action"
+        "name bio action"
+        "identity bio action";
+    align-items: center;
+    column-gap: 24px;
+}
+
+.memberCardList .memberLabel {
+    grid-area: label;
+}
+
+.memberCardList .memberCopy h2 {
+    grid-area: name;
+    margin-top: 4px;
+    font-size: 1.35rem;
+}
+
+.memberCardList .memberCopy > span:not(.memberLabel):not(.detailsLink) {
+    grid-area: identity;
+}
+
+.memberCardList .memberCopy p {
+    grid-area: bio;
+    margin: 0;
+    -webkit-line-clamp: 2;
+}
+
+.memberCardList .detailsLink {
+    grid-area: action;
+    margin-top: 0;
+    white-space: nowrap;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 34px;
+}
+
+.pagination > button,
+.pageNumbers button {
+    min-width: 38px;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 999px;
+    background: rgba(248, 245, 239, 0.025);
+    color: rgba(248, 245, 239, 0.72);
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.pagination > button:hover:not(:disabled),
+.pagination > button:focus-visible:not(:disabled),
+.pageNumbers button:hover,
+.pageNumbers button:focus-visible,
+.pageButtonActive {
+    border-color: rgba(212, 175, 55, 0.62) !important;
+    background: rgba(212, 175, 55, 0.12) !important;
+    color: #e3c766 !important;
+}
+
+.pagination > button:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.pageNumbers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+}
+
+.visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+    .memberCardList .memberCopy {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "label action"
+            "name action"
+            "identity action"
+            "bio bio";
+        row-gap: 2px;
+    }
+
+    .memberCardList .memberCopy p {
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 640px) {
+    .titleRow {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    .titleRow h1,
+    .viewToggle {
+        grid-column: 1;
+    }
+
+    .viewToggle {
+        justify-self: center;
+        margin-top: 8px;
+    }
+
+    .catalogToolbar {
+        margin-top: -4px;
+    }
+
+    .memberCardList {
+        align-items: flex-start;
+    }
+
+    .memberCardList .memberCopy {
+        display: block;
+    }
+
+    .memberCardList .memberCopy p {
+        margin-top: 10px;
+    }
+
+    .memberCardList .detailsLink {
+        margin-top: 14px;
+    }
+
+    .pagination {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pagination > button {
+        width: 100%;
+    }
+}
