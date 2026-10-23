@@ -215,6 +215,8 @@ The project has separate user-facing workflows for general files and document-or
 - `src/pages/DocumentsPage.jsx`
 - `src/services/fileService.js`
 
+The public catalogs are intentionally separated: **Gallery** shows approved photos, audio, video and Story text files, while **Documents** shows approved document-category files. This keeps document entries from being duplicated across both public catalogs.
+
 Supabase Storage is used for uploaded content. Database metadata controls ownership, visibility, moderation and whether registered members are offered a download action for eligible shared files. File owners can edit supported uploads through a centralized owner-only flow: rename the displayed filename, replace the stored content, change visibility and manage member-download permission. Replacing content preserves the existing `user_files.id`, so comments, ratings and deep links remain attached to the same record. Replacement files are checked with the existing SHA-256 duplicate warning while excluding the current record from self-matching; the owner can explicitly confirm an intentional duplicate. Replacing approved Community content returns it to `pending` moderation before it becomes public again. This application permission does not attempt to prevent a browser user from saving content that is otherwise legitimately viewable. Private-message attachments use the private `message-attachments` bucket and signed access URLs governed by conversation-participant RLS.
 
 ### Administration & moderation
@@ -650,11 +652,21 @@ Two dedicated demo accounts are available so evaluators can inspect the authenti
 
 ### How to enter the application
 
+The demo accounts below can be used with either the live deployment or a local development instance.
+
+**Live application:**
+https://cane-corso-heritage.netlify.app
+
+**Local development:**
+
 1. Start the application with `npm run dev`.
 2. Open the URL printed by Vite in the terminal, normally `http://localhost:5173/`.
-3. Select **Login** from the application header, or open `/login` directly.
-4. Sign in with one of the demo accounts below.
-5. Use **Logout** before switching between the regular-user and admin accounts.
+
+For both the live application and the local version:
+
+1. Select **Login** from the application header, or open `/login` directly.
+2. Sign in with one of the demo accounts below.
+3. Use **Logout** before switching between the regular-user and admin accounts.
 
 ### Regular user demo
 
