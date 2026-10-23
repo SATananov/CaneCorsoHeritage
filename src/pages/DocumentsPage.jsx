@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import CatalogToolbar from '../components/CatalogToolbar';
 import CatalogEmptyState from '../components/CatalogEmptyState';
-import CatalogLoadMore from '../components/CatalogLoadMore';
 import CatalogResultSummary from '../components/CatalogResultSummary';
 import CommentsSection from '../components/CommentsSection';
 import OwnerFileEditModal from '../components/OwnerFileEditModal';
@@ -106,7 +105,8 @@ function DocumentsPage() {
     const [files, setFiles] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortMode, setSortMode] = useState(SORT_OPTIONS.NEWEST);
-    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [viewMode, setViewMode] = useState('grid');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [editFile, setEditFile] = useState(null);
@@ -202,15 +202,67 @@ function DocumentsPage() {
         });
     }, [files, language, searchTerm, sortMode]);
 
-    const pagedFiles = visibleFiles.slice(0, visibleCount);
-    const hasMore = visibleCount < visibleFiles.length;
+    const totalPages = Math.max(1, Math.ceil(visibleFiles.length / PAGE_SIZE));
+    const safePage = Math.min(currentPage, totalPages);
+    const pageStart = (safePage - 1) * PAGE_SIZE;
+    const pagedFiles = visibleFiles.slice(pageStart, pageStart + PAGE_SIZE);
 
     return (
         <main className={styles.page}>
             <div className={styles.shell}>
                 <header className={styles.heading}>
                     <p className="section-kicker">{t('kicker')}</p>
-                    <h1>{t('title')}</h1>
+
+                    <div className={styles.titleRow}>
+                        <h1>{t('title')}</h1>
+
+                        <div
+                            className={styles.viewToggle}
+                            role="group"
+                            aria-label={t('viewMode')}
+                        >
+                            <button
+                                aria-label={t('gridView')}
+                                aria-pressed={viewMode === 'grid'}
+                                className={viewMode === 'grid' ? styles.viewButtonActive : styles.viewButton}
+                                type="button"
+                                onClick={() => {
+                                    setViewMode('grid');
+                                    setCurrentPage(1);
+                                }}
+                                title={t('gridView')}
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24">
+                                    <rect x="4" y="4" width="6" height="6" rx="1" />
+                                    <rect x="14" y="4" width="6" height="6" rx="1" />
+                                    <rect x="4" y="14" width="6" height="6" rx="1" />
+                                    <rect x="14" y="14" width="6" height="6" rx="1" />
+                                </svg>
+                            </button>
+
+                            <button
+                                aria-label={t('listView')}
+                                aria-pressed={viewMode === 'list'}
+                                className={viewMode === 'list' ? styles.viewButtonActive : styles.viewButton}
+                                type="button"
+                                onClick={() => {
+                                    setViewMode('list');
+                                    setCurrentPage(1);
+                                }}
+                                title={t('listView')}
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24">
+                                    <line x1="8" y1="6" x2="20" y2="6" />
+                                    <line x1="8" y1="12" x2="20" y2="12" />
+                                    <line x1="8" y1="18" x2="20" y2="18" />
+                                    <circle cx="4" cy="6" r="1" />
+                                    <circle cx="4" cy="12" r="1" />
+                                    <circle cx="4" cy="18" r="1" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
                     <p>{t('intro')}</p>
                 </header>
 
@@ -220,13 +272,13 @@ function DocumentsPage() {
                     searchValue={searchTerm}
                     onSearchChange={(value) => {
                         setSearchTerm(value);
-                        setVisibleCount(PAGE_SIZE);
+                        setCurrentPage(1);
                     }}
                     sortLabel={t('sortLabel')}
                     sortValue={sortMode}
                     onSortChange={(value) => {
                         setSortMode(value);
-                        setVisibleCount(PAGE_SIZE);
+                        setCurrentPage(1);
                     }}
                     sortOptions={[
                         { value: SORT_OPTIONS.NEWEST, label: t('sortNewest') },
@@ -258,9 +310,19 @@ function DocumentsPage() {
                 )}
 
                 {!loading && !error && pagedFiles.length > 0 && (
-                    <section className={styles.grid} aria-label={t('title')}>
+                    <section
+                        className={viewMode === 'list'
+                            ? `${styles.grid} ${styles.listView}`
+                            : styles.grid}
+                        aria-label={t('title')}
+                    >
                         {pagedFiles.map((file) => (
-                            <article className={styles.card} key={file.id}>
+                            <article
+                                className={viewMode === 'list'
+                                    ? `${styles.card} ${styles.cardList}`
+                                    : styles.card}
+                                key={file.id}
+                            >
                                 <div className={styles.documentPreview}>
                                     <span className={styles.mediaBadge}>
                                         {getMediaTypeLabel(language, 'document')}
@@ -352,14 +414,38 @@ function DocumentsPage() {
                     </section>
                 )}
 
-                {!loading && !error && hasMore && (
-                    <CatalogLoadMore
-                        label={t('loadMore')}
-                        statusLabel={t('showing')}
-                        visibleCount={visibleCount}
-                        totalCount={visibleFiles.length}
-                        onLoadMore={() => setVisibleCount((count) => count + PAGE_SIZE)}
-                    />
+                {!loading && !error && totalPages > 1 && (
+                    <nav className={styles.pagination} aria-label={t('paginationLabel')}>
+                        <button
+                            type="button"
+                            disabled={safePage === 1}
+                            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                        >
+                            {t('previousPage')}
+                        </button>
+
+                        <div className={styles.pageNumbers}>
+                            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    type="button"
+                                    aria-current={page === safePage ? 'page' : undefined}
+                                    className={page === safePage ? styles.pageButtonActive : undefined}
+                                    onClick={() => setCurrentPage(page)}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            type="button"
+                            disabled={safePage === totalPages}
+                            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                        >
+                            {t('nextPage')}
+                        </button>
+                    </nav>
                 )}
             </div>
             {editFile && (

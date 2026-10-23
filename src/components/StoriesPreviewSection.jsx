@@ -8,6 +8,8 @@ import { enrichStoriesWithCatalogMetrics } from '../services/storyCatalogService
 import { fetchStories } from '../services/storyService';
 import { localizeStoryCollection } from '../services/storyTranslationService';
 
+const PAGE_SIZE = 9;
+
 const SORT_OPTIONS = {
     NEWEST: 'newest',
     TOP_RATED: 'topRated',
@@ -26,6 +28,8 @@ function StoriesPreviewSection() {
     const [metricsWarning, setMetricsWarning] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortMode, setSortMode] = useState(SORT_OPTIONS.NEWEST);
+    const [viewMode, setViewMode] = useState('grid');
+    const [currentPage, setCurrentPage] = useState(1);
 
     const displayEyebrow = (story) => {
         if (story.editorial_source) {
@@ -136,6 +140,10 @@ function StoriesPreviewSection() {
 
     const communityStories = visibleStories.filter((story) => !story.editorial_source);
     const editorialStories = visibleStories.filter((story) => Boolean(story.editorial_source));
+    const totalPages = Math.max(1, Math.ceil(communityStories.length / PAGE_SIZE));
+    const safePage = Math.min(currentPage, totalPages);
+    const pageStart = (safePage - 1) * PAGE_SIZE;
+    const pagedCommunityStories = communityStories.slice(pageStart, pageStart + PAGE_SIZE);
 
     return (
         <section className="visitor-section" aria-labelledby="stories-feature-title">
@@ -153,7 +161,44 @@ function StoriesPreviewSection() {
                 </div>
 
                 <div className="visitor-section-heading visitor-section-heading-compact story-catalog-heading">
-                    <h2>{t('communityTitle')}</h2>
+                    <div className="story-catalog-title-row">
+                        <h2>{t('communityTitle')}</h2>
+
+                        <div className="story-view-toggle" role="group" aria-label={t('viewMode')}>
+                            <button
+                                type="button"
+                                className={viewMode === 'grid' ? 'is-active' : ''}
+                                aria-pressed={viewMode === 'grid'}
+                                aria-label={t('gridView')}
+                                title={t('gridView')}
+                                onClick={() => { setViewMode('grid'); setCurrentPage(1); }}
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24">
+                                    <rect x="4" y="4" width="6" height="6" rx="1" />
+                                    <rect x="14" y="4" width="6" height="6" rx="1" />
+                                    <rect x="4" y="14" width="6" height="6" rx="1" />
+                                    <rect x="14" y="14" width="6" height="6" rx="1" />
+                                </svg>
+                            </button>
+                            <button
+                                type="button"
+                                className={viewMode === 'list' ? 'is-active' : ''}
+                                aria-pressed={viewMode === 'list'}
+                                aria-label={t('listView')}
+                                title={t('listView')}
+                                onClick={() => { setViewMode('list'); setCurrentPage(1); }}
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24">
+                                    <line x1="8" y1="6" x2="20" y2="6" />
+                                    <line x1="8" y1="12" x2="20" y2="12" />
+                                    <line x1="8" y1="18" x2="20" y2="18" />
+                                    <circle cx="4" cy="6" r="1" />
+                                    <circle cx="4" cy="12" r="1" />
+                                    <circle cx="4" cy="18" r="1" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                     <p>{t('communityIntro')}</p>
                 </div>
 
@@ -164,7 +209,10 @@ function StoriesPreviewSection() {
                             type="search"
                             value={searchTerm}
                             placeholder={t('searchPlaceholder')}
-                            onChange={(event) => setSearchTerm(event.target.value)}
+                            onChange={(event) => {
+                                setSearchTerm(event.target.value);
+                                setCurrentPage(1);
+                            }}
                         />
                     </label>
 
@@ -172,21 +220,21 @@ function StoriesPreviewSection() {
                         <button
                             type="button"
                             className={sortMode === SORT_OPTIONS.NEWEST ? 'is-active' : ''}
-                            onClick={() => setSortMode(SORT_OPTIONS.NEWEST)}
+                            onClick={() => { setSortMode(SORT_OPTIONS.NEWEST); setCurrentPage(1); }}
                         >
                             {t('sortNewest')}
                         </button>
                         <button
                             type="button"
                             className={sortMode === SORT_OPTIONS.TOP_RATED ? 'is-active' : ''}
-                            onClick={() => setSortMode(SORT_OPTIONS.TOP_RATED)}
+                            onClick={() => { setSortMode(SORT_OPTIONS.TOP_RATED); setCurrentPage(1); }}
                         >
                             {t('sortTopRated')}
                         </button>
                         <button
                             type="button"
                             className={sortMode === SORT_OPTIONS.MOST_COMMENTED ? 'is-active' : ''}
-                            onClick={() => setSortMode(SORT_OPTIONS.MOST_COMMENTED)}
+                            onClick={() => { setSortMode(SORT_OPTIONS.MOST_COMMENTED); setCurrentPage(1); }}
                         >
                             {t('sortMostCommented')}
                         </button>
@@ -208,8 +256,9 @@ function StoriesPreviewSection() {
                 ) : (
                     <div className="story-catalog-sections">
                         {communityStories.length > 0 && (
-                            <div className="story-preview-grid">
-                                {communityStories.map((story) => (
+                            <>
+                                <div className={viewMode === 'list' ? 'story-preview-grid story-preview-list' : 'story-preview-grid'}>
+                                    {pagedCommunityStories.map((story) => (
                                     <div className="story-catalog-card" key={story.id ?? story._id}>
                                         <PreviewCard
                                             eyebrow={displayEyebrow(story)}
@@ -229,8 +278,33 @@ function StoriesPreviewSection() {
                                             </span>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+
+                                {totalPages > 1 && (
+                                    <nav className="story-pagination" aria-label={t('paginationLabel')}>
+                                        <button type="button" disabled={safePage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>
+                                            {t('previousPage')}
+                                        </button>
+                                        <div className="story-page-numbers">
+                                            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                                                <button
+                                                    key={page}
+                                                    type="button"
+                                                    className={page === safePage ? 'is-active' : ''}
+                                                    aria-current={page === safePage ? 'page' : undefined}
+                                                    onClick={() => setCurrentPage(page)}
+                                                >
+                                                    {page}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button type="button" disabled={safePage === totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>
+                                            {t('nextPage')}
+                                        </button>
+                                    </nav>
+                                )}
+                            </>
                         )}
 
                         {editorialStories.length > 0 && (
