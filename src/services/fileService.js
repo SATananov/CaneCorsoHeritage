@@ -226,6 +226,14 @@ function duplicateUploadError(file, duplicate, contentHash) {
     return error;
 }
 
+function ambiguousFileUpdateError() {
+    const error = new Error(
+        'Unable to confirm whether the file update was committed. Refresh before trying again; any replacement object was kept for safety.',
+    );
+    error.code = 'FILE_UPDATE_AMBIGUOUS';
+    return error;
+}
+
 export async function uploadUserFiles(
     files,
     {
@@ -393,7 +401,7 @@ export async function editOwnedUserFile(
             .single();
 
         if (refreshError || !refreshed) {
-            throw new Error(refreshError?.message || 'Unable to reload the updated file.');
+            throw ambiguousFileUpdateError();
         }
 
         return {
@@ -515,22 +523,8 @@ export async function editOwnedUserFile(
 
         if (!reconciliationError && reconciled?.storage_path === uploadedReplacementPath) {
             committed = reconciled;
-        } else if (!reconciliationError && reconciled) {
-            const { error: cleanupError } = await supabase.storage
-                .from('user-files')
-                .remove([uploadedReplacementPath]);
-
-            if (cleanupError) {
-                throw new Error(
-                    `${updateError?.message || 'Unable to update the file.'} The uncommitted replacement could not be cleaned up: ${cleanupError.message || 'unknown storage cleanup error'}.`,
-                );
-            }
-
-            throw new Error(updateError?.message || 'Unable to update the file.');
         } else {
-            throw new Error(
-                'Unable to confirm whether the replacement was committed. The new storage object was kept for safety.',
-            );
+            throw ambiguousFileUpdateError();
         }
     }
 

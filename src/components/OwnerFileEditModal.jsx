@@ -78,8 +78,12 @@ function OwnerFileEditModal({ file, onClose, onSaved }) {
             }
 
             onClose?.();
-        } catch {
-            setError(ui.saveError);
+        } catch (error) {
+            setError(
+                error?.code === 'FILE_UPDATE_AMBIGUOUS'
+                    ? ui.ambiguousSaveError
+                    : ui.saveError,
+            );
         } finally {
             setSaving(false);
         }

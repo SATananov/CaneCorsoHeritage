@@ -285,7 +285,7 @@ npm run lint
 npm run build
 ```
 
-At the final pre-submission checkpoint, the project passes **25 unit/component tests across 6 test files** and **all 96 project verifier scripts**, together with ESLint and the production build.
+At the final pre-submission checkpoint, the project passes **25 unit/component tests across 6 test files** and **all 97 project verifier scripts**, together with ESLint and the production build.
 
 ## Main features
 

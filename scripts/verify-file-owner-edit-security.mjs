@@ -44,7 +44,13 @@ assert.match(
 );
 assert.match(
     fileService,
-    /Unable to confirm whether the replacement was committed/,
+    /FILE_UPDATE_AMBIGUOUS/,
+    'ambiguous file updates must use the dedicated fail-safe error code',
+);
+assert.match(
+    fileService,
+    /kept for safety/,
+    'ambiguous file updates must keep the replacement object for safety',
 );
 assert.match(
     modal,
