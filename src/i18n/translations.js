@@ -45,6 +45,10 @@ export const translations = {
             empty: 'There are no approved community images yet.',
             openImage: 'Open image',
             viewStory: 'View related story',
+            viewRelatedImage: 'View related image',
+            listenRelatedAudio: 'Listen to related audio',
+            viewRelatedVideo: 'View related video',
+            openRelatedDocument: 'Open related document',
             closePreview: 'Close preview',
             filterLabel: 'Gallery categories',
             filterAll: 'All',
@@ -607,6 +611,10 @@ export const translations = {
             empty: 'Все още няма одобрени снимки от общността.',
             openImage: 'Отвори снимката',
             viewStory: 'Виж свързаната история',
+            viewRelatedImage: 'Виж свързаното изображение',
+            listenRelatedAudio: 'Чуй свързаното аудио',
+            viewRelatedVideo: 'Виж свързаното видео',
+            openRelatedDocument: 'Отвори свързания документ',
             closePreview: 'Затвори прегледа',
             filterLabel: 'Категории в галерията',
             filterAll: 'Всички',
@@ -1169,6 +1177,10 @@ export const translations = {
             empty: 'Non ci sono ancora immagini approvate dalla comunità.',
             openImage: 'Apri immagine',
             viewStory: 'Vedi la storia collegata',
+            viewRelatedImage: 'Vedi l’immagine collegata',
+            listenRelatedAudio: 'Ascolta l’audio collegato',
+            viewRelatedVideo: 'Vedi il video collegato',
+            openRelatedDocument: 'Apri il documento collegato',
             closePreview: 'Chiudi anteprima',
             filterLabel: 'Categorie della galleria',
             filterAll: 'Tutti',
@@ -1693,4 +1705,3 @@ export function getTranslation(language, section, key) {
         ?? translations.en?.[section]?.[key]
         ?? key;
 }
-

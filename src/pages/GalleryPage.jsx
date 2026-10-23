@@ -63,6 +63,39 @@ function getMediaType(file) {
     return MEDIA_FILTERS.DOCUMENTS;
 }
 
+function getRelatedMediaFile(file, files) {
+    if (!isStoryTextFile(file) || !file.story_id) return null;
+
+    const priority = {
+        [MEDIA_FILTERS.IMAGES]: 0,
+        [MEDIA_FILTERS.AUDIO]: 1,
+        [MEDIA_FILTERS.VIDEO]: 2,
+        [MEDIA_FILTERS.DOCUMENTS]: 3,
+    };
+
+    return files
+        .filter((candidate) => (
+            candidate.id !== file.id
+            && candidate.story_id === file.story_id
+            && !isStoryTextFile(candidate)
+            && Boolean(candidate.url)
+        ))
+        .sort((a, b) => (
+            (priority[getMediaType(a)] ?? Number.MAX_SAFE_INTEGER)
+            - (priority[getMediaType(b)] ?? Number.MAX_SAFE_INTEGER)
+        ))[0] ?? null;
+}
+
+function getRelatedMediaTranslationKey(file) {
+    const mediaType = getMediaType(file);
+
+    if (mediaType === MEDIA_FILTERS.IMAGES) return 'viewRelatedImage';
+    if (mediaType === MEDIA_FILTERS.AUDIO) return 'listenRelatedAudio';
+    if (mediaType === MEDIA_FILTERS.VIDEO) return 'viewRelatedVideo';
+
+    return 'openRelatedDocument';
+}
+
 function isImageDocument(file) {
     return isDocumentCategoryFile(file)
         && (file.mime_type ?? '').startsWith('image/')
@@ -415,6 +448,9 @@ useEffect(() => {
                     <section className={styles.grid} aria-label={t('title')}>
                         {pagedFiles.map((file) => {
                             const mediaType = getMediaType(file);
+                            const relatedMedia = isStoryTextFile(file)
+                                ? getRelatedMediaFile(file, files)
+                                : null;
 
                             return (
                                 <article className={styles.card} key={file.id}>
@@ -496,13 +532,24 @@ useEffect(() => {
                                         </div>
 
                                         <div className={styles.actionSlot}>
-                                            {file.story_id && (
+                                            {file.story_id && !isStoryTextFile(file) && (
                                                 <Link
                                                     className={styles.storyLink}
                                                     to={`/stories/${file.story_id}`}
                                                 >
                                                     {t('viewStory')}
                                                 </Link>
+                                            )}
+
+                                            {relatedMedia && (
+                                                <a
+                                                    className={styles.storyLink}
+                                                    href={relatedMedia.url}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    {t(getRelatedMediaTranslationKey(relatedMedia))}
+                                                </a>
                                             )}
 
                                             {file.url && (

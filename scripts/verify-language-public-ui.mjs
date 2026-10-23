@@ -9,6 +9,7 @@ const files = [
     'src/pages/UsersPage.jsx',
     'src/pages/HeritageArticlePage.jsx',
     'src/pages/StoryDetailsPage.jsx',
+    'src/pages/GalleryPage.jsx',
 ];
 
 for (const file of files) {
@@ -17,7 +18,40 @@ for (const file of files) {
     assert.match(source, /getTranslation/, `${file} must use the shared translations`);
 }
 
+const gallery = fs.readFileSync('src/pages/GalleryPage.jsx', 'utf8');
 const translations = fs.readFileSync('src/i18n/translations.js', 'utf8');
+
+assert.match(
+    gallery,
+    /file\.story_id && !isStoryTextFile\(file\)/,
+    'media cards must keep the reciprocal link back to the related Story',
+);
+assert.match(
+    gallery,
+    /getRelatedMediaFile\(file, files\)/,
+    'text Story files must resolve one related sibling media file',
+);
+assert.match(
+    gallery,
+    /candidate\.story_id === file\.story_id/,
+    'related media must belong to the same Story',
+);
+assert.match(
+    gallery,
+    /t\(getRelatedMediaTranslationKey\(relatedMedia\)\)/,
+    'related media action must use a localized type-specific label',
+);
+
+for (const key of [
+    'viewRelatedImage',
+    'listenRelatedAudio',
+    'viewRelatedVideo',
+    'openRelatedDocument',
+]) {
+    const matches = translations.match(new RegExp(`\\b${key}:\\s*`, 'g')) ?? [];
+    assert.equal(matches.length, 3, `${key} must exist exactly once in EN/BG/IT`);
+}
+
 for (const section of [
     'publicStories',
     'publicHeritage',
@@ -32,4 +66,4 @@ for (const section of [
 }
 
 console.log('LANGUAGE PUBLIC UI 02B: PASS');
-console.log('Stories / Heritage / Members public UI is wired to EN / BG / IT.');
+console.log('Stories / Heritage / Members / Gallery public UI is wired to EN / BG / IT, including reciprocal Story/media actions.');
