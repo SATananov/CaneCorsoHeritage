@@ -39,7 +39,7 @@ export const translations = {
         gallery: {
             communityGallery: 'Community Gallery',
             title: 'Gallery',
-            intro: 'Browse approved photos, audio, video, Story texts and documents shared by Cane Corso Heritage members.',
+            intro: 'Browse approved photos, audio, video and Story texts shared by Cane Corso Heritage members.',
             loading: 'Loading gallery...',
             loadError: 'Unable to load the gallery right now.',
             empty: 'There are no approved community images yet.',
@@ -605,7 +605,7 @@ export const translations = {
         gallery: {
             communityGallery: 'Галерия на общността',
             title: 'Галерия',
-            intro: 'Разглеждайте одобрени снимки, аудио, видео, текстове към Истории и документи, споделени от членовете на Cane Corso Heritage.',
+            intro: 'Разглеждайте одобрени снимки, аудио, видео и текстове към Истории, споделени от членовете на Cane Corso Heritage.',
             loading: 'Зареждане на галерията...',
             loadError: 'Галерията не може да бъде заредена в момента.',
             empty: 'Все още няма одобрени снимки от общността.',
@@ -1171,7 +1171,7 @@ export const translations = {
         gallery: {
             communityGallery: 'Galleria della comunità',
             title: 'Galleria',
-            intro: 'Sfoglia foto, audio, video, testi delle Storie e documenti approvati condivisi dai membri di Cane Corso Heritage.',
+            intro: 'Sfoglia foto, audio, video e testi delle Storie approvati condivisi dai membri di Cane Corso Heritage.',
             loading: 'Caricamento della galleria...',
             loadError: 'Impossibile caricare la galleria in questo momento.',
             empty: 'Non ci sono ancora immagini approvate dalla comunità.',

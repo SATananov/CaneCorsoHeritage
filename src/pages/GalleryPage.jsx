@@ -30,6 +30,14 @@ const MEDIA_FILTERS = {
     DOCUMENTS: 'documents',
 };
 
+const GALLERY_FILTERS = [
+    MEDIA_FILTERS.ALL,
+    MEDIA_FILTERS.IMAGES,
+    MEDIA_FILTERS.AUDIO,
+    MEDIA_FILTERS.VIDEO,
+    MEDIA_FILTERS.STORIES,
+];
+
 const PAGE_SIZE = 9;
 
 const SORT_OPTIONS = {
@@ -156,7 +164,7 @@ function GalleryPage() {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const requestedFilter = searchParams.get('type');
-    const activeFilter = Object.values(MEDIA_FILTERS).includes(requestedFilter)
+    const activeFilter = GALLERY_FILTERS.includes(requestedFilter)
         ? requestedFilter
         : MEDIA_FILTERS.ALL;
 
@@ -253,16 +261,19 @@ useEffect(() => {
     }, [preview]);
 
     const categoryCounts = useMemo(() => {
+        const galleryFiles = files.filter(
+            (file) => getMediaType(file) !== MEDIA_FILTERS.DOCUMENTS,
+        );
+
         const counts = {
-            [MEDIA_FILTERS.ALL]: files.length,
+            [MEDIA_FILTERS.ALL]: galleryFiles.length,
             [MEDIA_FILTERS.IMAGES]: 0,
             [MEDIA_FILTERS.AUDIO]: 0,
             [MEDIA_FILTERS.VIDEO]: 0,
             [MEDIA_FILTERS.STORIES]: 0,
-            [MEDIA_FILTERS.DOCUMENTS]: 0,
         };
 
-        files.forEach((file) => {
+        galleryFiles.forEach((file) => {
             counts[getMediaType(file)] += 1;
         });
 
@@ -273,8 +284,12 @@ useEffect(() => {
         const normalizedSearch = searchTerm.trim().toLocaleLowerCase(language);
 
         const filtered = files.filter((file) => {
+            const mediaType = getMediaType(file);
+
+            if (mediaType === MEDIA_FILTERS.DOCUMENTS) return false;
+
             const matchesCategory = activeFilter === MEDIA_FILTERS.ALL
-                || getMediaType(file) === activeFilter;
+                || mediaType === activeFilter;
 
             if (!matchesCategory) return false;
             if (!normalizedSearch) return true;
@@ -339,7 +354,6 @@ useEffect(() => {
         [MEDIA_FILTERS.AUDIO, t('filterAudio')],
         [MEDIA_FILTERS.VIDEO, t('filterVideo')],
         [MEDIA_FILTERS.STORIES, t('filterStories')],
-        [MEDIA_FILTERS.DOCUMENTS, t('filterDocuments')],
     ];
 
     async function downloadHandler(file) {

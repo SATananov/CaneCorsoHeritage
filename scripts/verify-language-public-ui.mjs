@@ -41,6 +41,21 @@ assert.match(
     /t\(getRelatedMediaTranslationKey\(relatedMedia\)\)/,
     'related media action must use a localized type-specific label',
 );
+assert.match(
+    gallery,
+    /const GALLERY_FILTERS = \[[\s\S]*MEDIA_FILTERS\.STORIES,[\s\S]*\];/,
+    'Gallery must expose only media and Story filters',
+);
+assert.doesNotMatch(
+    gallery,
+    /\[MEDIA_FILTERS\.DOCUMENTS, t\('filterDocuments'\)\]/,
+    'Gallery must not expose a duplicate Documents filter',
+);
+assert.match(
+    gallery,
+    /if \(mediaType === MEDIA_FILTERS\.DOCUMENTS\) return false;/,
+    'Gallery results must exclude document-category files',
+);
 
 for (const key of [
     'viewRelatedImage',
@@ -66,4 +81,4 @@ for (const section of [
 }
 
 console.log('LANGUAGE PUBLIC UI 02B: PASS');
-console.log('Stories / Heritage / Members / Gallery public UI is wired to EN / BG / IT, including reciprocal Story/media actions.');
+console.log('Stories / Heritage / Members / Gallery public UI is wired to EN / BG / IT; Gallery keeps reciprocal Story/media actions while Documents remain in the dedicated catalog.');
