@@ -31,6 +31,7 @@ function harness({ profileOutcome, contactOutcome }) {
         AbortController,
         useLanguage: () => ({ language: 'en' }),
         getTranslation: (_language, _section, key) => `en:${key}`,
+        PAGE_SIZE: 9,
         fetchProfiles: () => resolveOutcome(profileOutcome),
         fetchPublicContacts: () => resolveOutcome(contactOutcome),
         useCallback(callback) { return callback; },

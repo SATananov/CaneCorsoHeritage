@@ -58,6 +58,7 @@ function harness(spec) {
         useNavigate: () => () => {},
         useSearchParams: () => [{ get: () => category }, () => {}],
         getTranslation: (lang, _section, key) => `${lang}:${key}`,
+        PAGE_SIZE: 9,
         useMemo: memo,
         useCallback: (callback, deps) => memo(() => callback, deps),
         useRef: (initial) => hooks[cursor++] ??= { current: initial },
